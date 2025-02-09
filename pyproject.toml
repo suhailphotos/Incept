@@ -1,14 +1,14 @@
 [tool.poetry]
 name = "bootstrapx"
 version = "0.1.0"
-description = ""
+description = "A Python package for managing courses, projects, and directories with Notion integration."
 authors = ["Suhail <suhailece@gmail.com>"]
 readme = "README.md"
 packages = [{include = "bootstrapx", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-notionmanager = "^0.1.1"
+notionmanager = "^0.1.2"
 
 
 [build-system]
