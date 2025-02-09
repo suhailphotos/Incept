@@ -1,6 +1,6 @@
-# CodeNest
+# BootStrapX
 
-CodeNest is a powerful package designed to help you efficiently manage, create, delete, modify, and catalog courses, projects, and directories. Whether you're working on a new Python project, organizing a course, or managing VFX-related projects in tools like Nuke or Houdini, CodeNest provides a streamlined solution. All your project and course information is tracked in a Notion database for a centralized and organized workflow.
+BootStrapX is a powerful package designed to help you efficiently manage, create, delete, modify, and catalog courses, projects, and directories. Whether you're working on a new Python project, organizing a course, or managing VFX-related projects in tools like Nuke or Houdini, BootStrapX provides a streamlined solution. All your project and course information is tracked in a Notion database for a centralized and organized workflow.
 
 ---
 
@@ -30,7 +30,7 @@ CodeNest is a powerful package designed to help you efficiently manage, create, 
 
 ## Folder Structure
 
-CodeNest generates clean and consistent folder structures tailored to your projects and courses. Here's an example for a course:
+BootStrapX generates clean and consistent folder structures tailored to your projects and courses. Here's an example for a course:
 
 ```
 {course_name}/
@@ -50,15 +50,15 @@ CodeNest generates clean and consistent folder structures tailored to your proje
 
 ## Installation
 
-To use CodeNest, simply install the package via `pip` (once published):
+To use BootStrapX, simply install the package via `pip` (once published):
 ```bash
-pip install codenest
+pip install bootstrapx
 ```
 
 Or, clone the repository and install it locally:
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/CodeNest.git
-cd CodeNest
+git clone https://github.com/YOUR_GITHUB_USERNAME/BootStrapX.git
+cd BootStrapX
 pip install -e .
 ```
 
@@ -68,30 +68,30 @@ pip install -e .
 
 ### **1. Initialize a New Course**
 ```python
-from codenest import CourseManager
+from bootstrapx import CourseManager
 
 CourseManager.create_course("Intro_to_Machine_Learning")
 ```
 
 ### **2. Initialize a New Python Project**
 ```python
-from codenest import ProjectManager
+from bootstrapx import ProjectManager
 
 ProjectManager.create_project("MyAwesomeProject", project_type="python")
 ```
 
 ### **3. Synchronize with Notion**
 ```python
-from codenest import NotionSync
+from bootstrapx import NotionSync
 
 NotionSync.sync_course("Intro_to_Machine_Learning")
 ```
 
 ### **4. Automate Directory Management**
-Use CodeNest's command-line interface (CLI) to manage directories:
+Use BootStrapX's command-line interface (CLI) to manage directories:
 ```bash
-codenest init-course "Intro_to_Machine_Learning"
-codenest init-project "MyAwesomeProject" --type python
+bootstrapx init-course "Intro_to_Machine_Learning"
+bootstrapx init-project "MyAwesomeProject" --type python
 ```
 
 ---
@@ -119,8 +119,9 @@ We welcome contributions! Please feel free to submit pull requests, report issue
 
 ## Contact
 
-For any questions, issues, or feedback, please reach out via the [GitHub Issues](https://github.com/YOUR_GITHUB_USERNAME/CodeNest/issues) page.
+For any questions, issues, or feedback, please reach out via the [GitHub Issues](https://github.com/YOUR_GITHUB_USERNAME/BootStrapX/issues) page.
 
 ---
 
-CodeNest: Your all-in-one solution for managing courses, projects, and directories with effortless Notion integration!
+BootStrapX: Your all-in-one solution for managing courses, projects, and directories with effortless Notion integration!
+

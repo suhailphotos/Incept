@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "codenest"
+name = "bootstrapx"
 version = "0.1.0"
 description = ""
 authors = ["Suhail <suhailece@gmail.com>"]
 readme = "README.md"
-packages = [{include = "codenest", from = "src"}]
+packages = [{include = "bootstrapx", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
