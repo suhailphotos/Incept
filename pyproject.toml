@@ -8,6 +8,7 @@ packages = [{include = "bootstrapx", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+notionmanager = "^0.1.1"
 
 
 [build-system]
