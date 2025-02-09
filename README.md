@@ -1,7 +1,6 @@
+# CodeNest
 
-# Scriptorium
-
-Scriptorium is a powerful package designed to help you efficiently manage, create, delete, modify, and catalog courses, projects, and directories. Whether you're working on a new Python project, organizing a course, or managing VFX-related projects in tools like Nuke or Houdini, Scriptorium provides a streamlined solution. All your project and course information is tracked in a Notion database for a centralized and organized workflow.
+CodeNest is a powerful package designed to help you efficiently manage, create, delete, modify, and catalog courses, projects, and directories. Whether you're working on a new Python project, organizing a course, or managing VFX-related projects in tools like Nuke or Houdini, CodeNest provides a streamlined solution. All your project and course information is tracked in a Notion database for a centralized and organized workflow.
 
 ---
 
@@ -31,7 +30,7 @@ Scriptorium is a powerful package designed to help you efficiently manage, creat
 
 ## Folder Structure
 
-Scriptorium generates clean and consistent folder structures tailored to your projects and courses. Here's an example for a course:
+CodeNest generates clean and consistent folder structures tailored to your projects and courses. Here's an example for a course:
 
 ```
 {course_name}/
@@ -51,15 +50,15 @@ Scriptorium generates clean and consistent folder structures tailored to your pr
 
 ## Installation
 
-To use Scriptorium, simply install the package via `pip` (once published):
+To use CodeNest, simply install the package via `pip` (once published):
 ```bash
-pip install scriptorium
+pip install codenest
 ```
 
 Or, clone the repository and install it locally:
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/Scriptorium.git
-cd Scriptorium
+git clone https://github.com/YOUR_GITHUB_USERNAME/CodeNest.git
+cd CodeNest
 pip install -e .
 ```
 
@@ -69,30 +68,30 @@ pip install -e .
 
 ### **1. Initialize a New Course**
 ```python
-from scriptorium import CourseManager
+from codenest import CourseManager
 
 CourseManager.create_course("Intro_to_Machine_Learning")
 ```
 
 ### **2. Initialize a New Python Project**
 ```python
-from scriptorium import ProjectManager
+from codenest import ProjectManager
 
 ProjectManager.create_project("MyAwesomeProject", project_type="python")
 ```
 
 ### **3. Synchronize with Notion**
 ```python
-from scriptorium import NotionSync
+from codenest import NotionSync
 
 NotionSync.sync_course("Intro_to_Machine_Learning")
 ```
 
 ### **4. Automate Directory Management**
-Use Scriptorium's command-line interface (CLI) to manage directories:
+Use CodeNest's command-line interface (CLI) to manage directories:
 ```bash
-scriptorium init-course "Intro_to_Machine_Learning"
-scriptorium init-project "MyAwesomeProject" --type python
+codenest init-course "Intro_to_Machine_Learning"
+codenest init-project "MyAwesomeProject" --type python
 ```
 
 ---
@@ -120,9 +119,8 @@ We welcome contributions! Please feel free to submit pull requests, report issue
 
 ## Contact
 
-For any questions, issues, or feedback, please reach out via the [GitHub Issues](https://github.com/YOUR_GITHUB_USERNAME/Scriptorium/issues) page.
+For any questions, issues, or feedback, please reach out via the [GitHub Issues](https://github.com/YOUR_GITHUB_USERNAME/CodeNest/issues) page.
 
 ---
 
-Scriptorium: Your all-in-one solution for managing courses, projects, and directories with effortless Notion integration!
-
+CodeNest: Your all-in-one solution for managing courses, projects, and directories with effortless Notion integration!
