@@ -1,6 +1,6 @@
-# BootStrapX
+# Incept
 
-BootStrapX is a powerful package designed to help you efficiently manage, create, delete, modify, and catalog courses, projects, and directories. Whether you're working on a new Python project, organizing a course, or managing VFX-related projects in tools like Nuke or Houdini, BootStrapX provides a streamlined solution. All your project and course information is tracked in a Notion database for a centralized and organized workflow.
+Incept is a powerful package designed to help you efficiently manage, create, delete, modify, and catalog courses, projects, and directories. Whether you're working on a new Python project, organizing a course, or managing VFX-related projects in tools like Nuke or Houdini, Incept provides a streamlined solution. All your project and course information is tracked in a Notion database for a centralized and organized workflow.
 
 ---
 
@@ -30,7 +30,7 @@ BootStrapX is a powerful package designed to help you efficiently manage, create
 
 ## Folder Structure
 
-BootStrapX generates clean and consistent folder structures tailored to your projects and courses. Here's an example for a course:
+Incept generates clean and consistent folder structures tailored to your projects and courses. Here's an example for a course:
 
 ```
 {course_name}/
@@ -50,15 +50,15 @@ BootStrapX generates clean and consistent folder structures tailored to your pro
 
 ## Installation
 
-To use BootStrapX, simply install the package via `pip` (once published):
+To use Incept, simply install the package via `pip` (once published):
 ```bash
-pip install bootstrapx
+pip install incept
 ```
 
 Or, clone the repository and install it locally:
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/BootStrapX.git
-cd BootStrapX
+git clone https://github.com/YOUR_GITHUB_USERNAME/Incept.git
+cd Incept
 pip install -e .
 ```
 
@@ -68,30 +68,31 @@ pip install -e .
 
 ### **1. Initialize a New Course**
 ```python
-from bootstrapx import CourseManager
+import incept
 
-CourseManager.create_course("Intro_to_Machine_Learning")
+my_course = incept.course.addCourse("Intro_to_Machine_Learning")
 ```
 
 ### **2. Initialize a New Python Project**
 ```python
-from bootstrapx import ProjectManager
+import incept
 
-ProjectManager.create_project("MyAwesomeProject", project_type="python")
+my_project = incept.project.addProject("MyAwesomeProject", project_type="python")
 ```
 
 ### **3. Synchronize with Notion**
 ```python
-from bootstrapx import NotionSync
+import incept
 
-NotionSync.sync_course("Intro_to_Machine_Learning")
+notion_page = incept.NotionPage(notion_api_key, database_id, my_course.name, my_course.content_type, my_course.template)
+notion_page.create_page()
 ```
 
 ### **4. Automate Directory Management**
-Use BootStrapX's command-line interface (CLI) to manage directories:
+Use Incept's command-line interface (CLI) to manage directories:
 ```bash
-bootstrapx init-course "Intro_to_Machine_Learning"
-bootstrapx init-project "MyAwesomeProject" --type python
+incept init-course "Intro_to_Machine_Learning"
+incept init-project "MyAwesomeProject" --type python
 ```
 
 ---
@@ -119,9 +120,6 @@ We welcome contributions! Please feel free to submit pull requests, report issue
 
 ## Contact
 
-For any questions, issues, or feedback, please reach out via the [GitHub Issues](https://github.com/YOUR_GITHUB_USERNAME/BootStrapX/issues) page.
+For any questions, issues, or feedback, please reach out via the [GitHub Issues](https://github.com/YOUR_GITHUB_USERNAME/Incept/issues) page.
 
 ---
-
-BootStrapX: Your all-in-one solution for managing courses, projects, and directories with effortless Notion integration!
-
