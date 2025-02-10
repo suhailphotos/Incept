@@ -4,14 +4,18 @@ version = "0.1.0"
 description = "A Python package for managing courses, projects, and directories with Notion integration."
 authors = ["Suhail <suhailece@gmail.com>"]
 readme = "README.md"
-packages = [{include = "bootstrapx", from = "src"}]
+packages = [
+    { include = "bootstrapx", from = "src" }
+]
+
+# This is the correct place to include extra files:
+include = [
+    "bootstrapx/.config/**"
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
 notionmanager = "^0.1.2"
-
-[tool.poetry.include]
-"bootstrapx/.config/**" = { format = ["sdist", "wheel"] }
 
 [build-system]
 requires = ["poetry-core"]
