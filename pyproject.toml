@@ -10,6 +10,8 @@ packages = [{include = "bootstrapx", from = "src"}]
 python = "^3.11"
 notionmanager = "^0.1.2"
 
+[tool.poetry.include]
+"bootstrapx/.config/**" = { format = ["sdist", "wheel"] }
 
 [build-system]
 requires = ["poetry-core"]

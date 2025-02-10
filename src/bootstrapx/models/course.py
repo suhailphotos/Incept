@@ -1,0 +1,48 @@
+from .icon import Icon
+from .cover import Cover
+from .chapter import Chapter
+
+class Course:
+    DEFAULT_NAME = "Sample Course"
+    DEFAULT_DESCRIPTION = "This is a sample course. Write description here."
+    DEFAULT_PATH = "$DATALIB/threeD/courses"
+    DEFAULT_COURSE_LINK = "https://example.com"
+    DEFAULT_CONTENT_TYPE = "Course"
+    DEFAULT_TOOL = "149a1865-b187-80f9-b21f-c9c96430bf62"  # Sample tool ID
+    DEFAULT_TAGS = ["Python"]
+    DEFAULT_TEMPLATE = "default"
+
+    def __init__(self, name=DEFAULT_NAME, description=DEFAULT_DESCRIPTION, path=DEFAULT_PATH,
+                 course_link=DEFAULT_COURSE_LINK, content_type=DEFAULT_CONTENT_TYPE,
+                 icon=None, cover=None, tool=DEFAULT_TOOL, tags=None, template=DEFAULT_TEMPLATE):
+        """
+        Represents a Course object.
+
+        Parameters:
+        - name (str): Course title.
+        - description (str): Short course description.
+        - path (str): File system path where course files are stored.
+        - course_link (str): URL to the course webpage.
+        - content_type (str): Type of entry (default: "Course").
+        - icon (Icon): Course icon.
+        - cover (Cover): Course cover image.
+        - tool (str): Associated tool ID.
+        - tags (list): Tags for classification.
+        - template (str): Folder template name.
+        """
+        self.name = name
+        self.description = description
+        self.path = path
+        self.course_link = course_link
+        self.content_type = content_type
+        self.icon = icon or Icon()
+        self.cover = cover or Cover()
+        self.tool = tool
+        self.tags = tags or self.DEFAULT_TAGS
+        self.template = template
+        self.chapters = []
+
+    def add_chapter(self, chapter: Chapter):
+        """Adds a Chapter object to the Course."""
+        chapter.parent_course = self  # Assigns parent reference
+        self.chapters.append(chapter)
