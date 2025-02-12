@@ -38,10 +38,10 @@ class Course:
         self.template = template
         self.chapters = []
 
-    def add_chapter(self, chapter: Chapter):
-        """Adds a Chapter object to the Course."""
-        chapter.parent_course = self  # Assigns parent reference
-        self.chapters.append(chapter)
+#    def add_chapter(self, chapter: Chapter):
+#        """Adds a Chapter object to the Course."""
+#        chapter.parent_course = self  # Assigns parent reference
+#        self.chapters.append(chapter)
 
 if __name__ == "__main__":
     newCourse = Course()
