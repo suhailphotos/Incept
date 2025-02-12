@@ -1,6 +1,3 @@
-from .lesson import Lesson
-from .course import Course
-
 class Chapter:
     DEFAULT_NAME = "Sample Chapter"
     DEFAULT_CONTENT_TYPE = "Chapter"

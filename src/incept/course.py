@@ -1,7 +1,3 @@
-from .icon import Icon
-from .cover import Cover
-from .chapter import Chapter
-
 class Course:
     DEFAULT_NAME = "Sample Course"
     DEFAULT_DESCRIPTION = "This is a sample course. Write description here."
@@ -46,3 +42,7 @@ class Course:
         """Adds a Chapter object to the Course."""
         chapter.parent_course = self  # Assigns parent reference
         self.chapters.append(chapter)
+
+if __name__ == "__main__":
+    newCourse = Course()
+    print(newCourse)

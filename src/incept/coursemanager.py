@@ -1,39 +1,28 @@
-import os
-from .models.course import Course
-from .models.chapter import Chapter
-from .models.lesson import Lesson
-from .models.notion_page import NotionPage
-from .template_manager import TemplateManager
+from incept.course import Course
+from incept.chapter import Chapter
+from incept.lesson import Lesson
+from incept.template.manager import create_course_structure
 
-class CourseManager:
-    def __init__(self, notion_api_key: str, database_id: str):
-        """
-        Manages course creation, folder setup, and Notion integration.
+def newCourse(name, description=None, path=None, template="default"):
+    """
+    Creates a new Course object and sets up folder structure.
+    """
+    course = Course(name, description, path, template=template)
+    create_course_structure(course.name, template)
+    return course
 
-        Parameters:
-        - notion_api_key (str): API Key for Notion.
-        - database_id (str): Notion database ID.
-        """
-        self.notion_api_key = notion_api_key
-        self.database_id = database_id
+def newChapter(course, name, materials_path=None, assignments_path=None):
+    """
+    Creates a new Chapter object and associates it with a Course.
+    """
+    chapter = Chapter(name, materials_path=materials_path, assignments_path=assignments_path, parent_course=course)
+    course.add_chapter(chapter)
+    return chapter
 
-    def create_course(self, course: Course):
-        """Creates a new course with folder structure and Notion entry."""
-        TemplateManager.create_course_structure(course.name, course.template)
-        notion_page = NotionPage(
-            self.notion_api_key, self.database_id, course.name, course.content_type, course.template,
-            icon=course.icon, cover=course.cover, path=course.path, course_link=course.course_link
-        )
-        return notion_page.create_page()
-
-    def create_chapter(self, course: Course, chapter_name: str):
-        """Creates a new chapter and associates it with a course."""
-        chapter = Chapter(name=chapter_name, parent_course=course)
-        course.add_chapter(chapter)
-        return chapter
-
-    def create_lesson(self, chapter: Chapter, lesson_name: str):
-        """Creates a new lesson and associates it with a chapter."""
-        lesson = Lesson(name=lesson_name, parent_chapter=chapter)
-        chapter.add_lesson(lesson)
-        return lesson
+def newLesson(chapter, name):
+    """
+    Creates a new Lesson object and associates it with a Chapter.
+    """
+    lesson = Lesson(name, parent_chapter=chapter)
+    chapter.add_lesson(lesson)
+    return lesson

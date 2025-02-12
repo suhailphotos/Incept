@@ -1,5 +1,3 @@
-from .chapter import Chapter
-
 class Lesson:
     DEFAULT_NAME = "Sample Lesson"
     DEFAULT_CONTENT_TYPE = "Lesson"
