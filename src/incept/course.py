@@ -1,3 +1,7 @@
+from __future__ import annotations  #Enables deferred evaluation of annotations
+from incept.media.icon import Icon
+from incept.media.cover import Cover
+
 class Course:
     DEFAULT_NAME = "Sample Course"
     DEFAULT_DESCRIPTION = "This is a sample course. Write description here."
@@ -38,10 +42,11 @@ class Course:
         self.template = template
         self.chapters = []
 
-#    def add_chapter(self, chapter: Chapter):
-#        """Adds a Chapter object to the Course."""
-#        chapter.parent_course = self  # Assigns parent reference
-#        self.chapters.append(chapter)
+    def add_chapter(self, chapter: "Chapter"):  # Use string-based type hint
+        """Adds a Chapter object to the Course."""
+        from incept.chapter import Chapter  #Import inside method to avoid circular import
+        chapter.parent_course = self
+        self.chapters.append(chapter)
 
 if __name__ == "__main__":
     newCourse = Course()
