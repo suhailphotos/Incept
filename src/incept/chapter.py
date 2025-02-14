@@ -1,3 +1,6 @@
+from __future__ import annotations
+#from incept.lesson import Lesson  
+
 class Chapter:
     DEFAULT_NAME = "Sample Chapter"
     DEFAULT_CONTENT_TYPE = "Chapter"
@@ -21,7 +24,8 @@ class Chapter:
         self.parent_course = parent_course  # Store parent reference
         self.lessons = []
 
-    def add_lesson(self, lesson):
+    def add_lesson(self, lesson: "Lesson"):
         """Adds a Lesson object to the Chapter."""
+        from incept.lesson import Lesson
         lesson.parent_chapter = self  # Assigns parent reference
         self.lessons.append(lesson)

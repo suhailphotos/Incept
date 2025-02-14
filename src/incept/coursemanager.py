@@ -1,7 +1,7 @@
 from incept.course import Course
 from incept.chapter import Chapter
 from incept.lesson import Lesson
-from incept.template.manager import create_course_structure
+from incept.template.manager import create_course_structure 
 
 def newCourse(name, description=None, path=None, template="default"):
     """

@@ -3,7 +3,7 @@ from incept.chapter import Chapter
 from incept.lesson import Lesson
 from incept.media.icon import Icon
 from incept.media.cover import Cover
-#from incept.coursemanager import newCourse, newChapter, newLesson
+from incept.coursemanager import newCourse, newChapter, newLesson
 #from incept.notion import insertCourse, insertChapter, insertLesson  # Notion-related functions
 
 # Make them available when using `import incept`
