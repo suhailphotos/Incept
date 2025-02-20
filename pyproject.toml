@@ -16,6 +16,7 @@ include = [
 [tool.poetry.dependencies]
 python = "^3.11"
 notionmanager = "^0.1.2"
+pandas = "^2.2.3"
 
 [build-system]
 requires = ["poetry-core"]
