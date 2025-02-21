@@ -17,6 +17,7 @@ include = [
 python = "^3.11"
 notionmanager = "^0.1.4"
 pandas = "^2.2.3"
+oauthmanager = "^0.1.1"
 
 [build-system]
 requires = ["poetry-core"]
