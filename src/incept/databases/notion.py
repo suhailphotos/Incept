@@ -10,19 +10,48 @@ class NotionDB:
     def get_courses(self, **kwargs):
         """
         Fetch courses from Notion, aggregate chapters and lessons, and return as a Pandas DataFrame.
-
+    
+        If a filter is applied, it filters only courses but fetches all related chapters and lessons.
+    
         Parameters:
-        - kwargs: Optional filters for querying Notion.
-
+        - kwargs: Optional filters for querying Notion (e.g., `Name="Sample Course"`).
+    
         Returns:
         - pd.DataFrame: DataFrame containing course details with rolled-up chapters and lessons.
         """
-        notion_data = self.notion._get_pages(**kwargs)
-
-        if not notion_data:
-            return pd.DataFrame()  # Return empty DataFrame if no data
-
-        return self._convert_to_dataframe(notion_data)
+        filter_payload = None
+    
+        # If filtering by Name, construct the correct Notion filter format
+        if "Name" in kwargs:
+            filter_payload = {
+                "filter": {
+                    "property": "Name",
+                    "title": {
+                        "equals": kwargs["Name"]
+                    }
+                }
+            }
+            print(f"🔍 Fetching courses with filter: {filter_payload}")
+        else:
+            print("🔍 Fetching ALL courses")
+    
+        # Step 1: Retrieve filtered courses
+        courses_data = self.notion._get_pages(**filter_payload) if filter_payload else self.notion._get_pages()
+    
+        if not courses_data:
+            print("⚠️ No matching courses found!")
+            return pd.DataFrame()
+    
+        # Extract course IDs from filtered result
+        course_ids = [course["id"] for course in courses_data]
+        print(f"📌 Filtered Course IDs: {course_ids}")
+    
+        # Step 2: Retrieve all chapters and lessons
+        print(f"🔍 Fetching ALL chapters and lessons for courses: {course_ids}")
+        all_data = self.notion._get_pages(retrieve_all=True)
+    
+        # Step 3: Convert the full dataset into a structured DataFrame
+        return self._convert_to_dataframe(all_data, course_ids)
 
     def insert_course(self, data):
         """Insert a new course into Notion."""
@@ -62,7 +91,7 @@ class NotionDB:
         """Delete (archive) a lesson."""
         return self.notion.update_page(lesson_id, {"archived": True})
 
-    def _convert_to_dataframe(self, notion_data):
+    def _convert_to_dataframe(self, notion_data, filter_course_ids=None):
         """
         Convert Notion API response into a structured Pandas DataFrame.
         Rolls up courses with their respective chapters and lessons.
@@ -94,7 +123,7 @@ class NotionDB:
                 "cover": page.get("cover", {}).get("external", {}).get("url"),
                 "icon": page.get("icon", {}).get("external", {}).get("url"),
                 "sub_items": sub_items,
-                "parent_id": parent_ids[0] if parent_ids else None,  # Ensuring it's a single ID
+                "parent_id": parent_ids[0] if parent_ids else None,
             }
 
             # Debugging output
@@ -103,17 +132,14 @@ class NotionDB:
             print(f"  - Sub-items: {entry['sub_items']}")
 
             if page_type == "Course":
-                courses[page_id] = {
-                    **entry,
-                    "chapters": {},  # Ensure this exists
-                }
+                courses[page_id] = {**entry, "chapters": {}}
 
             elif page_type == "Chapter":
                 chapters[page_id] = {
                     "id": page_id,
                     "name": entry["name"],
                     "description": entry["description"],
-                    "parent_id": entry["parent_id"],  # Ensure parent_id is stored properly
+                    "parent_id": entry["parent_id"],
                     "lessons": {},
                 }
 
@@ -122,18 +148,18 @@ class NotionDB:
                     "id": page_id,
                     "name": entry["name"],
                     "description": entry["description"],
-                    "parent_id": entry["parent_id"],  # Ensure parent_id is stored properly
+                    "parent_id": entry["parent_id"],
                 }
 
         # Pass 2: Attach chapters to courses
         for chapter_id, chapter_data in chapters.items():
-            parent_course_id = chapter_data.get("parent_id")  # Use .get() to avoid KeyError
+            parent_course_id = chapter_data.get("parent_id")
             if parent_course_id in courses:
                 courses[parent_course_id]["chapters"][chapter_id] = chapter_data
 
         # Pass 3: Attach lessons to chapters
         for lesson_id, lesson_data in lessons.items():
-            parent_chapter_id = lesson_data.get("parent_id")  # Use .get() to avoid KeyError
+            parent_chapter_id = lesson_data.get("parent_id")
             for course in courses.values():
                 if parent_chapter_id in course["chapters"]:
                     course["chapters"][parent_chapter_id]["lessons"][lesson_id] = lesson_data
@@ -146,7 +172,13 @@ class NotionDB:
             }
             course_list.append(course)
 
-        return pd.DataFrame(course_list)
+        df = pd.DataFrame(course_list)
+
+        # Step 4: If filtering by course, retain only the specified courses
+        if filter_course_ids:
+            df = df[df["id"].isin(filter_course_ids)]
+
+        return df
 
     @staticmethod
     def _extract_title(properties):
@@ -190,11 +222,11 @@ if __name__ == "__main__":
 
     db = NotionDB(NOTION_API_KEY, DATABASE_ID)
 
-    # ✅ Test get_courses()
-    courses_df = db.get_courses(retrieve_all=True)
+    # ✅ Test get_courses() with a filter
+    courses_df = db.get_courses(Name="Sample Course B")
 
     print("\n📌 Courses DataFrame:")
     print(courses_df)
 
     print("\n📌 Debugging Chapters Field:")
-    print(courses_df["chapters"].iloc[0])  # Check if chapters exist for first course
+    print(courses_df["chapters"].iloc[0])
