@@ -1,6 +1,4 @@
 import pandas as pd
-import json
-pd.set_option("display.max_colwidth", None)  # Ensures full content is displayed
 from notionmanager.notion import NotionManager
 
 class NotionDB:
@@ -212,6 +210,7 @@ class NotionDB:
 # --- TESTING THE NOTIONDB CLASS ---
 if __name__ == "__main__":
     from oauthmanager import OnePasswordAuthManager
+    import json
 
     auth_manager = OnePasswordAuthManager(vault_name="API Keys")
     notion_creds = auth_manager.get_credentials("Quantum", "credential")
