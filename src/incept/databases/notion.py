@@ -35,7 +35,7 @@ class NotionDB:
             }
 
         # Step 1: Retrieve filtered courses
-        courses_data = self.notion._get_pages(**filter_payload) if filter_payload else self.notion._get_pages()
+        courses_data = self.notion.get_pages(**filter_payload) if filter_payload else self.notion._get_pages()
 
         if not courses_data:
             return pd.DataFrame()  # Return empty DataFrame if no matching courses
@@ -44,7 +44,7 @@ class NotionDB:
         course_ids = [course["id"] for course in courses_data]
 
         # Step 2: Retrieve all chapters and lessons
-        all_data = self.notion._get_pages(retrieve_all=True)
+        all_data = self.notion.get_pages(retrieve_all=True)
 
         # Step 3: Convert the full dataset into a structured DataFrame
         return self._convert_to_dataframe(all_data, course_ids)
