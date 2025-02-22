@@ -9,21 +9,15 @@ class NotionDB:
 
     def get_courses(self, **kwargs):
         """
-        Fetch courses from Notion, aggregate chapters and lessons, and return as a Pandas DataFrame.
+        Fetch courses (and their chapters/lessons) from Notion as a Pandas DataFrame.
 
-        - If a filter is applied (e.g., `Name="Sample Course"`), it filters only courses
-          but retrieves all related chapters and lessons.
-        - Ensures related data such as `chapters` and `lessons` are included.
-
-        Parameters:
-        - kwargs: Optional filters for querying Notion (e.g., `Name="Sample Course"`).
-
-        Returns:
-        - pd.DataFrame: DataFrame containing course details with rolled-up chapters and lessons.
+        - If no filter is provided, fetch *all* pages (Courses, Chapters, Lessons).
+        - If a filter is provided (e.g., Name="Sample Course"), only fetch
+          the matching course(s) and their children recursively.
         """
         filter_payload = None
 
-        # Apply filter only if filtering by course name
+        # Only apply a filter if "Name" is in kwargs
         if "Name" in kwargs:
             filter_payload = {
                 "filter": {
@@ -34,20 +28,39 @@ class NotionDB:
                 }
             }
 
-        # Step 1: Retrieve filtered courses
-        courses_data = self.notion.get_pages(**filter_payload) if filter_payload else self.notion._get_pages()
+        if not filter_payload:
+            # Scenario 1: No filter => Retrieve ALL pages in one go
+            notion_data = self.notion.get_pages(retrieve_all=True)
+            if not notion_data:
+                return pd.DataFrame()
+            return self._convert_to_dataframe(notion_data)
+        else:
+            # Scenario 2: Filter => Retrieve only the matching course(s), 
+            # then recursively fetch children.
+            filtered_courses = self.notion.get_pages(**filter_payload)
+            if not filtered_courses:
+                return pd.DataFrame()
 
-        if not courses_data:
-            return pd.DataFrame()  # Return empty DataFrame if no matching courses
+            visited_pages = {}
 
-        # Extract course IDs from filtered results
-        course_ids = [course["id"] for course in courses_data]
+            def fetch_children(page_id):
+                """Recursive DFS to get all sub-items of a given page."""
+                if page_id in visited_pages:
+                    return  # Avoid duplicate calls or infinite loops
+                page = self.notion.get_page(page_id)
+                visited_pages[page_id] = page
+                # Extract child page_ids from 'Sub-item' property
+                sub_item_ids = self._extract_relation(page.get("properties", {}), "Sub-item")
+                for child_id in sub_item_ids:
+                    fetch_children(child_id)
 
-        # Step 2: Retrieve all chapters and lessons
-        all_data = self.notion.get_pages(retrieve_all=True)
+            # 1) Fetch the filtered course pages
+            for course_page in filtered_courses:
+                fetch_children(course_page["id"])
 
-        # Step 3: Convert the full dataset into a structured DataFrame
-        return self._convert_to_dataframe(all_data, course_ids)
+            # 2) Convert the visited pages into a DataFrame
+            notion_data = list(visited_pages.values())
+            return self._convert_to_dataframe(notion_data)
 
     def insert_course(self, data):
         """Insert a new course into Notion."""
@@ -164,6 +177,8 @@ class NotionDB:
         # Convert to DataFrame
         course_list = []
         for course in courses.values():
+            # This is just an example of how you might "roll up" chapters 
+            # and lessons into a single column. You can adjust as needed.
             course["chapters"] = {
                 ch["name"]: ch["lessons"] for ch in course["chapters"].values()
             }
@@ -171,7 +186,7 @@ class NotionDB:
 
         df = pd.DataFrame(course_list)
 
-        # Step 4: If filtering by course, retain only the specified courses
+        # Optional: If you still want to filter in the DataFrame layer
         if filter_course_ids:
             df = df[df["id"].isin(filter_course_ids)]
 
@@ -220,9 +235,12 @@ if __name__ == "__main__":
 
     db = NotionDB(NOTION_API_KEY, DATABASE_ID)
 
+    # Test get_courses() without filter (retrieves all)
+    all_df = db.get_courses()
+    print("=== ALL Courses ===")
+    print(all_df)
+
     # Test get_courses() with a filter
     courses_df = db.get_courses(Name="Sample Course B")
-    for index, value in courses_df["chapters"].items():
-        print(f"Row {index}:")
-        print(json.dumps(value, indent=2))  # Pretty-print JSON structure
-        print("\n" + "-"*50)  # Separator for readability
+    print("=== Filtered Courses ===")
+    print(courses_df)
