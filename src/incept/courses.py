@@ -1,56 +1,86 @@
 import pandas as pd
-from incept.databases.notion import NotionDB
+from incept.databases.factory import get_db_client
 from incept.templates.manager import create_course_structure
 
 DEFAULT_DB = "notion"
 
-def getCourses(db=DEFAULT_DB, api_key=None, database_id=None, filter=None):
+def getCourses(db=DEFAULT_DB, filter=None, **kwargs):
     """
-    Retrieve courses from the specified database (defaults to Notion),
-    returning a Pandas DataFrame.
-
-    - If `filter` is provided (e.g., filter="Sample Course"),
-      it will only retrieve the matching course(s) + their chapters/lessons.
-    - If `filter` is not provided, it retrieves all courses, chapters, and lessons.
+    Retrieve courses from whichever DB is specified.
+      - If `filter` is provided, it might filter by course name.
+    :return: A pandas DataFrame.
     """
-    if db != "notion":
-        raise ValueError(f"Unsupported database: {db}")
+    db_client = get_db_client(db, **kwargs)
 
-    notion_db = NotionDB(api_key, database_id)
-
+    # If your DB client expects the filter as "Name=...", do so:
     if filter:
-        # Pass the filter along as 'Name' to match the `NotionDB.get_courses()` logic
-        return notion_db.get_courses(Name=filter)
+        return db_client.get_courses(Name=filter)
     else:
-        # Retrieve all courses
-        return notion_db.get_courses()
+        return db_client.get_courses()
 
-def addCourse(db=DEFAULT_DB, template="default", **kwargs):
+def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
     """
-    Add a new course, ensuring it doesn’t already exist.
+    Add a SINGLE course from a pandas DataFrame (if db=Notion, do Notion logic;
+    if db=Postgres, do Postgres, etc.).
 
-    - Creates a local folder structure for the course (via `create_course_structure`).
-    - Inserts a new page in the Notion database.
+    Steps:
+     1. If `df` has multiple rows, use the first row only.
+     2. Check if it exists (by name).
+     3. If not, create local folder structure + insert into DB.
     """
-    if db != "notion":
-        raise ValueError(f"Unsupported database: {db}")
+    db_client = get_db_client(db, **kwargs)
 
-    api_key = kwargs["api_key"]
-    database_id = kwargs["database_id"]
-    course_name = kwargs["name"]
+    if df is None or df.empty:
+        return "DataFrame is empty. No course to add."
 
-    notion_db = NotionDB(api_key, database_id)
+    row = df.iloc[0].to_dict()
+    if "name" not in row:
+        raise ValueError("Missing 'name' column in the first row.")
 
-    # Check if course already exists
-    existing_df = notion_db.get_courses()
-    if course_name in existing_df["name"].values:
+    course_name = row["name"]
+
+    # Check if course name exists
+    existing_df = db_client.get_courses()
+    if not existing_df.empty and course_name in set(existing_df["name"].values):
         return f"Course '{course_name}' already exists."
 
-    # Create the local folder structure (notion page + local project alignment)
+    # create local folder
     create_course_structure(course_name, template)
 
-    # Insert into Notion
-    return notion_db.insert_course(kwargs)
+    # Insert into DB
+    return db_client.insert_course(**row)
+
+def addCourses(db=DEFAULT_DB, template="default", df=None, **kwargs):
+    """
+    Add multiple courses from a DataFrame.
+    Each row is a separate course. Skips existing ones.
+    """
+    db_client = get_db_client(db, **kwargs)
+
+    if df is None or df.empty:
+        return "DataFrame is empty. No courses to add."
+
+    if "name" not in df.columns:
+        raise ValueError("Missing 'name' column in df.")
+
+    existing_df = db_client.get_courses()
+    existing_names = set(existing_df["name"].values) if not existing_df.empty else set()
+
+    results = []
+    for idx, row_data in df.iterrows():
+        course_data = row_data.to_dict()
+        course_name = course_data["name"]
+
+        if course_name in existing_names:
+            results.append((course_name, f"Already exists. Skipped."))
+            continue
+
+        create_course_structure(course_name, template)
+        res = db_client.insert_course(**course_data)
+        existing_names.add(course_name)
+        results.append((course_name, res))
+
+    return results
 
 def updateCourse(db=DEFAULT_DB, course_id=None, **kwargs):
     """Update a course."""

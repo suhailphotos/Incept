@@ -18,9 +18,10 @@ incept-init = "incept.cli:cli_init_templates"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-notionmanager = "^0.1.4"
+notionmanager = "^0.1.5"
 pandas = "^2.2.3"
 oauthmanager = "^0.1.1"
+platformdirs = "^3.0"
 
 [build-system]
 requires = ["poetry-core"]

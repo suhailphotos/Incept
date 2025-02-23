@@ -93,9 +93,73 @@ class NotionDB:
             return df[df["id"] == course_id].reset_index(drop=True)
         return pd.DataFrame()
 
-    def insert_course(self, data):
-        """Insert a new course into Notion."""
-        return self.notion.add_page(data)
+    def insert_course(self, **kwargs):
+        """
+        Insert a new "Course" page into Notion using kwargs.
+
+        - name (str) is required (for Title).
+        - Optional fields: description, tags, cover, icon, course_link, path, etc.
+        """
+
+        # 1) name is required
+        name = kwargs.get("name")
+        if not name:
+            raise ValueError("Missing required field: 'name'")
+
+        # 2) Build the top-level Notion payload
+        notion_payload = {
+            # 'parent': {"database_id": self.database_id},  # optional
+            "properties": {
+                "Name": {
+                    "title": [{"text": {"content": name}}]
+                },
+                "Type": {
+                    "select": {"name": "Course"}
+                }
+            }
+        }
+
+        # 3) Cover & icon
+        cover_url = kwargs.get("cover")
+        if cover_url:
+            notion_payload["cover"] = {
+                "type": "external",
+                "external": {"url": cover_url}
+            }
+
+        icon_url = kwargs.get("icon")
+        if icon_url:
+            notion_payload["icon"] = {
+                "type": "external",
+                "external": {"url": icon_url}
+            }
+
+        # 4) Additional properties
+        desc = kwargs.get("description")
+        if desc:
+            notion_payload["properties"]["Course Description"] = {
+                "rich_text": [{"text": {"content": desc}}]
+            }
+
+        tags = kwargs.get("tags")
+        if tags:
+            notion_payload["properties"]["Tags"] = {
+                "multi_select": [{"name": t} for t in tags]
+            }
+
+        link = kwargs.get("course_link")
+        if link:
+            notion_payload["properties"]["Course Link"] = {"url": link}
+
+        path_val = kwargs.get("path")
+        if path_val:
+            notion_payload["properties"]["Path"] = {
+                "rich_text": [{"text": {"content": path_val}}]
+            }
+
+        # 5) Create the page via NotionManager
+        return self.notion.add_page(notion_payload)
+
 
     def update_course(self, course_id, data):
         """Update an existing course."""
