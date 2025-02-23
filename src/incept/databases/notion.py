@@ -1,6 +1,10 @@
 import pandas as pd
 from notionmanager.notion import NotionManager
 
+# Default icon/cover constants
+DEFAULT_ICON_URL = "https://www.notion.so/icons/graduate_lightgray.svg"
+DEFAULT_COVER_URL = "https://github.com/suhailphotos/notionUtils/blob/main/assets/media/banner/notion_style_banners_lgt_36.jpg?raw=true"
+
 class NotionDB:
     def __init__(self, api_key, database_id):
         """Wrapper around NotionManager for handling Notion database interactions."""
@@ -99,19 +103,22 @@ class NotionDB:
 
         - name (str) is required (for Title).
         - Optional fields: description, tags, cover, icon, course_link, path, etc.
+        - If 'cover' or 'icon' is missing, we use the default external URL.
+        - If 'cover'/'icon' is a string, we treat it as an external URL.
+        - If 'cover'/'icon' is a dict, we use it directly as the Notion object.
+        - 'Path' property is styled with code=True, color="default".
         """
-
-        # 1) name is required
         name = kwargs.get("name")
         if not name:
             raise ValueError("Missing required field: 'name'")
 
-        # 2) Build the top-level Notion payload
+        # Basic Notion page structure
         notion_payload = {
-            # 'parent': {"database_id": self.database_id},  # optional
             "properties": {
                 "Name": {
-                    "title": [{"text": {"content": name}}]
+                    "title": [
+                        {"text": {"content": name}}
+                    ]
                 },
                 "Type": {
                     "select": {"name": "Course"}
@@ -119,22 +126,43 @@ class NotionDB:
             }
         }
 
-        # 3) Cover & icon
-        cover_url = kwargs.get("cover")
-        if cover_url:
+        # 1) Cover logic
+        cover_val = kwargs.get("cover")
+        if cover_val is None:
+            # Use default external URL
             notion_payload["cover"] = {
                 "type": "external",
-                "external": {"url": cover_url}
+                "external": {"url": DEFAULT_COVER_URL}
             }
+        elif isinstance(cover_val, str):
+            # Treat as an external URL
+            notion_payload["cover"] = {
+                "type": "external",
+                "external": {"url": cover_val}
+            }
+        elif isinstance(cover_val, dict):
+            # Assume this is already a valid Notion 'cover' object
+            notion_payload["cover"] = cover_val
 
-        icon_url = kwargs.get("icon")
-        if icon_url:
+        # 2) Icon logic
+        icon_val = kwargs.get("icon")
+        if icon_val is None:
+            # Default external icon
             notion_payload["icon"] = {
                 "type": "external",
-                "external": {"url": icon_url}
+                "external": {"url": DEFAULT_ICON_URL}
             }
+        elif isinstance(icon_val, str):
+            # String => external URL
+            notion_payload["icon"] = {
+                "type": "external",
+                "external": {"url": icon_val}
+            }
+        elif isinstance(icon_val, dict):
+            # Already a Notion icon object
+            notion_payload["icon"] = icon_val
 
-        # 4) Additional properties
+        # 3) Additional properties
         desc = kwargs.get("description")
         if desc:
             notion_payload["properties"]["Course Description"] = {
@@ -154,45 +182,77 @@ class NotionDB:
         path_val = kwargs.get("path")
         if path_val:
             notion_payload["properties"]["Path"] = {
-                "rich_text": [{"text": {"content": path_val}}]
+                "rich_text": [
+                    {
+                        "type": "text",
+                        "text": {"content": path_val},
+                        "annotations": {
+                            "code": True,
+                            "color": "default"
+                        }
+                    }
+                ]
             }
 
-        # 5) Create the page via NotionManager
+        # Post to Notion
         return self.notion.add_page(notion_payload)
 
-
     def update_course(self, course_id, data):
-        """Update an existing course."""
+        """
+        Placeholder method: Update an existing course.
+
+        Currently no advanced logic, just a direct call to notion.
+        """
         return self.notion.update_page(course_id, data)
 
     def delete_course(self, course_id):
-        """Delete (archive) a course."""
+        """
+        Placeholder method: Delete (archive) a course.
+
+        Currently just sets 'archived': True.
+        """
         return self.notion.update_page(course_id, {"archived": True})
 
     def insert_chapter(self, course_id, data):
-        """Insert a new chapter under a course."""
+        """
+        Placeholder: Insert a new chapter under a course.
+        Currently a minimal direct pass to notion.
+        """
         data["parent_course"] = course_id
         return self.notion.add_page(data)
 
     def insert_lesson(self, chapter_id, data):
-        """Insert a lesson under a chapter."""
+        """
+        Placeholder: Insert a new lesson under a chapter.
+        Currently minimal logic.
+        """
         data["parent_chapter"] = chapter_id
         return self.notion.add_page(data)
 
     def update_chapter(self, chapter_id, data):
-        """Update a chapter."""
+        """
+        Placeholder: Update a chapter.
+        Currently a direct call to notion.
+        """
         return self.notion.update_page(chapter_id, data)
 
     def update_lesson(self, lesson_id, data):
-        """Update a lesson."""
+        """
+        Placeholder: Update a lesson.
+        Currently a direct call to notion.
+        """
         return self.notion.update_page(lesson_id, data)
 
     def delete_chapter(self, chapter_id):
-        """Delete (archive) a chapter."""
+        """
+        Placeholder: Delete (archive) a chapter.
+        """
         return self.notion.update_page(chapter_id, {"archived": True})
 
     def delete_lesson(self, lesson_id):
-        """Delete (archive) a lesson."""
+        """
+        Placeholder: Delete (archive) a lesson.
+        """
         return self.notion.update_page(lesson_id, {"archived": True})
 
     def _convert_to_dataframe(self, notion_data):
@@ -320,14 +380,23 @@ if __name__ == "__main__":
     DATABASE_ID = "195a1865-b187-8103-9b6a-cc752ca45874"
     db = NotionDB(NOTION_API_KEY, DATABASE_ID)
 
-    # Suppose we know a specific course page_id with dashes
-    specific_course_id = "195a1865-b187-8036-b481-dfb62afee3d6"
+    # 1) Insert a course with no icon/cover => uses defaults
+    new_course_data_1 = {
+        "name": "CourseWithDefaultIconCover",
+        "description": "No icon or cover passed, should see defaults",
+        "tags": ["Default", "Demo"],
+        "path": "/my/code/path"
+    }
+    resp_1 = db.insert_course(**new_course_data_1)
+    print("Inserted page (defaults):", json.dumps(resp_1, indent=2))
 
-    single_course_df = db.get_course(specific_course_id)
-    print(single_course_df, "\n")
-
-    # Pretty‐print the dictionary stored in the "chapters" column
-    if not single_course_df.empty:
-        chapters_dict = single_course_df["chapters"].iloc[0]
-        print("Chapters structure:")
-        print(json.dumps(chapters_dict, indent=2))
+    # 2) Insert a course with a custom icon dictionary (e.g. an emoji) 
+    #    and a custom cover string
+    new_course_data_2 = {
+        "name": "CourseWithEmojiIcon",
+        "icon": {"type": "emoji", "emoji": "🚀"},  # custom dict
+        "cover": "https://example.com/custom_cover.jpg",  # just a string
+        "description": "Using a custom emoji icon + custom cover",
+    }
+    resp_2 = db.insert_course(**new_course_data_2)
+    print("\nInserted page (custom icon & cover):", json.dumps(resp_2, indent=2))

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "incept"
-version = "0.1.7"
+version = "0.1.8"
 description = "A Python package for managing courses, projects, and directories with Notion integration."
 authors = ["Suhail <suhailece@gmail.com>"]
 readme = "README.md"
@@ -14,7 +14,7 @@ include = [
 ]
 
 [tool.poetry.scripts]
-incept-init = "incept.cli:cli_init_templates"
+incept = "incept.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.11"
