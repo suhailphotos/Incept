@@ -1,0 +1,9 @@
+{
+  "course": {
+    "name": "My new fun course",
+    "description": "This is sample course for testing",
+    "link": "http://example.com",
+    "path": "$DATALIB/courses/{course_name}",
+    "folder_template_name": "default"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "course": {
+    "name": "My new fun course",
+    "chapters": [
+      {
+        "name": "chapter1",
+        "lessons": [
+          {
+            "name": "lesson1",
+            "description": "This is sample lesson",
+            "link": "example.com",
+            "path": "$DATALIB/courses/{course_name}/{chapter_name}/{lesson_name}",
+            "folder_template_name": "default"
+          }
+        ]
+      }
+    ]
+  }
+}
