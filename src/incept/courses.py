@@ -1,8 +1,29 @@
+import os
+import re
 import pandas as pd
+from pathlib import Path
+from dotenv import load_dotenv
 from incept.databases.factory import get_db_client
 from incept.templates.manager import create_course_structure
 
 DEFAULT_DB = "notion"
+CONFIG_DIR = Path.home() / ".incept"
+CONFIG_SUBDIR = CONFIG_DIR / "config"
+ENV_FILE = CONFIG_DIR / ".env"
+
+def sanitize_course_name(name: str) -> str:
+    """
+    Converts 'Course Name 123!' → 'Course_Name_123'
+    - Spaces & dashes are converted to underscores.
+    - Special characters (except `_`) are removed.
+    - Ensures only **one** underscore (`_`) between words.
+    """
+    name = re.sub(r"[^\w\s-]", "", name)  # Remove special characters except space & dash
+    name = name.replace("-", "_")         # Convert dashes to underscores
+    name = re.sub(r"\s+", "_", name)      # Convert spaces to underscores
+    name = re.sub(r"_+", "_", name)       # Remove multiple underscores
+    return name.strip("_")  # Remove leading/trailing underscores
+
 
 def getCourses(db=DEFAULT_DB, filter=None, **kwargs):
     """
@@ -19,16 +40,10 @@ def getCourses(db=DEFAULT_DB, filter=None, **kwargs):
 
 def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
     """
-    Add course(s) from a Pandas DataFrame. 
+    Add course(s) from a Pandas DataFrame.
     - If the DataFrame has exactly 1 row, returns a single insert result or a skip message.
     - If multiple rows are present, processes each row in a loop, returns a list of (course_name, status).
     - If the DataFrame is empty, returns a simple message.
-
-    Steps for each row:
-      1) Check if 'name' is present.
-      2) Check if the name already exists in the DB.
-      3) If not, create local folder structure + insert into DB.
-      4) Gather results in a list if multi-row, or return single result if one row.
     """
     db_client = get_db_client(db, **kwargs)
 
@@ -42,35 +57,48 @@ def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
     existing_df = db_client.get_courses()
     existing_names = set(existing_df["name"].values) if not existing_df.empty else set()
 
-    # If multiple rows, we will store results for each course
     results = []
 
-    for idx, row_data in df.iterrows():
+    for _, row_data in df.iterrows():
         course_data = row_data.to_dict()
         course_name = course_data["name"]
+        sanitized_course_name = sanitize_course_name(course_name)
 
         if course_name in existing_names:
-            # Already exists, skip
             results.append((course_name, f"Course '{course_name}' already exists. Skipped."))
             continue
 
-        # Create local folder structure
-        create_course_structure(course_name, template)
+        # 1) Load ~/.incept/.env if it exists
+        if ENV_FILE.exists():
+            load_dotenv(ENV_FILE)
 
-        # Insert into DB
+
+        # 1) Resolve Notion path (keep $DATALIB, append sanitized name)
+        base_notion_path = course_data.get("path") or os.getenv("COURSE_FOLDER_PATH")
+        if not base_notion_path:
+            base_notion_path = str(Path.home() / "Documents" / "courses")  # Default symbolic path for Notion
+
+        notion_path_str = f"{base_notion_path}/{sanitized_course_name}"  # Preserve $DATALIB
+
+        # 2) Fully resolve local folder path
+        expanded_base_path = os.path.expandvars(os.getenv("COURSE_FOLDER_PATH", ""))
+        if not expanded_base_path:
+            expanded_base_path = str(Path.home() / "Documents" / "courses")  # Default fallback
+
+        local_course_path = Path(expanded_base_path) / sanitized_course_name
+
+        # 3) Update `course_data` to use resolved Notion path
+        course_data["path"] = notion_path_str  # Store symbolic path in Notion
+
+        # 4) Create local folder
+        create_course_structure(course_name, template, base_path=local_course_path)
+
+        # 5) Insert into DB
         res = db_client.insert_course(**course_data)
-        # Mark the name as existing now
         existing_names.add(course_name)
-
         results.append((course_name, res))
 
-    # If there's exactly 1 row, return the single result directly
-    if len(df) == 1:
-        return results[0][1]  # i.e. the "status" part
-
-    # Otherwise return the list of tuples
-    return results
-
+    return results if len(df) > 1 else results[0][1]  # Return single result if only 1 row
 
 def updateCourse(db=DEFAULT_DB, **kwargs):
     """

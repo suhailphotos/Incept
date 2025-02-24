@@ -8,6 +8,9 @@ credentials_cache.json
 # C extensions
 *.so
 
+#.environments
+.env
+
 # .DS_Store
 .DS_Store
 

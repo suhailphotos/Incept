@@ -92,20 +92,23 @@ def cli_get_courses(api_key, database_id, filter):
     if ENV_FILE.exists():
         load_dotenv(ENV_FILE)
 
-    # 2) If user didn't pass --api-key, see if environment has API_KEY
+    # 2) DB type: environment or default to 'notion'
+    db_type = os.getenv("DATABASE_NAME", "notion")
+
+    # 3) If user didn't pass --api-key, see if environment has API_KEY
     if not api_key:
         api_key = os.getenv("API_KEY")  # from .env or system
-    # 3) If user didn't pass --database-id, see if environment has DATABASE_ID
+    # 4) If user didn't pass --database-id, see if environment has DATABASE_ID
     if not database_id:
         database_id = os.getenv("DATABASE_ID")
 
-    # 4) If still missing, raise error
+    # 5) If still missing, raise error
     if not api_key or not database_id:
         raise click.ClickException("API_KEY or DATABASE_ID not found. Provide via CLI options or .env file.")
 
-    # 5) Call getCourses
+    # 6) Call getCourses
     df = getCourses(
-        db="notion",
+        db=db_type,
         api_key=api_key,
         database_id=database_id,
         filter=filter
@@ -114,16 +117,97 @@ def cli_get_courses(api_key, database_id, filter):
         click.echo("No courses found.")
         return
 
-    # 6) Format/truncate columns except for 'id' and 'name'
+    # 7) Format/truncate columns except for 'id' and 'name'
     df_formatted = format_course_df(df, max_len=20)
 
-    # 7) Print with lines between columns & row data
+    # 8) Print with lines between columns & row data
     click.echo("Courses found:")
 
     # Option 1: Use to_markdown with fancy_grid for horizontal rules
     # This requires: `pip install tabulate` or `poetry add tabulate`
     table_str = df_formatted.to_markdown(index=False, tablefmt="fancy_grid")
     click.echo(table_str)
+
+@main.command("add-course")
+@click.option("--api-key", default=None, help="Notion API Key (fallback to .env).")
+@click.option("--database-id", default=None, help="Notion Database ID (fallback to .env).")
+@click.option("--data-file-path", default=None,
+              help="Path to a JSON file containing course data.")
+@click.option("--name", default=None, help="Course name (override if data-file also given).")
+@click.option("--description", default=None, help="Course description.")
+@click.option("--link", default=None, help="Course link/URL.")
+@click.option("--path", default=None, help="Custom path for Notion property. e.g. '$DATALIB/threeD/courses'.")
+@click.option("--folder-template", default=None, 
+              help="Template folder name for local structure (e.g. 'default').")
+def cli_add_course(api_key, database_id, data_file_path,
+                   name, description, link, path, folder_template):
+    """
+    Add a new course to your DB (default is 'notion'), creating a local folder as well.
+    - If `path` is provided in JSON, it is used.
+    - If `path` is missing, it defaults to `$COURSE_FOLDER_PATH`.
+    - Notion path retains variables (`$DATALIB` or `$DROPBOX`), but local folders are **fully expanded**.
+    """
+    # 1) Load environment (.env)
+    if ENV_FILE.exists():
+        load_dotenv(ENV_FILE)
+
+    # 2) db_type from environment or default to "notion"
+    db_type = os.getenv("DATABASE_NAME", "notion")
+
+    # 3) Credentials from CLI or env
+    if not api_key:
+        api_key = os.getenv("API_KEY")
+    if not database_id:
+        database_id = os.getenv("DATABASE_ID")
+    if not api_key or not database_id:
+        raise click.ClickException("API_KEY or DATABASE_ID not found. Provide via CLI or .env.")
+
+    # 4) Load JSON file if provided
+    file_data = {}
+    if data_file_path:
+        import json
+        file_path = Path(data_file_path)
+        if not file_path.exists():
+            raise click.ClickException(f"Data file not found: {file_path}")
+        with file_path.open("r") as f:
+            try:
+                file_json = json.load(f)
+            except json.JSONDecodeError as e:
+                raise click.ClickException(f"Invalid JSON in {file_path}: {e}")
+        file_data = file_json.get("course", {})
+
+    # 5) Merge CLI overrides
+    if name:
+        file_data["name"] = name
+    if description:
+        file_data["description"] = description
+    if link:
+        file_data["link"] = link
+    if path:
+        file_data["path"] = path
+    if folder_template:
+        file_data["folder_template_name"] = folder_template
+
+    # Ensure we have a name
+    if "name" not in file_data:
+        raise click.ClickException("No course name found (use --name or JSON).")
+
+    # 6) Build the single-row DF for incept.courses.addCourse
+    df_single = pd.DataFrame([file_data])
+
+    # 7) Call `addCourse` (path logic handled inside `courses.py`)
+    from incept.courses import addCourse
+
+    result = addCourse(
+        db=db_type,
+        template=file_data.get("folder_template_name", "default"),
+        df=df_single,
+        api_key=api_key,
+        database_id=database_id
+    )
+
+    click.echo(f"add-course result: {result}")
+
 
 if __name__ == "__main__":
     main()
