@@ -1,7 +1,34 @@
 # src/incept/utils/file_utils.py
 
+import os
+import re
 import shutil
 from pathlib import Path
+from platformdirs import user_documents_dir
+
+def get_default_documents_folder() -> Path:
+    """
+    Returns the cross-platform 'Documents' directory using platformdirs.
+    On Windows, this typically points to:  C:\\Users\\<YourName>\\Documents
+    On macOS:    /Users/<YourName>/Documents
+    On Linux:    /home/<YourName>/Documents (or similar, if configured).
+    """
+    return Path(user_documents_dir())
+
+
+def sanitize_dir_name(name: str) -> str:
+    """
+    Converts 'Course Name 123!' → 'Course_Name_123'
+    - Spaces & dashes are converted to underscores.
+    - Special characters (except `_`) are removed.
+    - Ensures only **one** underscore (`_`) between words.
+    """
+    name = re.sub(r"[^\w\s-]", "", name)  # Remove special characters except space & dash
+    name = name.replace("-", "_")         # Convert dashes to underscores
+    name = re.sub(r"\s+", "_", name)      # Convert spaces to underscores
+    name = re.sub(r"_+", "_", name)       # Remove multiple underscores
+    return name.strip("_")  # Remove leading/trailing underscores
+
 
 def sync_templates(src: Path, dst: Path):
     """
