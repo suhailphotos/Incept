@@ -51,6 +51,7 @@ def find_placeholder_folder(base: Path, placeholder: str) -> Path | None:
     return None
 
 
+
 def create_folder_structure(
     folder_name: str,
     search_folder_name: str = "{course_name}",
@@ -83,7 +84,6 @@ def create_folder_structure(
     if force_init:
         ensure_templates_from_package()
 
-    # Template base folder e.g. ~/.incept/folder_templates/courses/default
     template_base = TEMPLATE_DIR / "courses" / template
     if not template_base.is_dir():
         raise ValueError(f"Template '{template}' not found: {template_base}")
@@ -91,10 +91,12 @@ def create_folder_structure(
     if base_path is None:
         base_path = get_default_documents_folder() / "courses"
 
-    # destination_course_path is provided by the caller (already includes the sanitized folder name)
-    destination_course_path = base_path  
+    # destination_course_path is assumed to already include the final folder name.
+    destination_course_path = base_path  # 'base_path' should be like .../My_new_fun_course
+
     if destination_course_path.exists():
-        raise FileExistsError(f"Folder already exists: {destination_course_path}")
+        # Exit gracefully if folder already exists.
+        return destination_course_path
 
     def ignore_placeholder_folders(folder: str, items: list[str]) -> list[str]:
         ignored = []
@@ -103,10 +105,10 @@ def create_folder_structure(
                 ignored.append(item)
         return ignored
 
-    # Recursively search for a folder named exactly "search_folder_name" in template_base.
+    # Search recursively for a folder named exactly 'search_folder_name'
     placeholder_folder = find_placeholder_folder(template_base, search_folder_name)
     if placeholder_folder is not None:
-        # Copy the contents of the placeholder folder (instead of the folder itself)
+        # Create destination folder and copy contents of the placeholder folder.
         destination_course_path.mkdir(parents=True, exist_ok=True)
         for item in placeholder_folder.iterdir():
             src_item = placeholder_folder / item.name
@@ -116,7 +118,7 @@ def create_folder_structure(
             else:
                 shutil.copy2(src_item, dst_item)
     else:
-        # If no placeholder folder is found, copy the entire template_base into destination
+        # If no placeholder folder is found, copy the entire template_base.
         shutil.copytree(src=template_base, dst=destination_course_path, dirs_exist_ok=False, ignore=ignore_placeholder_folders)
 
     return destination_course_path
