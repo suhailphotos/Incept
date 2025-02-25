@@ -8,11 +8,12 @@ from incept.courses import (
 from incept.databases.notion import NotionDB
 from incept.templates.manager import (
     get_available_templates,
-    create_course_structure,
+    create_folder_structure,
     builtin_templates_dir,
-    ensure_templates_from_package
+    ensure_templates_from_package,
+    find_placeholder_folder
 )
-from incept.utils.file_utils import sync_templates
+from incept.utils.file_utils import sync_templates, sanitize_dir_name, get_default_documents_folder
 
 __all__ = [
     # Course-related
@@ -24,9 +25,9 @@ __all__ = [
     "NotionDB",
 
     # Templates
-    "get_available_templates", "create_course_structure",
-    "builtin_templates_dir", "ensure_templates_from_package",
+    "get_available_templates", "create_folder_structure",
+    "builtin_templates_dir", "ensure_templates_from_package", "find_placeholder_folder",
 
     # File utilities
-    "sync_templates",
+    "sync_templates", "get_default_documents_folder", "sanitize_dir_name",
 ]

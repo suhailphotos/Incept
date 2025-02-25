@@ -1,3 +1,5 @@
+# src/incept/courses.py
+
 import os
 import re
 import pandas as pd
@@ -5,7 +7,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from incept.utils.file_utils import sanitize_dir_name, get_default_documents_folder
 from incept.databases.factory import get_db_client
-from incept.templates.manager import create_course_structure
+from incept.templates.manager import create_folder_structure
 
 DEFAULT_DB = "notion"
 CONFIG_DIR = Path.home() / ".incept"
@@ -28,8 +30,8 @@ def getCourses(db=DEFAULT_DB, filter=None, **kwargs):
 def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
     """
     Add course(s) from a Pandas DataFrame.
-    - If exactly 1 row, returns single insert result or skip message.
-    - If multiple rows, returns list of (course_name, status).
+    - If exactly 1 row, returns a single insert result or a skip message.
+    - If multiple rows, processes each row in a loop, returns a list of (course_name, status).
     - If empty, returns a simple message.
     """
     db_client = get_db_client(db, **kwargs)
@@ -39,7 +41,7 @@ def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
     if "name" not in df.columns:
         raise ValueError("DataFrame must contain 'name' column.")
 
-    # (Optional) load .env here if you want .env to be loaded for each row
+    # Load environment variables from .env
     if ENV_FILE.exists():
         load_dotenv(ENV_FILE)
 
@@ -56,35 +58,34 @@ def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
             results.append((raw_course_name, f"Course '{raw_course_name}' already exists. Skipped."))
             continue
 
-        # 1) Notion path
+        # Resolve Notion path (symbolic)
         base_notion_path = course_data.get("path") or os.getenv("COURSE_FOLDER_PATH")
         if not base_notion_path:
-            # fallback symbolic path
             base_notion_path = str(get_default_documents_folder() / "courses")
+        notion_path_str = f"{base_notion_path}/{sanitized_dir_name}"
+        course_data["path"] = notion_path_str
 
-        notion_path_str = f"{base_notion_path}/{sanitized_dir_name}"  # e.g. "$DATALIB/threeD/courses/My_Course"
-        course_data["path"] = notion_path_str  # store symbolic path in Notion
-
-        # 2) Local folder path
+        # Resolve local folder path (fully expanded)
         expanded_base_path = os.path.expandvars(os.getenv("COURSE_FOLDER_PATH", ""))
         if not expanded_base_path:
             expanded_base_path = str(get_default_documents_folder() / "courses")
-
         local_course_path = Path(expanded_base_path) / sanitized_dir_name
 
-        # 3) Create local folder from template
-        create_course_structure(
-            course_name=sanitized_dir_name,  # pass sanitized to manager
+        # Create local folder structure
+        create_folder_structure(
+            folder_name=sanitized_dir_name,
+            search_folder_name="{course_name}",
             template=template,
             base_path=local_course_path
         )
 
-        # 4) Insert into DB
+        # Insert course into DB
         res = db_client.insert_course(**course_data)
         existing_names.add(raw_course_name)
         results.append((raw_course_name, res))
 
     return results if len(results) > 1 else results[0][1]
+
 
 def updateCourse(db=DEFAULT_DB, **kwargs):
     """
