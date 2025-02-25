@@ -31,8 +31,8 @@ def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
     """
     Add course(s) from a Pandas DataFrame.
     - If exactly 1 row, returns a single insert result or a skip message.
-    - If multiple rows, processes each row in a loop, returns a list of (course_name, status).
-    - If empty, returns a simple message.
+    - If multiple rows, processes each row in a loop, returning a list of (course_name, status).
+    - If the DataFrame is empty, returns a simple message.
     """
     db_client = get_db_client(db, **kwargs)
 
@@ -41,7 +41,7 @@ def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
     if "name" not in df.columns:
         raise ValueError("DataFrame must contain 'name' column.")
 
-    # Load environment variables from .env
+    # Load environment from .env if exists
     if ENV_FILE.exists():
         load_dotenv(ENV_FILE)
 
@@ -58,34 +58,46 @@ def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
             results.append((raw_course_name, f"Course '{raw_course_name}' already exists. Skipped."))
             continue
 
-        # Resolve Notion path (symbolic)
-        base_notion_path = course_data.get("path") or os.getenv("COURSE_FOLDER_PATH")
-        if not base_notion_path:
-            base_notion_path = str(get_default_documents_folder() / "courses")
-        notion_path_str = f"{base_notion_path}/{sanitized_dir_name}"
+        # -- Determine the base path from JSON or environment --
+        provided_path = course_data.get("path") or os.getenv("COURSE_FOLDER_PATH")
+        if not provided_path:
+            # Use default symbolic path for Notion if none provided.
+            provided_path = str(get_default_documents_folder() / "courses")
+
+        # -- Determine if provided_path ends with a placeholder pattern --
+        # This pattern looks for a substring at the end enclosed in curly braces.
+        placeholder_match = re.search(r'(\{[^}]+\})\s*$', provided_path)
+        if placeholder_match:
+            placeholder = placeholder_match.group(1)
+            notion_path_str = provided_path.replace(placeholder, sanitized_dir_name)
+            # For local folder, expand and then replace the placeholder.
+            expanded_base = os.path.expandvars(provided_path)
+            local_course_path = Path(expanded_base.replace(placeholder, sanitized_dir_name))
+            search_placeholder = placeholder
+        else:
+            # No placeholder found; append the sanitized name.
+            notion_path_str = f"{provided_path.rstrip('/')}/{sanitized_dir_name}"
+            expanded_base = os.path.expandvars(provided_path)
+            local_course_path = Path(expanded_base) / sanitized_dir_name
+            search_placeholder = "{course_name}"
+
+        # Update course_data with the symbolic Notion path.
         course_data["path"] = notion_path_str
 
-        # Resolve local folder path (fully expanded)
-        expanded_base_path = os.path.expandvars(os.getenv("COURSE_FOLDER_PATH", ""))
-        if not expanded_base_path:
-            expanded_base_path = str(get_default_documents_folder() / "courses")
-        local_course_path = Path(expanded_base_path) / sanitized_dir_name
-
-        # Create local folder structure
+        # Create local folder structure from template
         create_folder_structure(
             folder_name=sanitized_dir_name,
-            search_folder_name="{course_name}",
+            search_folder_name=search_placeholder,
             template=template,
             base_path=local_course_path
         )
 
-        # Insert course into DB
+        # Insert into DB (e.g., Notion)
         res = db_client.insert_course(**course_data)
         existing_names.add(raw_course_name)
         results.append((raw_course_name, res))
 
     return results if len(results) > 1 else results[0][1]
-
 
 def updateCourse(db=DEFAULT_DB, **kwargs):
     """
