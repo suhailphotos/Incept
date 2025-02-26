@@ -6,6 +6,22 @@ import shutil
 from pathlib import Path
 from platformdirs import user_documents_dir
 
+def get_next_numeric_prefix(base_dir: Path) -> str:
+    """
+    Scans base_dir for subfolders whose names start with a two-digit prefix followed by an underscore.
+    Returns the next available two-digit number as a string (e.g. "10").
+    """
+    import re
+    existing_numbers = []
+    if base_dir.exists():
+        for d in base_dir.iterdir():
+            if d.is_dir():
+                m = re.match(r'^(\d{2})_', d.name)
+                if m:
+                    existing_numbers.append(int(m.group(1)))
+    next_num = (max(existing_numbers) + 1) if existing_numbers else 1
+    return f"{next_num:02d}"
+
 def get_default_documents_folder() -> Path:
     """
     Returns the cross-platform 'Documents' directory using platformdirs.
@@ -28,6 +44,18 @@ def sanitize_dir_name(name: str) -> str:
     name = re.sub(r"\s+", "_", name)      # Convert spaces to underscores
     name = re.sub(r"_+", "_", name)       # Remove multiple underscores
     return name.strip("_")  # Remove leading/trailing underscores
+
+def normalize_placeholder(placeholder: str) -> str:
+    """
+    If a placeholder starts with "{##", remove "##" after '{'.
+      e.g. "{##_course_name}" -> "{course_name}"
+           "{##_chapter_name}" -> "{chapter_name}"
+    """
+    # Detect something like "{##_"
+    if placeholder.startswith("{##"):
+        # e.g. "{##_course_name}" -> "{" + placeholder[3:]
+        return "{" + placeholder[4:]
+    return placeholder
 
 
 def sync_templates(src: Path, dst: Path):

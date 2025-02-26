@@ -3,7 +3,7 @@ import os
 import re
 import shutil
 from pathlib import Path
-from incept.utils.file_utils import sync_templates, get_default_documents_folder
+from incept.utils import sync_templates, get_default_documents_folder, normalize_placeholder
 
 CONFIG_DIR = Path.home() / ".incept"
 TEMPLATE_DIR = CONFIG_DIR / "folder_templates"
@@ -41,16 +41,21 @@ def ensure_templates_from_package():
 
 def find_placeholder_folder(base: Path, placeholder: str) -> Path | None:
     """
-    Recursively searches for a subfolder in 'base' whose name equals 'placeholder'.
+    Recursively searches for a subfolder in 'base' whose *normalized* name
+    equals the *normalized* 'placeholder'.
     Returns the first match found or None.
     """
+    normalized_target = normalize_placeholder(placeholder)
+
     for root, dirs, _ in os.walk(base):
         for d in dirs:
-            if d == placeholder:
+            # Physically the folder might be named "{##_course_name}" or "{course_name}".
+            # We normalize it so that e.g. "{##_course_name}" -> "{course_name}".
+            norm_dir = normalize_placeholder(d)
+            if norm_dir == normalized_target:
+                # Found a match: Return the physical path (root/d)
                 return Path(root) / d
     return None
-
-
 
 def create_folder_structure(
     folder_name: str,
@@ -123,9 +128,21 @@ def create_folder_structure(
 
     return destination_course_path
 
+
+def get_available_templates() -> list[str]:
+    courses_dir = TEMPLATE_DIR / "courses"
+    if not courses_dir.exists():
+        return []
+    return [folder.name for folder in courses_dir.iterdir() if folder.is_dir()]
+
 def get_available_templates() -> list[str]:
     """Lists subfolders in ~/.incept/folder_templates/courses."""
     courses_dir = TEMPLATE_DIR / "courses"
     if not courses_dir.exists():
         return []
     return [folder.name for folder in courses_dir.iterdir() if folder.is_dir()]
+
+if __name__ == "__main__":
+    folder_name="01_My_new_fun_course"
+    search_folder_name = normalize_placeholder("{##_course_name}")
+    print(search_folder_name)

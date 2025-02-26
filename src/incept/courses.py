@@ -5,14 +5,20 @@ import re
 import pandas as pd
 from pathlib import Path
 from dotenv import load_dotenv
-from incept.utils.file_utils import sanitize_dir_name, get_default_documents_folder
 from incept.databases.factory import get_db_client
 from incept.templates.manager import create_folder_structure
+from incept.utils import (
+    sanitize_dir_name,
+    get_default_documents_folder,
+    get_next_numeric_prefix,
+    normalize_placeholder,
+)
 
 DEFAULT_DB = "notion"
 CONFIG_DIR = Path.home() / ".incept"
 CONFIG_SUBDIR = CONFIG_DIR / "config"
 ENV_FILE = CONFIG_DIR / ".env"
+
 
 def getCourses(db=DEFAULT_DB, filter=None, **kwargs):
     """
@@ -30,7 +36,7 @@ def getCourses(db=DEFAULT_DB, filter=None, **kwargs):
 def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
     """
     Add course(s) from a Pandas DataFrame.
-    - If exactly 1 row, returns a single insert result or a skip message.
+    - If exactly 1 row, returns a single insert result or skip message.
     - If multiple rows, processes each row in a loop, returning a list of (course_name, status).
     - If the DataFrame is empty, returns a simple message.
     """
@@ -56,29 +62,40 @@ def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
             results.append((raw_course_name, f"Course '{raw_course_name}' already exists. Skipped."))
             continue
 
-        # Determine the base symbolic path from JSON or environment.
+        # Determine provided path from JSON or environment.
         provided_path = course_data.get("path") or os.getenv("COURSE_FOLDER_PATH")
         if not provided_path:
             provided_path = str(get_default_documents_folder() / "courses")
         
-        # Check if provided_path ends with a placeholder.
+        # Check if provided_path ends with a placeholder pattern.
         placeholder_match = re.search(r'(\{[^}]+\})\s*$', provided_path)
         if placeholder_match:
             placeholder = placeholder_match.group(1)
-            notion_path_str = provided_path.replace(placeholder, sanitized_dir_name)
-            expanded_base = os.path.expandvars(provided_path)
-            local_course_path = Path(expanded_base.replace(placeholder, sanitized_dir_name))
-            search_placeholder = placeholder
+            if placeholder.startswith("{##"):
+                # Numeric prefix mode.
+                expanded_base = os.path.expandvars(provided_path)
+                # Use the parent of the placeholder in the expanded base.
+                base_for_numeric = Path(expanded_base).parent
+                numeric_prefix = get_next_numeric_prefix(base_for_numeric)
+                new_folder_name = f"{numeric_prefix}_{sanitized_dir_name}"
+                notion_path_str = provided_path.replace(placeholder, new_folder_name)
+                local_course_path = base_for_numeric / new_folder_name
+                search_placeholder = normalize_placeholder(placeholder)
+            else:
+                notion_path_str = provided_path.replace(placeholder, sanitized_dir_name)
+                expanded_base = os.path.expandvars(provided_path)
+                local_course_path = Path(expanded_base.replace(placeholder, sanitized_dir_name))
+                search_placeholder = normalize_placeholder(placeholder)
         else:
             notion_path_str = f"{provided_path.rstrip('/')}/{sanitized_dir_name}"
             expanded_base = os.path.expandvars(provided_path)
             local_course_path = Path(expanded_base) / sanitized_dir_name
-            search_placeholder = os.getenv('COURSE_SEARCH_FOLDER') or "{course_name}"
+            search_placeholder = normalize_placeholder(os.getenv('COURSE_SEARCH_FOLDER')) or "{course_name}"
 
+        # Update course_data with the symbolic Notion path.
         course_data["path"] = notion_path_str
 
-        # Create the local folder structure. The base_path here is the destination
-        # and should already include the sanitized course folder name.
+        # Create local folder structure from template.
         try:
             create_folder_structure(
                 folder_name=sanitized_dir_name,
@@ -87,7 +104,6 @@ def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
                 base_path=local_course_path
             )
         except Exception as e:
-            # If folder already exists, exit gracefully.
             results.append((raw_course_name, f"Folder already exists: {local_course_path}"))
             continue
 
@@ -96,7 +112,6 @@ def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
         results.append((raw_course_name, res))
 
     return results if len(results) > 1 else results[0][1]
-
 
 def updateCourse(db=DEFAULT_DB, **kwargs):
     """
