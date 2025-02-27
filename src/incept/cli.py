@@ -118,7 +118,7 @@ def cli_get_courses(api_key, database_id, filter):
         return
 
     # 7) Format/truncate columns except for 'id' and 'name'
-    df_formatted = format_course_df(df, max_len=20)
+    df_formatted = format_course_df(df, max_len=10)
 
     # 8) Print with lines between columns & row data
     click.echo("Courses found:")
@@ -129,41 +129,36 @@ def cli_get_courses(api_key, database_id, filter):
     click.echo(table_str)
 
 @main.command("add-course")
-@click.option("--api-key", default=None, help="Notion API Key (fallback to .env).")
-@click.option("--database-id", default=None, help="Notion Database ID (fallback to .env).")
-@click.option("--data-file-path", default=None,
-              help="Path to a JSON file containing course data.")
-@click.option("--name", default=None, help="Course name (override if data-file also given).")
+@click.option("--api-key", default=None, help="Notion API Key (or from .env).")
+@click.option("--database-id", default=None, help="Notion Database ID (or from .env).")
+@click.option("--data-file-path", default=None, help="Path to JSON file with course data.")
+@click.option("--name", default=None, help="Course name (override JSON).")
 @click.option("--description", default=None, help="Course description.")
 @click.option("--link", default=None, help="Course link/URL.")
-@click.option("--path", default=None, help="Custom path for Notion property. e.g. '$DATALIB/threeD/courses'.")
-@click.option("--folder-template", default=None, 
-              help="Template folder name for local structure (e.g. 'default').")
-def cli_add_course(api_key, database_id, data_file_path,
-                   name, description, link, path, folder_template):
+@click.option("--path", default=None, help="Custom path for Notion property (e.g. '$DATALIB/threeD/courses').")
+@click.option("--folder-template", default=None, help="Template folder name for local structure (e.g. 'default').")
+def cli_add_course(api_key, database_id, data_file_path, name, description, link, path, folder_template):
     """
-    Add a new course to your DB (default is 'notion'), creating a local folder as well.
-    - If `path` is provided in JSON, it is used.
-    - If `path` is missing, it defaults to `$COURSE_FOLDER_PATH`.
-    - Notion path retains variables (`$DATALIB` or `$DROPBOX`), but local folders are **fully expanded**.
+    Add new course(s) to your database, creating local folder(s) as well.
+    
+    If a JSON file is provided, it should contain either:
+      - A single course (under the key "course"), in which case any CLI overrides
+        (like --name, --description, etc.) will be merged into that record.
+      - Or multiple courses (under the key "courses"). In that case, CLI override options
+        are not allowed.
     """
-    # 1) Load environment (.env)
     if ENV_FILE.exists():
         load_dotenv(ENV_FILE)
-
-    # 2) db_type from environment or default to "notion"
     db_type = os.getenv("DATABASE_NAME", "notion")
-
-    # 3) Credentials from CLI or env
     if not api_key:
         api_key = os.getenv("API_KEY")
     if not database_id:
         database_id = os.getenv("DATABASE_ID")
     if not api_key or not database_id:
-        raise click.ClickException("API_KEY or DATABASE_ID not found. Provide via CLI or .env.")
+        raise click.ClickException("API_KEY or DATABASE_ID not found. Provide via CLI or .env file.")
 
-    # 4) Load JSON file if provided
-    file_data = {}
+    # Load JSON file if provided.
+    df = None
     if data_file_path:
         import json
         file_path = Path(data_file_path)
@@ -174,39 +169,57 @@ def cli_add_course(api_key, database_id, data_file_path,
                 file_json = json.load(f)
             except json.JSONDecodeError as e:
                 raise click.ClickException(f"Invalid JSON in {file_path}: {e}")
-        file_data = file_json.get("course", {})
-
-    # 5) Merge CLI overrides
-    if name:
-        file_data["name"] = name
-    if description:
-        file_data["description"] = description
-    if link:
-        file_data["link"] = link
-    if path:
-        file_data["path"] = path
-    if folder_template:
-        file_data["folder_template_name"] = folder_template
-
-    # Ensure we have a name
-    if "name" not in file_data:
-        raise click.ClickException("No course name found (use --name or JSON).")
-
-    # 6) Build the single-row DF for incept.courses.addCourse
-    df_single = pd.DataFrame([file_data])
-
-    # 7) Call `addCourse` (path logic handled inside `courses.py`)
+        # If JSON contains multiple courses (key "courses")
+        if "courses" in file_json:
+            courses_list = file_json["courses"]
+            if not isinstance(courses_list, list):
+                raise click.ClickException("The 'courses' key must contain a list of course objects.")
+            if len(courses_list) > 1 and any([name, description, link, path, folder_template]):
+                raise click.ClickException(
+                    "Multiple courses detected in JSON; please do not mix CLI override options with multi-course JSON input."
+                )
+            df = pd.DataFrame(courses_list)
+        elif "course" in file_json:
+            # Single course provided; merge CLI overrides.
+            file_data = file_json["course"]
+            if name:
+                file_data["name"] = name
+            if description:
+                file_data["description"] = description
+            if link:
+                file_data["link"] = link
+            if path:
+                file_data["path"] = path
+            if folder_template:
+                file_data["folder_template_name"] = folder_template
+            if "name" not in file_data:
+                raise click.ClickException("No course name found (use --name or JSON).")
+            df = pd.DataFrame([file_data])
+        else:
+            raise click.ClickException("Invalid JSON file: must contain either 'course' or 'courses' key.")
+    else:
+        # No JSON file provided; require CLI options.
+        if not name:
+            raise click.ClickException("No data file provided. Please supply CLI options for a single course.")
+        course_dict = {
+            "name": name,
+            "description": description,
+            "link": link,
+            "path": path,
+            "folder_template_name": folder_template,
+        }
+        df = pd.DataFrame([course_dict])
+    
     from incept.courses import addCourse
-
-    result = addCourse(
+    result_df = addCourse(
         db=db_type,
-        template=file_data.get("folder_template_name", "default"),
-        df=df_single,
+        template=df.iloc[0].get("folder_template_name", "default"),
+        df=df,
         api_key=api_key,
         database_id=database_id
     )
-
-    click.echo(f"add-course result: {result}")
+    click.echo("add-course result:")
+    click.echo(result_df.to_markdown(index=False))
 
 
 if __name__ == "__main__":
