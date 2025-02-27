@@ -6,6 +6,13 @@ import shutil
 from pathlib import Path
 from platformdirs import user_documents_dir
 
+
+def detect_numeric_prefix(placeholder: str) -> bool:
+    """
+    Return True if placeholder starts with '{##'.
+    """
+    return placeholder.startswith("{##")
+
 def get_next_numeric_prefix(base_dir: Path) -> str:
     """
     Scans base_dir for subfolders whose names start with a two-digit prefix followed by an underscore.

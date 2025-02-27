@@ -33,11 +33,12 @@ def getCourses(db=DEFAULT_DB, filter=None, **kwargs):
         return db_client.get_courses()
 
 
+
 def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
     """
     Add course(s) from a Pandas DataFrame.
     - If exactly 1 row, returns a single insert result or skip message.
-    - If multiple rows, processes each row in a loop, returning a list of (course_name, status).
+    - If multiple rows, returns a list of (course_name, status).
     - If the DataFrame is empty, returns a simple message.
     """
     db_client = get_db_client(db, **kwargs)
@@ -51,8 +52,9 @@ def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
 
     existing_df = db_client.get_courses()
     existing_names = set(existing_df["name"].values) if not existing_df.empty else set()
-
+    env_search_folder_name = os.getenv('COURSE_SEARCH_FOLDER')
     results = []
+
     for _, row_data in df.iterrows():
         course_data = row_data.to_dict()
         raw_course_name = course_data["name"]
@@ -66,15 +68,15 @@ def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
         provided_path = course_data.get("path") or os.getenv("COURSE_FOLDER_PATH")
         if not provided_path:
             provided_path = str(get_default_documents_folder() / "courses")
-        
+
         # Check if provided_path ends with a placeholder pattern.
         placeholder_match = re.search(r'(\{[^}]+\})\s*$', provided_path)
         if placeholder_match:
             placeholder = placeholder_match.group(1)
             if placeholder.startswith("{##"):
-                # Numeric prefix mode.
+                # Numeric prefix mode triggered from the provided path.
                 expanded_base = os.path.expandvars(provided_path)
-                # Use the parent of the placeholder in the expanded base.
+                # Use the parent of the placeholder in the expanded path.
                 base_for_numeric = Path(expanded_base).parent
                 numeric_prefix = get_next_numeric_prefix(base_for_numeric)
                 new_folder_name = f"{numeric_prefix}_{sanitized_dir_name}"
@@ -86,16 +88,25 @@ def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
                 expanded_base = os.path.expandvars(provided_path)
                 local_course_path = Path(expanded_base.replace(placeholder, sanitized_dir_name))
                 search_placeholder = normalize_placeholder(placeholder)
+        elif env_search_folder_name and env_search_folder_name.startswith("{##"):
+            # No placeholder in provided_path, but the fallback env search folder requests numeric prefix.
+            expanded_base = os.path.expandvars(provided_path)
+            base_for_numeric = Path(expanded_base)
+            numeric_prefix = get_next_numeric_prefix(base_for_numeric)
+            new_folder_name = f"{numeric_prefix}_{sanitized_dir_name}"
+            notion_path_str = f"{provided_path.rstrip('/')}/{new_folder_name}"
+            local_course_path = base_for_numeric / new_folder_name
+            search_placeholder = normalize_placeholder(env_search_folder_name)
         else:
+            # Fallback: no placeholder found in provided_path and no numeric env override.
             notion_path_str = f"{provided_path.rstrip('/')}/{sanitized_dir_name}"
             expanded_base = os.path.expandvars(provided_path)
             local_course_path = Path(expanded_base) / sanitized_dir_name
-            search_placeholder = normalize_placeholder(os.getenv('COURSE_SEARCH_FOLDER')) or "{course_name}"
+            search_placeholder = normalize_placeholder(env_search_folder_name) if env_search_folder_name else "{course_name}"
 
-        # Update course_data with the symbolic Notion path.
+        # Update the symbolic Notion path.
         course_data["path"] = notion_path_str
 
-        # Create local folder structure from template.
         try:
             create_folder_structure(
                 folder_name=sanitized_dir_name,
@@ -112,6 +123,7 @@ def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
         results.append((raw_course_name, res))
 
     return results if len(results) > 1 else results[0][1]
+
 
 def updateCourse(db=DEFAULT_DB, **kwargs):
     """
