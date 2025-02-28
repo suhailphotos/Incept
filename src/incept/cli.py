@@ -218,8 +218,9 @@ def cli_add_course(api_key, database_id, data_file_path, name, description, link
         api_key=api_key,
         database_id=database_id
     )
+    result_df_formated = format_course_df(result_df, max_len=10)
     click.echo("add-course result:")
-    click.echo(result_df.to_markdown(index=False))
+    click.echo(result_df_formated.to_markdown(index=False, tablefmt="fancy_grid"))
 
 
 if __name__ == "__main__":

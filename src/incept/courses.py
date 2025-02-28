@@ -37,13 +37,19 @@ def getCourses(db=DEFAULT_DB, filter=None, **kwargs):
 def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
     """
     Add course(s) from a Pandas DataFrame.
-    - If exactly 1 row, returns a DataFrame with one result.
-    - If multiple rows, returns a DataFrame of (course_name, result) pairs.
-    - If the DataFrame is empty, returns a message.
+    
+    - If exactly 1 row, returns a DataFrame with one row.
+    - If multiple rows, returns a DataFrame with one row per inserted course.
+    - If the DataFrame is empty, returns a DataFrame with a message.
+    
+    This function accumulates the raw page responses returned from each insert,
+    and once all courses are inserted, calls _convert_to_dataframe() on the accumulated list.
+    This produces a rolled‐up DataFrame (in the same format as get_courses()) without
+    having to re‐query all pages from Notion.
     """
     db_client = get_db_client(db, **kwargs)
     if df is None or df.empty:
-        return "DataFrame is empty. No course(s) to add."
+        return pd.DataFrame([{"course_name": None, "result": "DataFrame is empty. No course(s) to add."}])
     if "name" not in df.columns:
         raise ValueError("DataFrame must contain 'name' column.")
 
@@ -53,7 +59,8 @@ def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
     existing_df = db_client.get_courses()
     existing_names = set(existing_df["name"].values) if not existing_df.empty else set()
     env_search_folder_name = os.getenv('COURSE_SEARCH_FOLDER')
-    results = []
+    inserted_pages = []  # accumulate raw responses
+    results = []         # to record error messages or inserted IDs
 
     for _, row_data in df.iterrows():
         course_data = row_data.to_dict()
@@ -61,7 +68,7 @@ def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
         sanitized_dir_name = sanitize_dir_name(raw_course_name)
 
         if raw_course_name in existing_names:
-            results.append((raw_course_name, f"Course '{raw_course_name}' already exists. Skipped."))
+            results.append((raw_course_name, "Course already exists"))
             continue
 
         # Determine the provided path from JSON or environment.
@@ -88,7 +95,7 @@ def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
                 local_course_path = Path(expanded_base.replace(placeholder, sanitized_dir_name))
                 search_placeholder = normalize_placeholder(placeholder)
         elif env_search_folder_name and env_search_folder_name.startswith("{##"):
-            # Fallback: No placeholder in provided_path, but the env value triggers numeric prefix.
+            # Fallback: no placeholder in provided_path, but env value triggers numeric prefix.
             expanded_base = os.path.expandvars(provided_path)
             base_for_numeric = Path(expanded_base)
             numeric_prefix = get_next_numeric_prefix(base_for_numeric)
@@ -97,7 +104,6 @@ def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
             local_course_path = base_for_numeric / new_folder_name
             search_placeholder = normalize_placeholder(env_search_folder_name)
         else:
-            # Fallback: No placeholder found.
             notion_path_str = f"{provided_path.rstrip('/')}/{sanitized_dir_name}"
             expanded_base = os.path.expandvars(provided_path)
             local_course_path = Path(expanded_base) / sanitized_dir_name
@@ -114,15 +120,26 @@ def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
                 base_path=local_course_path
             )
         except Exception as e:
-            results.append((raw_course_name, f"Folder already exists: {local_course_path}"))
+            results.append((raw_course_name, f"Folder exists: {local_course_path}"))
             continue
 
-        res = db_client.insert_course(**course_data)
-        existing_names.add(raw_course_name)
-        results.append((raw_course_name, res))
+        # Insert the course; insert_course() returns the raw Notion page object.
+        resp = db_client.insert_course(**course_data)
+        if resp.get("id"):
+            inserted_pages.append(resp)
+            existing_names.add(raw_course_name)
+            results.append((raw_course_name, resp.get("id")))
+        else:
+            results.append((raw_course_name, "Insert failed"))
 
-    # Return a pandas DataFrame of results.
-    return pd.DataFrame(results, columns=["course_name", "result"])
+    # Once all insertions are complete, convert the accumulated raw responses to a rolled-up DataFrame.
+    if inserted_pages:
+        new_courses_df = db_client._convert_to_dataframe(inserted_pages)
+    else:
+        new_courses_df = pd.DataFrame(results, columns=["course_name", "result"])
+
+    return new_courses_df
+
 
 def updateCourse(db=DEFAULT_DB, **kwargs):
     """
