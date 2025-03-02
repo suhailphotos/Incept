@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "incept"
+version = "0.1.47"
+description = "A Python package for managing courses, projects, and directories with Notion integration."
+authors = ["Suhail <suhailece@gmail.com>"]
+readme = "README.md"
+packages = [
+    { include = "incept", from = "src" }
+]
+
+# This is the correct place to include extra files:
+include = [
+    "incept/.config/**"
+]
+
+[tool.poetry.scripts]
+incept = "incept.cli:main"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+notionmanager = "^0.1.5"
+oauthmanager = "^0.1.1"
+platformdirs = "^3.0"
+tabulate = "^0.9.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
