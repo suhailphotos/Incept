@@ -140,6 +140,34 @@ def addCourse(db=DEFAULT_DB, template="default", df=None, **kwargs):
 
     return new_courses_df
 
+def addChapter(
+    db=DEFAULT_DB,
+    template="default",
+    chapter_folder="chapters",
+    df=None,
+    **kwargs
+):
+    """
+    Add chapter(s) from a Pandas DataFrame to the given course.
+
+    - Either `course_id` or `course_name` must be provided.
+    - For Notion, sets the "Parent item" property to the parent course ID.
+    - Copies the local chapter folder from the template into <course_folder>/<chapter_folder>/...
+    - Returns a rolled‐up DataFrame.
+    """
+    return {
+        "db": db,
+        "template": template,
+        "chapter_folder": chapter_folder,
+        "df": df,
+        **kwargs
+    }
+
+def addLesson(db=DEFAULT_DB, chapter_id=None, template="default", **kwargs):
+    """
+    Placeholder for future addLesson logic.
+    """
+    return "addLesson not yet implemented."
 
 def updateCourse(db=DEFAULT_DB, **kwargs):
     """
@@ -153,21 +181,6 @@ def deleteCourse(db=DEFAULT_DB, course_id=None, **kwargs):
     Placeholder for future delete logic.
     """
     return "deleteCourse not yet implemented."
-
-
-def addChapter(db=DEFAULT_DB, course_id=None, template="default", **kwargs):
-    """
-    Placeholder for future addChapter logic.
-    """
-    return "addChapter not yet implemented."
-
-
-def addLesson(db=DEFAULT_DB, chapter_id=None, template="default", **kwargs):
-    """
-    Placeholder for future addLesson logic.
-    """
-    return "addLesson not yet implemented."
-
 
 def updateChapter(db=DEFAULT_DB, chapter_id=None, **kwargs):
     """
@@ -197,52 +210,99 @@ def deleteLesson(db=DEFAULT_DB, lesson_id=None, **kwargs):
     return "deleteLesson not yet implemented."
 
 
-# -- EXAMPLE USAGE / TESTING --
 if __name__ == "__main__":
     from oauthmanager import OnePasswordAuthManager
     import json
+    from notionmanager.notion import NotionManager
+    from incept.cli import format_course_df
 
-    # Example: show how to retrieve courses
+    # --- Environment setup ---
+    if ENV_FILE.exists():
+        load_dotenv(ENV_FILE)
+    db_type = os.getenv("DATABASE_NAME", "notion")
+
+    # --- Retrieve Notion API credentials ---
     auth_manager = OnePasswordAuthManager(vault_name="API Keys")
     notion_creds = auth_manager.get_credentials("Quantum", "credential")
-    NOTION_API_KEY = notion_creds.get("credential")
-    DATABASE_ID = "195a1865-b187-8103-9b6a-cc752ca45874"
+    api_key = notion_creds.get("credential")
+    database_id = "195a1865-b187-8103-9b6a-cc752ca45874"
 
-    print("=== Fetching ALL courses ===")
-    all_courses_df = getCourses(
-        db="notion",
-        api_key=NOTION_API_KEY,
-        database_id=DATABASE_ID
+    # --- Override options (unused because we rely solely on JSON) ---
+    name = None
+    description = None
+    link = None
+    path = None
+    folder_template = None
+
+    # --- Define chapter folder (for example purposes) ---
+    chapter_folder = "chapters"
+
+    # --- Load JSON file ---
+    data_file_path = CONFIG_SUBDIR / "full_course.json"
+    file_path = data_file_path
+    if not file_path.exists():
+        raise Exception(f"Data file not found: {file_path}")
+    with file_path.open("r") as f:
+        try:
+            file_json = json.load(f)
+        except json.JSONDecodeError as e:
+            raise Exception(f"Invalid JSON in {file_path}: {e}")
+
+    # --- Extract course objects from JSON ---
+    courses_list = []
+    if "course" in file_json:
+        courses_list = [file_json["course"]]
+    elif "courses" in file_json:
+        courses = file_json["courses"]
+        if isinstance(courses, list):
+            courses_list = courses
+        elif isinstance(courses, dict):
+            courses_list = [courses]
+        else:
+            raise Exception("The 'courses' key must contain a list or a dictionary.")
+    else:
+        raise Exception("Invalid JSON file: must contain either 'course' or 'courses' key.")
+
+    # --- Build filter criteria based on course names ---
+    course_names = []
+    for course in courses_list:
+        if "name" in course and course["name"]:
+            course_names.append(course["name"])
+        else:
+            raise Exception("Course name not found in one of the courses in JSON.")
+    # If only one unique course name is provided, use it directly.
+    if len(set(course_names)) == 1:
+        filter_criteria = course_names[0]
+    else:
+        # Build an OR filter JSON payload.
+        filter_criteria = {
+            "filter": {
+                "or": [
+                    {
+                        "property": "Name",
+                        "title": {"equals": cn}
+                    } for cn in course_names
+                ]
+            }
+        }
+
+    # --- Query the database for the course(s) ---
+    # getCourses returns a DataFrame with each course as a single row (including its children).
+    courses_df = getCourses(db=db_type, filter=filter_criteria, api_key=api_key, database_id=database_id)
+    if courses_df.empty:
+        raise Exception("No course found in the database matching the provided JSON course name(s).")
+    # Take only the first row from the result (as a DataFrame).
+    course_row_df = courses_df.iloc[[0]]
+
+    # --- Call addChapter using the course information from the database ---
+    result_df = addChapter(
+        db=db_type,
+        template=folder_template if folder_template else "default",
+        chapter_folder=chapter_folder,
+        df=course_row_df
     )
-    print(all_courses_df, "\n")
+    print(result_df)
 
-    # 1) Single row insert
-    import pandas as pd
-
-    df_single = pd.DataFrame([{
-        "name": "Sample Course X",
-        "description": "Description for X",
-        "tags": ["Python", "Test"],
-    }])
-    single_result = addCourse(
-        db="notion",
-        template="default",
-        df=df_single,
-        api_key=NOTION_API_KEY,
-        database_id=DATABASE_ID
-    )
-    print("Single addCourse result:", single_result)
-
-    # 2) Multi-row insert
-    df_multi = pd.DataFrame([
-        {"name": "Course Y", "description": "Multi-test Y", "tags": ["Multi"]},
-        {"name": "Course Z", "description": "Multi-test Z", "tags": ["Multi"]},
-    ])
-    multi_result = addCourse(
-        db="notion",
-        template="default",
-        df=df_multi,
-        api_key=NOTION_API_KEY,
-        database_id=DATABASE_ID
-    )
-    print("Multi addCourse results:", multi_result)
+    #result_df_formatted = format_course_df(result_df, max_len=10)
+    #print("add-chapter result:")
+    #print(result_df_formatted.to_markdown(index=False, tablefmt="fancy_grid"))

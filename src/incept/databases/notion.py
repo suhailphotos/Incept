@@ -22,14 +22,18 @@ class NotionDB:
         filter_payload = None
 
         if "Name" in kwargs:
-            filter_payload = {
-                "filter": {
-                    "property": "Name",
-                    "title": {
-                        "equals": kwargs["Name"]
+            if isinstance(kwargs["Name"], dict):
+                # Assume it's already a complete filter payload.
+                filter_payload = kwargs["Name"]
+            else:
+                filter_payload = {
+                    "filter": {
+                        "property": "Name",
+                        "title": {
+                            "equals": kwargs["Name"]
+                        }
                     }
                 }
-            }
 
         if not filter_payload:
             # Scenario 1: No filter => Retrieve ALL pages in one go
@@ -379,24 +383,11 @@ if __name__ == "__main__":
 
     DATABASE_ID = "195a1865-b187-8103-9b6a-cc752ca45874"
     db = NotionDB(NOTION_API_KEY, DATABASE_ID)
+    filter_criteria={"Name": "Sample Course A"}
+    results = db.get_courses(**filter_criteria)
+    print(results)
 
-    # 1) Insert a course with no icon/cover => uses defaults
-    new_course_data_1 = {
-        "name": "CourseWithDefaultIconCover",
-        "description": "No icon or cover passed, should see defaults",
-        "tags": ["Default", "Demo"],
-        "path": "/my/code/path"
-    }
-    resp_1 = db.insert_course(**new_course_data_1)
-    print("Inserted page (defaults):", json.dumps(resp_1, indent=2))
 
-    # 2) Insert a course with a custom icon dictionary (e.g. an emoji) 
-    #    and a custom cover string
-    new_course_data_2 = {
-        "name": "CourseWithEmojiIcon",
-        "icon": {"type": "emoji", "emoji": "🚀"},  # custom dict
-        "cover": "https://example.com/custom_cover.jpg",  # just a string
-        "description": "Using a custom emoji icon + custom cover",
-    }
-    resp_2 = db.insert_course(**new_course_data_2)
-    print("\nInserted page (custom icon & cover):", json.dumps(resp_2, indent=2))
+
+
+
