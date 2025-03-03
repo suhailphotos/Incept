@@ -1,0 +1,27 @@
+{# 
+  This template defines the folder structure for a chapter.
+  - The final chapter folder will be named: "<chapter_prefix>_<chapter_name>"
+  - It contains subfolders for assignments, lessons, and materials.
+  - It also creates a file named notes.md.
+  - The variable `lessons` is expected to be a list of lesson objects (each rendered via the lesson template).
+#}
+{
+  "folder": "{{ chapter_prefix }}_{{ chapter_name }}",
+  "subfolders": [
+    { "folder": "assignments" },
+    { 
+      "folder": "lessons",
+      "subfolders": [
+        {# Render each lesson #}
+        {% for lesson in lessons %}
+          {{ lesson | tojson }},
+        {% endfor %}
+        {}
+      ]
+    },
+    { "folder": "materials" }
+  ],
+  "files": [
+    { "file": "notes.md" }
+  ]
+}

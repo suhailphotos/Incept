@@ -1,0 +1,46 @@
+{
+  "courses": [
+    {
+      "id": null
+      "name": "Sample Course A",
+      "chapters": [
+        {
+          "id": null
+          "icon": null
+          "cover": null
+          "name": "Sample Chapter 1",
+          "tool": ["149a1865-b187-80f9-b21f-c9c96430bf62"],
+          "description": "This is a sample chapter",
+          "link": "example.com",
+          "path": "$DATALIB/courses/{course_name}/{chapter_name}",
+          "tags": ["Python"],
+          "template": "default"
+        },
+        {
+          "id": null
+          "icon": null
+          "cover": null
+          "name": "Sample Chapter 2",
+          "tool": ["149a1865-b187-80f9-b21f-c9c96430bf62"],
+          "description": "This is a sample chapter",
+          "link": "example.com",
+          "path": "$DATALIB/courses/{course_name}/{chapter_name}",
+          "tags": ["Python"],
+          "template": "default"
+        },
+        {
+          "id": null
+          "icon": null
+          "cover": null
+          "name": "Sample Chapter 3",
+          "tool": ["149a1865-b187-80f9-b21f-c9c96430bf62"],
+          "description": "This is a sample chapter",
+          "link": "example.com",
+          "path": "$DATALIB/courses/{course_name}/{chapter_name}",
+          "tags": ["Python"],
+          "template": "default"
+        },
+      ]
+    }
+  ]
+}

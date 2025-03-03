@@ -1,0 +1,28 @@
+{
+  "courses": [
+    {
+      "id": null
+      "icon": null
+      "cover": null
+      "name": "Sample Course A",
+      "tool": ["149a1865-b187-80f9-b21f-c9c96430bf62"],
+      "description": "This is sample course A for testing",
+      "link": "http://example.com",
+      "path": "$DATALIB/courses",
+      "tags": ["Python"],
+      "template": "default"
+    },
+    {
+      "id": null
+      "icon": null
+      "cover": null
+      "name": "Sample Course B",
+      "tool": ["149a1865-b187-80f9-b21f-c9c96430bf62"],
+      "description": "This is sample course B for testing",
+      "link": "http://example.com",
+      "path": "$DATALIB/courses",
+      "tags": ["Python"],
+      "template": "default"
+    },
+  ]
+}

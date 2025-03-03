@@ -1,0 +1,29 @@
+{# 
+  This template defines the folder structure for a course.
+  - The final course folder will be named: "<course_prefix>_<course_name>"
+  - It contains subfolders for assets, chapters, course_materials, and videos.
+  - It also creates files like notion_sync.json and progress.md.
+  - The variable `chapters` is expected to be a list of chapter objects (each rendered via the chapter template).
+#}
+{
+  "folder": "{{ course_prefix }}_{{ course_name }}",
+  "subfolders": [
+    { "folder": "assets" },
+    { 
+      "folder": "{{ chapter_folder }}", 
+      "subfolders": [
+        {# For each chapter, we include its rendered structure. The rendering code should iterate over chapters and render the chapter template. #}
+        {% for chapter in chapters %}
+          {{ chapter | tojson }},
+        {% endfor %}
+        {}
+      ]
+    },
+    { "folder": "course_materials" },
+    { "folder": "videos" }
+  ],
+  "files": [
+    { "file": "notion_sync.json" },
+    { "file": "progress.md" }
+  ]
+}
