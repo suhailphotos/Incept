@@ -1,9 +1,12 @@
 # src/incept/cli.py
 
 import os
+import json
 import click
 import shutil
+from dotenv import load_dotenv
 from pathlib import Path
+from incept.courses import getCourses
 
 # Set up user configuration directory
 CONFIG_DIR = Path.home() / ".incept"
@@ -60,6 +63,48 @@ def cli_init():
             click.echo(f"Source subdirectory {src_subdir} not found; skipping {subdir}.")
 
     click.echo("Initialization complete.")
+
+@main.command("get-courses")
+@click.option("--api-key", default=None, help="Notion API Key. If not provided, uses .env or environment variable.")
+@click.option("--database-id", default=None, help="Notion Database ID. If not provided, uses .env or environment variable.")
+@click.option("--filter", default=None, help="Optional filter: name of course to fetch.")
+def cli_get_courses(api_key, database_id, filter):
+    """
+    Fetch courses from the specified Notion database.
+    If --api-key or --database-id are not passed, we try .env or system env vars.
+    """
+    # 1) Load .env if it exists.
+    if ENV_FILE.exists():
+        load_dotenv(ENV_FILE)
+
+    # 2) Determine DB type (defaulting to "notion")
+    db_type = os.getenv("DATABASE_NAME", "notion")
+
+    # 3) If API key not passed via CLI, try environment variable.
+    if not api_key:
+        api_key = os.getenv("NOTION_API_KEY")
+    # 4) Similarly, get database ID.
+    if not database_id:
+        database_id = os.getenv("NOTION_DATABASE_ID")
+    # 5) If missing credentials, raise an error.
+    if not api_key or not database_id:
+        raise click.ClickException("API_KEY or DATABASE_ID not found. Provide via CLI options or .env file.")
+
+    # 6) Call getCourses to get the nested courses hierarchy.
+    courses = getCourses(
+        db=db_type,
+        api_key=api_key,
+        database_id=database_id,
+        filter=filter
+    )
+    if not courses or not courses.get("courses"):
+        click.echo("No courses found.")
+        return
+
+    # 7) Print the nested courses hierarchy as JSON.
+    click.echo("Courses found:")
+    click.echo(json.dumps(courses, indent=2))
+
 
 if __name__ == "__main__":
     main()
