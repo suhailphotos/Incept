@@ -85,6 +85,42 @@ def get_next_numeric_prefix(base_dir: Path, file_extension: Optional[str] = None
     next_num = (max(existing_numbers) + 1) if existing_numbers else 1
     return f"{next_num:02d}"
 
+def get_child_template_folder_from_parent(template_type: str, variant: str, templates_dir: Path) -> Optional[str]:
+    """
+    Attempts to extract the child_folder_name value from a parent template using Jinja2's meta API.
+    It reads the template file (e.g., the chapter template) and searches for an assignment:
+    
+         {% set child_folder_name = "lessons" %}
+    
+    If found and the value is constant, returns that value; otherwise, returns None.
+    """
+    from jinja2 import Environment, meta, nodes
+
+    lookup_file = templates_dir / "templates.json"
+    with lookup_file.open("r") as f:
+        template_map = json.load(f)
+    try:
+        parent_filename = template_map[template_type][variant]
+    except KeyError:
+        return None
+    template_path = templates_dir / parent_filename
+    if not template_path.exists():
+        return None
+
+    # Read the template source.
+    source = template_path.read_text()
+    env = Environment()
+    parsed_content = env.parse(source)
+
+    # Iterate over all assignment nodes.
+    for node in parsed_content.find_all(nodes.Assign):
+        # Check if the assignment target is a Name node with the correct name.
+        if isinstance(node.target, nodes.Name) and node.target.name == "child_folder_name":
+            # If the assigned value is a constant, return its value.
+            if isinstance(node.node, nodes.Const):
+                return node.node.value
+    return None
+
 
 def render_expression(expr: str, context: dict) -> str:
     """
@@ -101,10 +137,10 @@ def create_folder_structure(
     template_type: str,
     template_variant: str = "default",
     templates_dir: Path = None,
-    parent_path: Path = None  # Ensure this is a Path object
+    parent_path: Path = None
 ) -> dict:
     """
-    Create a folder/file structure on disk from Jinja2 templates.
+    Create a folder/file structure on disk from a Jinja2 template.
     """
     if templates_dir is None:
         templates_dir = Path(os.environ.get("JINJA_TEMPLATES_PATH", str(Path.home() / ".incept" / "templates")))
@@ -139,15 +175,14 @@ def create_folder_structure(
     else:
         parent_path = Path(os.path.expandvars(str(parent_path))).expanduser()
 
-    # Sanitize the entity name (used for folder or file naming)
+    # Sanitize the entity name used for folder/file naming.
     name_key = f"{template_type}_name"
     entity_data[name_key] = sanitize_dir_name(entity_data["name"])
 
-    # Render the template JSON structure
+    # Render the template JSON structure.
     rendered_json_str = template_obj.render(**entity_data)
     structure = json.loads(rendered_json_str)
 
-    # Uncomment and use the following line if you want to actually create the structure on disk.
     full_path = create_structure_recursive(structure, entity_data, parent_path)
     entity_data["final_path"] = str(full_path)
 
@@ -159,11 +194,7 @@ def create_folder_structure(
 
 def create_structure_recursive(structure: dict, context: dict, base_path: Path) -> Path:
     """
-    Recursively create a folder/file structure described by the rendered template JSON.
-    Ensures that numeric prefixes are properly applied.
-    
-    Returns:
-      Path: Full path of the top-level folder or file created.
+    Recursively create the folder/file structure described by the rendered JSON.
     """
     if not isinstance(base_path, Path):
         base_path = Path(base_path).expanduser()
@@ -171,11 +202,10 @@ def create_structure_recursive(structure: dict, context: dict, base_path: Path) 
     if "folder" in structure:
         folder_name_expr = structure["folder"]
         folder_name_rendered = render_expression(folder_name_expr, context)
-        # Folders are sanitized
         folder_name = sanitize_dir_name(folder_name_rendered)
 
         top_dir = base_path / folder_name
-        top_dir.mkdir(parents=True, exist_ok=True)
+        #top_dir.mkdir(parents=True, exist_ok=True) # <-- uncomment
 
         for subf in structure.get("subfolders", []):
             create_structure_recursive(subf, context, top_dir)
@@ -185,112 +215,134 @@ def create_structure_recursive(structure: dict, context: dict, base_path: Path) 
             if not file_name_expr:
                 continue
             file_name_rendered = render_expression(file_name_expr, context)
-            # SKIP sanitizing here so that "05_Lesson_E.py" retains the dot
+            # Do not re-sanitize to preserve the extension.
             file_name = file_name_rendered
-            (top_dir / file_name).touch()
+            #(top_dir / file_name).touch() # <-- Uncomment
 
         return top_dir
 
     elif "file" in structure:
         file_name_expr = structure["file"]
         file_name_rendered = render_expression(file_name_expr, context)
-        # SKIP sanitizing here
         file_name = file_name_rendered
 
         file_path = base_path / file_name
         file_path.parent.mkdir(parents=True, exist_ok=True)
-        file_path.touch()
+        # file_path.touch() # <-- Uncomment
         return file_path
 
     else:
         raise ValueError("Invalid structure: must contain 'folder' or 'file' key.")
+
+
 if __name__ == "__main__":
     import os
     import json
     from dotenv import load_dotenv
     from pathlib import Path
 
-    # Load environment variables from the .env file located in the same directory.
+    # Load environment variables from the .env file.
     env_path = os.path.join(os.path.dirname(__file__), ".env")
     load_dotenv(dotenv_path=env_path)
 
     raw_templates_dir = os.environ.get("JINJA_TEMPLATES_PATH", str(Path.home() / ".incept" / "templates"))
     templates_dir = Path(os.path.expandvars(raw_templates_dir)).expanduser()
-    
-    payload_file = os.path.join(os.path.expanduser("~"), ".incept", "payload", "lessons.json")
-    if not os.path.exists(payload_file):
-        print(f"Payload file not found: {payload_file}")
-        exit(1)
-    
-    with open(payload_file, "r") as f:
-        payload_data = json.load(f)
-    
-    try:
-        course = payload_data["courses"][0]         # a dict representing a course
-        chapter = course["chapters"][0]              # a dict representing a chapter
-        lessons = chapter.get("lessons")             # a list of lesson dicts (or a single dict)
-    except (KeyError, IndexError):
-        print("Invalid payload structure.")
-        exit(1)
-    
-    # --- Determine the chapter base path ---
-    chapter_raw_path = chapter.get("path")
-    if chapter_raw_path:
-        chapter_path = Path(os.path.expandvars(chapter_raw_path)).expanduser()
-    else:
-        env_course_folder = os.environ.get("COURSE_FOLDER_PATH")
-        if env_course_folder and os.path.isdir(os.path.expandvars(env_course_folder)):
-            chapter_path = Path(os.path.expandvars(env_course_folder)).expanduser() / sanitize_dir_name(chapter["name"])
-        else:
-            chapter_path = Path.home() / "Documents" / sanitize_dir_name(chapter["name"])
-    
-    # Compute the starting prefix ONCE before the loop.
-    lessons_dir = chapter_path
-    current_prefix = int(get_next_numeric_prefix(lessons_dir, ".py"))  # Start from next available number
-    
-    results = []
-    for lesson in lessons if isinstance(lessons, list) else [lessons]:
-        lesson["type"] = ["Lesson"]
-        lesson_context = lesson.copy()
-    
-        # Set prefix and sanitized lesson name BEFORE processing lesson path.
-        lesson_context["lesson_prefix"] = f"{current_prefix:02d}"  # Ensure prefix is 2-digit formatted
-        current_prefix += 1
-        lesson_context["lesson_name"] = sanitize_dir_name(lesson["name"])
-        lesson_context["ext"] = "py"  # File extension passed into the context
 
-        # Inject the chapter_path into the context for rendering dynamic expressions.
-        # This ensures that in a lesson path like "{{ chapter_path }}/lessons/{{ jinja_rendered_root }}",
-        # the token "{{ chapter_path }}" is correctly replaced.
-        lesson_context["parent_path"] = str(lessons_dir)
-        # Set jinja_rendered_root to a default value (empty string) as it's not used for actual rendering.
-        lesson_context["jinja_rendered_root"] = ""
-    
-        # --- Process lesson path override if present ---
-        if lesson.get("path"):
-            lesson_path_str = lesson["path"]
-            if "{{" in lesson_path_str and "}}" in lesson_path_str:
-                # Render the dynamic expression (which may include chapter_path and jinja_rendered_root tokens)
-                rendered_path = render_expression(lesson_path_str, lesson_context)
-                lesson_context["parent_path"] = Path(os.path.expandvars(rendered_path)).expanduser()
+    def text_folder_creation():
+
+        payload_file = os.path.join(os.path.expanduser("~"), ".incept", "payload", "lessons.json")
+        if not os.path.exists(payload_file):
+            print(f"Payload file not found: {payload_file}")
+            exit(1)
+
+        with open(payload_file, "r") as f:
+            payload_data = json.load(f)
+
+        try:
+            course = payload_data["courses"][0]         # a dict representing a course
+            chapter = course["chapters"][0]              # a dict representing a chapter
+            lessons = chapter.get("lessons")             # a list of lesson dicts (or a single dict)
+        except (KeyError, IndexError):
+            print("Invalid payload structure.")
+            exit(1)
+
+        # --- Determine the chapter base path ---
+        chapter_raw_path = chapter.get("path")
+        if chapter_raw_path:
+            chapter_path = Path(os.path.expandvars(chapter_raw_path)).expanduser()
+        else:
+            env_course_folder = os.environ.get("COURSE_FOLDER_PATH")
+            if env_course_folder and os.path.isdir(os.path.expandvars(env_course_folder)):
+                chapter_path = Path(os.path.expandvars(env_course_folder)).expanduser() / sanitize_dir_name(chapter["name"])
             else:
-                # Use the literal path provided in the payload
-                lesson_context["parent_path"] = Path(os.path.expandvars(lesson_path_str)).expanduser()
-        else:
-            # Fallback to the chapter base path.
-            lesson_context["parent_path"] = chapter_path
+                chapter_path = Path.home() / "Documents" / sanitize_dir_name(chapter["name"])
 
-        # Call create_folder_structure; it will use lesson_context["parent_path"]
-        lesson_result = create_folder_structure(
-            entity_data=lesson_context,
-            template_type="lesson",
-            template_variant="default",
-            templates_dir=templates_dir,
-            parent_path=lesson_context["parent_path"]
-        )
+        # Compute the starting prefix once before the loop.
+        lessons_dir = chapter_path
+        current_prefix = int(get_next_numeric_prefix(lessons_dir, ".py"))  # Start from next available number
+
+        results = []
+        for lesson in lessons if isinstance(lessons, list) else [lessons]:
+            lesson["type"] = ["Lesson"]
+            lesson_context = lesson.copy()
+
+            # Set prefix and sanitized lesson name before processing.
+            lesson_context["lesson_prefix"] = f"{current_prefix:02d}"
+            current_prefix += 1
+            lesson_context["lesson_name"] = sanitize_dir_name(lesson["name"])
+            lesson_context["ext"] = "py"  # File extension
+
+            # Process lesson path override: if a literal "path" is provided, use it.
+            if lesson.get("path"):
+                lesson_context["parent_path"] = Path(os.path.expandvars(lesson["path"])).expanduser()
+            else:
+                lesson_context["parent_path"] = chapter_path
+
+            # --- Subfolder Logic ---
+            # We want to decide whether to place the lesson in a child folder.
+            # We use:
+            #   - enable_subfolder (boolean flag, default True)
+            #   - child_folder_name: if not present in lesson_context,
+            #       we try to extract it from the parent (chapter) template of the same variant.
+            enable_subfolder = lesson_context.get("enable_subfolder", True)
+            if enable_subfolder:
+                child_folder = lesson_context.get("child_folder_name")
+                if not child_folder:
+                    # Assume the lesson uses the same variant as its template.
+                    lesson_variant = lesson_context.get("template", "default")
+                    # Attempt to load the value from the parent chapter template.
+                    child_folder = get_child_template_folder_from_parent("chapter", lesson_variant, templates_dir)
+                    if not child_folder:
+                        child_folder = "lessons"  # Fallback default.
+                lesson_context["parent_path"] = Path(lesson_context["parent_path"]) / child_folder
+            else:
+                lesson_context["parent_path"] = Path(lesson_context["parent_path"])
+
+            # Create the folder structure using the lesson template.
+            lesson_result = create_folder_structure(
+                entity_data=lesson_context,
+                template_type="lesson",
+                template_variant=lesson_context.get("template", "default"),
+                templates_dir=templates_dir,
+                parent_path=lesson_context["parent_path"]
+            )
+
+            lesson["final_path"] = lesson_result["full_path"]
+            results.append(lesson_result)
+
+        print("Rendered and Created Lesson Structures:")
+        print(json.dumps([{k: str(v) if isinstance(v, Path) else v for k, v in r.items()} for r in results], indent=2))
+
+    def test_get_child_template():
+        result = get_child_template_folder_from_parent(template_type='chapter', variant='default', templates_dir=templates_dir)
+        print("Extracted child_folder_name:", result)
     
-        lesson["final_path"] = lesson_result["full_path"]
-        results.append(lesson_result)
+    # Call the test functions:
+    # test_get_child_template()
+    text_folder_creation()  # Uncomment this if you want to test folder creation as well.
+
+
     
-    print("Rendered and Created Lesson Structures:")
-    print(json.dumps([{k: str(v) if isinstance(v, Path) else v for k, v in r.items()} for r in results], indent=2))
+
+
+
