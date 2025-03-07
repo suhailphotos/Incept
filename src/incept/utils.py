@@ -7,6 +7,7 @@ import json
 import jinja2
 from pathlib import Path
 from platformdirs import user_documents_dir
+from jinja2 import Environment, meta, nodes
 from typing import Optional
 
 
@@ -121,6 +122,20 @@ def get_child_template_folder_from_parent(template_type: str, variant: str, temp
                 return node.node.value
     return None
 
+def template_references_variable(template_path: Path, variable_name: str) -> bool:
+    """
+    Scan the given Jinja2 template to see if it references the given variable_name.
+    Returns True if found, False otherwise.
+    """
+    if not template_path.exists():
+        return False
+
+    source = template_path.read_text(encoding="utf-8")
+    env = Environment()
+    parsed_content = env.parse(source)
+    # meta.find_undeclared_variables(...) returns a set of variable names used in the template
+    referenced = meta.find_undeclared_variables(parsed_content)
+    return (variable_name in referenced)
 
 def render_expression(expr: str, context: dict) -> str:
     """
@@ -141,6 +156,11 @@ def create_folder_structure(
 ) -> dict:
     """
     Create a folder/file structure on disk from a Jinja2 template.
+    
+    The behavior regarding numeric prefixing is governed by the template.
+    If the template contains:
+       {% set use_numeric_prefix = true %}
+    then numeric prefixing is enabled; otherwise it is not applied.
     """
     if templates_dir is None:
         templates_dir = Path(os.environ.get("JINJA_TEMPLATES_PATH", str(Path.home() / ".incept" / "templates")))
@@ -162,6 +182,21 @@ def create_folder_structure(
     if not template_path.exists():
         raise FileNotFoundError(f"Template file {template_path} not found.")
 
+    # --- Detect whether the template uses a numeric prefix ---
+    # We'll parse the template source and look for an assignment to "use_numeric_prefix"
+    source = template_path.read_text(encoding="utf-8")
+    env = Environment()
+    parsed_content = env.parse(source)
+    use_numeric_prefix = False
+    # Look for assignments of the form: {% set use_numeric_prefix = True %}
+    for node in parsed_content.find_all(jinja2.nodes.Assign):
+        if isinstance(node.target, jinja2.nodes.Name) and node.target.name == "use_numeric_prefix":
+            if isinstance(node.node, jinja2.nodes.Const):
+                use_numeric_prefix = bool(node.node.value)
+                break
+    entity_data["template_uses_prefix"] = use_numeric_prefix
+    # -----------------------------------------------------------
+
     j2_env = jinja2.Environment(loader=jinja2.FileSystemLoader(str(templates_dir)), autoescape=False)
     template_obj = j2_env.get_template(j2_filename)
 
@@ -175,7 +210,7 @@ def create_folder_structure(
     else:
         parent_path = Path(os.path.expandvars(str(parent_path))).expanduser()
 
-    # Sanitize the entity name used for folder/file naming.
+    # Sanitize the entity name (for course/chapter/lesson)
     name_key = f"{template_type}_name"
     entity_data[name_key] = sanitize_dir_name(entity_data["name"])
 
@@ -183,6 +218,7 @@ def create_folder_structure(
     rendered_json_str = template_obj.render(**entity_data)
     structure = json.loads(rendered_json_str)
 
+    # Now call create_structure_recursive (which will use the "template_uses_prefix" flag).
     full_path = create_structure_recursive(structure, entity_data, parent_path)
     entity_data["final_path"] = str(full_path)
 
@@ -195,17 +231,28 @@ def create_folder_structure(
 def create_structure_recursive(structure: dict, context: dict, base_path: Path) -> Path:
     """
     Recursively create the folder/file structure described by the rendered JSON.
+    
+    If context["template_uses_prefix"] is True (set by the template), then the numeric prefix is 
+    assumed to have been provided by the template. Otherwise, the code applies a numeric prefix.
     """
     if not isinstance(base_path, Path):
         base_path = Path(base_path).expanduser()
+
+    # Read the flag from context:
+    uses_prefix = context.get("template_uses_prefix", False)
 
     if "folder" in structure:
         folder_name_expr = structure["folder"]
         folder_name_rendered = render_expression(folder_name_expr, context)
         folder_name = sanitize_dir_name(folder_name_rendered)
 
+        # If the template does NOT use a prefix, then we apply one here.
+        if uses_prefix:
+            prefix = get_next_numeric_prefix(base_path)
+            folder_name = f"{prefix}_{folder_name}"
+        # Else, assume the template already included the prefix.
         top_dir = base_path / folder_name
-        #top_dir.mkdir(parents=True, exist_ok=True) # <-- uncomment
+        top_dir.mkdir(parents=True, exist_ok=True)
 
         for subf in structure.get("subfolders", []):
             create_structure_recursive(subf, context, top_dir)
@@ -215,25 +262,27 @@ def create_structure_recursive(structure: dict, context: dict, base_path: Path) 
             if not file_name_expr:
                 continue
             file_name_rendered = render_expression(file_name_expr, context)
-            # Do not re-sanitize to preserve the extension.
-            file_name = file_name_rendered
-            #(top_dir / file_name).touch() # <-- Uncomment
-
+            # If the template does NOT use a prefix, apply one for files as well.
+            if uses_prefix:
+                prefix = get_next_numeric_prefix(top_dir, file_extension=".py")
+                file_name_rendered = f"{prefix}_{file_name_rendered}"
+            # Otherwise, leave as rendered.
+            (top_dir / file_name_rendered).touch()
         return top_dir
 
     elif "file" in structure:
         file_name_expr = structure["file"]
         file_name_rendered = render_expression(file_name_expr, context)
-        file_name = file_name_rendered
-
-        file_path = base_path / file_name
+        if uses_prefix:
+            prefix = get_next_numeric_prefix(base_path, file_extension=".py")
+            file_name_rendered = f"{prefix}_{file_name_rendered}"
+        file_path = base_path / file_name_rendered
         file_path.parent.mkdir(parents=True, exist_ok=True)
-        # file_path.touch() # <-- Uncomment
+        file_path.touch()
         return file_path
 
     else:
         raise ValueError("Invalid structure: must contain 'folder' or 'file' key.")
-
 
 if __name__ == "__main__":
     import os
@@ -241,7 +290,7 @@ if __name__ == "__main__":
     from dotenv import load_dotenv
     from pathlib import Path
 
-    # Load environment variables from the .env file.
+    # Load environment variables.
     env_path = os.path.join(os.path.dirname(__file__), ".env")
     load_dotenv(dotenv_path=env_path)
 
@@ -277,18 +326,10 @@ if __name__ == "__main__":
             else:
                 chapter_path = Path.home() / "Documents" / sanitize_dir_name(chapter["name"])
 
-        # Compute the starting prefix once before the loop.
-        lessons_dir = chapter_path
-        current_prefix = int(get_next_numeric_prefix(lessons_dir, ".py"))  # Start from next available number
-
         results = []
         for lesson in lessons if isinstance(lessons, list) else [lessons]:
             lesson["type"] = ["Lesson"]
             lesson_context = lesson.copy()
-
-            # Set prefix and sanitized lesson name before processing.
-            lesson_context["lesson_prefix"] = f"{current_prefix:02d}"
-            current_prefix += 1
             lesson_context["lesson_name"] = sanitize_dir_name(lesson["name"])
             lesson_context["ext"] = "py"  # File extension
 
