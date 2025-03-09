@@ -120,8 +120,10 @@ def create_structure_recursive(structure: dict, context: dict, base_path: Path) 
 
     We do not do any automatic prefixing here; we rely on the template to produce the final names.
     """
+    # If the structure is empty or not a dict, simply return the base_path.
+    if not structure or not isinstance(structure, dict):
+        return base_path
 
-    # --- Folder creation ---
     if "folder" in structure:
         folder_name_expr = structure["folder"]
         folder_name_rendered = render_expression(folder_name_expr, context)
@@ -130,11 +132,13 @@ def create_structure_recursive(structure: dict, context: dict, base_path: Path) 
         top_dir = base_path / folder_name
         top_dir.mkdir(parents=True, exist_ok=True)
 
-        # Recurse into subfolders
+        # Recurse into subfolders. Skip any empty dictionaries or those without 'folder' or 'file' keys.
         for subf in structure.get("subfolders", []):
+            if not subf or not ("folder" in subf or "file" in subf):
+                continue
             create_structure_recursive(subf, context, top_dir)
 
-        # Handle files inside this folder
+        # Handle files inside this folder.
         for file_item in structure.get("files", []):
             file_name_expr = file_item.get("file")
             if not file_name_expr:
@@ -145,7 +149,6 @@ def create_structure_recursive(structure: dict, context: dict, base_path: Path) 
 
         return top_dir
 
-    # --- File creation ---
     elif "file" in structure:
         file_name_expr = structure["file"]
         file_name_rendered = render_expression(file_name_expr, context)
@@ -157,7 +160,6 @@ def create_structure_recursive(structure: dict, context: dict, base_path: Path) 
 
     else:
         raise ValueError("Invalid structure: must contain 'folder' or 'file' key.")
-
 
 def create_folder_structure(
     entity_data: dict,
@@ -216,46 +218,28 @@ def expand_or_preserve_env_vars(
 ) -> Tuple[Path, str]:
     """
     Takes a potential 'raw_path' that may contain environment variables like '$ANYVAR/some/dir'.
-    1) If 'raw_path' is given, we substitute the environment variables (using _substitute_env_vars)
-       and then fully expand it (using os.path.expandvars) for actual disk usage.
-    2) Meanwhile, the final_path_str we store in JSON keeps '$VAR' if keep_env_in_path is True.
-    3) If 'raw_path' is None, fallback to 'parent_path' (processed similarly) or the user's home/Documents.
+    1) If 'raw_path' is provided, we fully expand it using os.path.expandvars for disk usage.
+    2) Meanwhile, final_path_str retains the original (with $VAR) if keep_env_in_path is True.
+    3) If raw_path is None, we fallback to parent_path (processed similarly) or to ~/Documents.
     Returns (expanded_path, final_path_str).
     """
     if raw_path:
         final_path_str = raw_path if keep_env_in_path else os.path.expandvars(raw_path)
-        # Substitute using our helper:
-        substituted = _substitute_env_vars(raw_path)
-        # Fully expand the substituted string.
-        fully_expanded = os.path.expandvars(substituted)
-        expanded_path = Path(fully_expanded).expanduser()
+        # Fully expand raw_path using os.path.expandvars
+        expanded = os.path.expandvars(raw_path)
+        expanded_path = Path(expanded).expanduser()
         return expanded_path, final_path_str
     else:
         if parent_path is not None:
             if isinstance(parent_path, str):
                 final_path_str = parent_path if keep_env_in_path else os.path.expandvars(parent_path)
-                substituted = _substitute_env_vars(parent_path)
-                fully_expanded = os.path.expandvars(substituted)
-                expanded_path = Path(fully_expanded).expanduser()
+                expanded = os.path.expandvars(parent_path)
+                expanded_path = Path(expanded).expanduser()
                 return expanded_path, final_path_str
             else:
                 return parent_path, str(parent_path)
         default_fallback = Path.home() / "Documents"
         return default_fallback, str(default_fallback)
-
-
-def _substitute_env_vars(path_str: str) -> str:
-    """
-    Internal helper that replaces any '$VAR' with os.environ['VAR'] if it exists,
-    else leaves it empty.
-    Example: 'some/$DROPBOX/path' -> 'some/<expanded>/path'
-    """
-    pattern = re.compile(r'(\$[A-Za-z0-9_]+)')
-    def replacer(match):
-        var_name = match.group(1)[1:]  # remove the '$'
-        # If the variable is not set, you may decide to return an empty string or a default.
-        return os.environ.get(var_name, "")
-    return pattern.sub(replacer, path_str)
 
 
 ##########################################
@@ -270,22 +254,26 @@ def create_courses(
     parent_path: Optional[Path] = None
 ):
     """
-    Create folder structure (optionally) for a list of courses.
+    Create folder structure for a list of courses.
     Injects 'path' back into each course dict.
-    Then calls `create_chapters` for any sub-chapters present.
+    Then calls create_chapters for any sub-chapters present.
     """
     template_manager = TemplateManager(templates_dir=templates_dir)
+    expanded_parent, raw_parent = expand_or_preserve_env_vars(raw_path=None, parent_path=parent_path, keep_env_in_path=keep_env_in_path)
 
     for course_dict in courses:
         raw_course_path = course_dict.get("path")
-        expanded_course_path, final_course_str = expand_or_preserve_env_vars(
-            raw_course_path,
-            parent_path,
-            keep_env_in_path
-        )
+        expanded_course_path, final_course_str = expand_or_preserve_env_vars(raw_course_path, raw_parent, keep_env_in_path)
 
         if create_folders:
-            context = {"type": "course", "name": course_dict["name"]}
+            base_prefix = int(get_next_numeric_prefix(expanded_course_path))
+            prefix = f"{base_prefix:02d}"
+            context = {
+                "numeric_prefix": prefix,
+                "course_name": course_dict["name"],
+                "name": course_dict["name"]
+            }
+
             result = create_folder_structure(
                 entity_data=context,
                 template_type="course",
@@ -294,22 +282,18 @@ def create_courses(
                 parent_path=expanded_course_path
             )
             final_disk_path = Path(result["full_path"])
-            # The actual folder name (may have numeric prefixes):
-            final_folder_name = final_disk_path.name
-            course_dict["path"] = str(Path(final_course_str) / final_folder_name)
+            course_dict["path"] = str(Path(final_course_str) / final_disk_path.name)
         else:
             course_dict["path"] = final_course_str
 
-        # Now process chapters if present
         if "chapters" in course_dict and isinstance(course_dict["chapters"], list):
             create_chapters(
                 course_dict["chapters"],
                 templates_dir=templates_dir,
                 create_folders=create_folders,
                 keep_env_in_path=keep_env_in_path,
-                parent_path=Path(course_dict["path"])
+                parent_path=course_dict["path"]
             )
-
 
 def create_chapters(
     chapters: List[Dict[str, Any]],
@@ -318,30 +302,27 @@ def create_chapters(
     keep_env_in_path: bool = True,
     parent_path: Optional[Path] = None
 ):
+    """
+    Create folder structure for a list of chapters.
+    Then calls create_lessons for any sub-lessons present.
+    """
     template_manager = TemplateManager(templates_dir=templates_dir)
+    expanded_parent, raw_parent = expand_or_preserve_env_vars(raw_path=None, parent_path=parent_path, keep_env_in_path=keep_env_in_path)
 
-    for idx, chapter_dict in enumerate(chapters):
+    for chapter_dict in chapters:
         raw_chapter_path = chapter_dict.get("path")
-        expanded_chapter_path, final_chapter_str = expand_or_preserve_env_vars(
-            raw_chapter_path,
-            parent_path,
-            keep_env_in_path
-        )
-    
+        expanded_chapter_path, final_chapter_str = expand_or_preserve_env_vars(raw_chapter_path, raw_parent, keep_env_in_path)
+
         if create_folders:
-            # Compute the base prefix from the destination folder.
-            # For example, if there are 5 chapters already, this returns "06" as an integer value 6.
             base_prefix = int(get_next_numeric_prefix(expanded_chapter_path))
-            # Add the current payload index offset.
-            prefix = f"{base_prefix + idx:02d}"
-            
+            prefix = f"{base_prefix:02d}"
             context = {
-                "numeric_prefix": prefix,      # e.g. "06", "07", ...
+                "numeric_prefix": prefix,
                 "chapter_name": chapter_dict["name"],
                 "lessons": chapter_dict.get("lessons", []),
                 "name": chapter_dict["name"]
             }
-    
+
             result = create_folder_structure(
                 entity_data=context,
                 template_type="chapter",
@@ -350,12 +331,10 @@ def create_chapters(
                 parent_path=expanded_chapter_path
             )
             final_disk_path = Path(result["full_path"])
-            final_folder_name = final_disk_path.name
-            chapter_dict["path"] = str(Path(final_chapter_str) / final_folder_name)
+            chapter_dict["path"] = str(Path(final_chapter_str) / final_disk_path.name)
         else:
             chapter_dict["path"] = final_chapter_str
-    
-        # Process lessons if present
+
         if "lessons" in chapter_dict:
             lessons = chapter_dict["lessons"]
             if not isinstance(lessons, list):
@@ -365,9 +344,9 @@ def create_chapters(
                 templates_dir=templates_dir,
                 create_folders=create_folders,
                 keep_env_in_path=keep_env_in_path,
-                parent_path=Path(chapter_dict["path"])
+                parent_path=chapter_dict["path"]
             )
-            chapter_dict["lessons"] = lessons  # In case we reassign.
+            chapter_dict["lessons"] = lessons
 
 def create_lessons(
     lessons: List[Dict[str, Any]],
@@ -376,42 +355,35 @@ def create_lessons(
     keep_env_in_path: bool = True,
     parent_path: Optional[Path] = None
 ):
+    """
+    Create folder/file structure for a list of lessons.
+    """
     template_manager = TemplateManager(templates_dir=templates_dir)
-
-    if parent_path is None:
-        parent_path = Path.home() / "Documents"
-    else:
-        parent_path = Path(parent_path).expanduser()
+    expanded_parent, raw_parent = expand_or_preserve_env_vars(raw_path=None, parent_path=parent_path, keep_env_in_path=keep_env_in_path)
 
     for idx, lesson_dict in enumerate(lessons):
         raw_lesson_path = lesson_dict.get("path")
-        expanded_lesson_path, final_lesson_str = expand_or_preserve_env_vars(
-            raw_lesson_path,
-            parent_path,
-            keep_env_in_path
-        )
-    
+        expanded_lesson_path, final_lesson_str = expand_or_preserve_env_vars(raw_lesson_path, raw_parent, keep_env_in_path)
+
         if create_folders:
-            # If a subfolder is enabled, add it first.
             enable_subfolder = lesson_dict.get("enable_subfolder", True)
             if enable_subfolder:
                 child_folder_name = lesson_dict.get("child_folder_name") or "lessons"
                 expanded_lesson_path = expanded_lesson_path / child_folder_name
                 final_lesson_str = str(Path(final_lesson_str) / child_folder_name)
-    
-            # Compute the base prefix from the destination (final) folder.
-            base_prefix = int(get_next_numeric_prefix(expanded_lesson_path))
+
+            ext = f".{lesson_dict.get('ext', 'md')}"
+            base_prefix = int(get_next_numeric_prefix(expanded_lesson_path, file_extension=ext))
             print(f'Expanded Lesson Path: {expanded_lesson_path}, base prefix: {base_prefix}  final_lesson_string: {final_lesson_str}')
-            # Add the index offset for this lesson.
-            prefix = f"{base_prefix + idx:02d}"
-    
+            prefix = f"{base_prefix:02d}"
+
             lesson_context = {
                 "numeric_prefix": prefix,
                 "lesson_name": lesson_dict["name"],
                 "ext": lesson_dict.get("ext", "md"),
                 "name": lesson_dict["name"]
             }
-    
+
             result = create_folder_structure(
                 entity_data=lesson_context,
                 template_type="lesson",
@@ -611,14 +583,60 @@ if __name__ == "__main__":
         print("Chapters after processing:")
         print(json.dumps(chapters, indent=2))
 
+    def test_create_courses():
+        import os, json
+        from pathlib import Path
+    
+        payload_file = os.path.join(os.path.expanduser("~"), ".incept", "payload", "full_courses.json")
+        if not os.path.exists(payload_file):
+            print(f"Payload file not found: {payload_file}")
+            return
+    
+        with open(payload_file, "r", encoding="utf-8") as f:
+            payload_data = json.load(f)
+    
+        try:
+            courses = payload_data["courses"]
+        except (KeyError, IndexError) as e:
+            print("Invalid payload structure:", e)
+            return
+    
+        # Ensure each course has a 'path'. If not, assign a default.
+        for course in courses:
+            if "path" not in course or not course["path"]:
+                env_course_folder = os.environ.get("COURSE_FOLDER_PATH")
+                if env_course_folder and os.path.isdir(os.path.expandvars(env_course_folder)):
+                    course["path"] = env_course_folder
+                else:
+                    course["path"] = str(Path.home() / "Documents")
+    
+        # Call create_courses with create_folders=True.
+        # The parent_path here is left as None so that create_courses uses its internal fallback.
+        create_courses(
+            courses,
+            templates_dir=templates_dir,  # assumes templates_dir is defined globally (as in your main block)
+            create_folders=True,
+            keep_env_in_path=True,
+            parent_path=None
+        )
+    
+        # Print the modified courses with updated "path" fields.
+        print("Courses after processing:")
+        print(json.dumps(courses, indent=2))
+
+
 
     # Uncomment the next line to test environment variable substitution.
-    test_substitute_env_vars()
+    # test_substitute_env_vars()
 
     # Run the test for creating lessons.
     # test_create_lessons()
 
     # Run the test for creating chapters.
     # test_create_chapters()
+
+    # Run the test for creating courses.
+    test_create_courses()
+
  
 
