@@ -30,11 +30,24 @@ def sanitize_dir_name(name: str) -> str:
     - Special characters (except `_`) are removed.
     - Ensures only **one** underscore (`_`) between words.
     """
-    name = re.sub(r"[^\w\s-]", "", name)  # Remove special characters except space & dash
-    name = name.replace("-", "_")         # Convert dashes to underscores
-    name = re.sub(r"\s+", "_", name)      # Convert spaces to underscores
-    name = re.sub(r"_+", "_", name)       # Remove multiple underscores
-    return name.strip("_")  # Remove leading/trailing underscores
+    # If there's a dot, assume it's a file with an extension.
+    if '.' in name:
+        base, ext = name.rsplit('.', 1)
+        # Sanitize the base name.
+        base = re.sub(r"[^\w\s-]", "", base)
+        base = base.replace("-", "_")
+        base = re.sub(r"\s+", "_", base)
+        base = re.sub(r"_+", "_", base)
+        base = base.strip("_")
+        # Return the sanitized base with the original extension.
+        return f"{base}.{ext}"
+    else:
+        # Otherwise, sanitize normally.
+        name = re.sub(r"[^\w\s-]", "", name)
+        name = name.replace("-", "_")
+        name = re.sub(r"\s+", "_", name)
+        name = re.sub(r"_+", "_", name)
+        return name.strip("_")
 
 
 def normalize_placeholder(placeholder: str) -> str:
@@ -100,26 +113,19 @@ def render_expression(expr: str, context: dict) -> str:
 
 def create_structure_recursive(structure: dict, context: dict, base_path: Path) -> Path:
     """
-    Recursively create the folder/file structure described by the rendered JSON.
-    
-    If context["template_uses_prefix"] is True, we assume the template is manually
-    handling numeric prefixes. Otherwise, we automatically add them.
+    Recursively create the folder/file structure described by the already-rendered JSON.
+    - 'structure' is a dict with either "folder" or "file" plus optional "subfolders" or "files".
+    - 'context' is any data you passed to the Jinja template (e.g. numeric_prefix, chapter_name, etc.).
+    - 'base_path' is where we create the current folder/file.
+
+    We do not do any automatic prefixing here; we rely on the template to produce the final names.
     """
-    if not isinstance(base_path, Path):
-        base_path = Path(base_path).expanduser()
 
-    uses_prefix = context.get("template_uses_prefix", False)
-
-    # Folder creation
+    # --- Folder creation ---
     if "folder" in structure:
         folder_name_expr = structure["folder"]
         folder_name_rendered = render_expression(folder_name_expr, context)
         folder_name = sanitize_dir_name(folder_name_rendered)
-
-        if uses_prefix:
-            # If template is handling numeric prefix itself, we get the next prefix here:
-            prefix = get_next_numeric_prefix(base_path)
-            folder_name = f"{prefix}_{folder_name}"
 
         top_dir = base_path / folder_name
         top_dir.mkdir(parents=True, exist_ok=True)
@@ -134,20 +140,16 @@ def create_structure_recursive(structure: dict, context: dict, base_path: Path) 
             if not file_name_expr:
                 continue
             file_name_rendered = render_expression(file_name_expr, context)
-            if uses_prefix:
-                # Example: only prefix certain file types, or all
-                prefix = get_next_numeric_prefix(top_dir, file_extension=".py")
-                file_name_rendered = f"{prefix}_{file_name_rendered}"
+            file_name_rendered = sanitize_dir_name(file_name_rendered)
             (top_dir / file_name_rendered).touch()
+
         return top_dir
 
-    # File creation (if top-level is a single file)
+    # --- File creation ---
     elif "file" in structure:
         file_name_expr = structure["file"]
         file_name_rendered = render_expression(file_name_expr, context)
-        if uses_prefix:
-            prefix = get_next_numeric_prefix(base_path, file_extension=".py")
-            file_name_rendered = f"{prefix}_{file_name_rendered}"
+        file_name_rendered = sanitize_dir_name(file_name_rendered)
         file_path = base_path / file_name_rendered
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.touch()
@@ -164,27 +166,12 @@ def create_folder_structure(
     templates_dir: Path = None,
     parent_path: Path = None
 ) -> dict:
-    """
-    Create a folder/file structure on disk from a Jinja2-based JSON template.
-    
-    1. Loads the template from templates.json using TemplateManager.
-    2. Detects if 'use_numeric_prefix' is set (True/False).
-    3. Renders the JSON structure, then calls create_structure_recursive().
-    """
     if templates_dir is None:
-        # Default to user home .incept/templates or an ENV override
         raw_dir = os.environ.get("JINJA_TEMPLATES_PATH", str(Path.home() / ".incept" / "templates"))
         templates_dir = Path(os.path.expandvars(raw_dir)).expanduser()
 
-    # Instantiate TemplateManager to load and parse templates
     template_manager = TemplateManager(templates_dir=templates_dir)
-    
-    # 1. Get the path to the desired .j2 template
     template_path = template_manager.get_template_path(template_type, template_variant)
-    
-    # 2. Detect use_numeric_prefix from the template
-    use_numeric_prefix = bool(template_manager.get_variable_value(template_type, template_variant, "use_numeric_prefix"))
-    entity_data["template_uses_prefix"] = use_numeric_prefix
 
     # Set up Jinja environment to actually render the JSON structure
     j2_env = jinja2.Environment(loader=jinja2.FileSystemLoader(str(templates_dir)), autoescape=False)
@@ -200,11 +187,11 @@ def create_folder_structure(
     else:
         parent_path = Path(os.path.expandvars(str(parent_path))).expanduser()
 
-    # Sanitize the primary name field: e.g. "course_name" or "chapter_name" or "lesson_name"
+    # e.g. "name" → "chapter_name" or "lesson_name"
     name_key = f"{template_type}_name"
     entity_data[name_key] = sanitize_dir_name(entity_data["name"])
 
-    # 3. Render the JSON structure
+    # 3. Render the JSON structure from the template
     rendered_json_str = template_obj.render(**entity_data)
     structure = json.loads(rendered_json_str)
 
@@ -229,26 +216,27 @@ def expand_or_preserve_env_vars(
 ) -> Tuple[Path, str]:
     """
     Takes a potential 'raw_path' that may contain environment variables like '$ANYVAR/some/dir'.
-    1) If 'raw_path' is given, we do a partial expansion for actual disk usage:
-       - Find each '$XYZ' pattern, see if there's an os.environ['XYZ'].
-       - If so, substitute that in a temporary string for actual creation.
-    2) Meanwhile, the final_path_str we store in JSON keeps '$XYZ' if keep_env_in_path=True.
-    3) If 'raw_path' is None, fallback to 'parent_path' or the user's home/Documents.
+    1) If 'raw_path' is given, we substitute the environment variables (using _substitute_env_vars)
+       and then fully expand it (using os.path.expandvars) for actual disk usage.
+    2) Meanwhile, the final_path_str we store in JSON keeps '$VAR' if keep_env_in_path is True.
+    3) If 'raw_path' is None, fallback to 'parent_path' (processed similarly) or the user's home/Documents.
     Returns (expanded_path, final_path_str).
     """
-
     if raw_path:
         final_path_str = raw_path if keep_env_in_path else os.path.expandvars(raw_path)
-        expanded_str = _substitute_env_vars(raw_path)
-        expanded_path = Path(os.path.expandvars(expanded_str)).expanduser()
+        # Substitute using our helper:
+        substituted = _substitute_env_vars(raw_path)
+        # Fully expand the substituted string.
+        fully_expanded = os.path.expandvars(substituted)
+        expanded_path = Path(fully_expanded).expanduser()
         return expanded_path, final_path_str
     else:
         if parent_path is not None:
-            # If parent_path is provided as a raw string, do similar processing.
             if isinstance(parent_path, str):
                 final_path_str = parent_path if keep_env_in_path else os.path.expandvars(parent_path)
-                expanded_str = _substitute_env_vars(parent_path)
-                expanded_path = Path(os.path.expandvars(expanded_str)).expanduser()
+                substituted = _substitute_env_vars(parent_path)
+                fully_expanded = os.path.expandvars(substituted)
+                expanded_path = Path(fully_expanded).expanduser()
                 return expanded_path, final_path_str
             else:
                 return parent_path, str(parent_path)
@@ -262,11 +250,11 @@ def _substitute_env_vars(path_str: str) -> str:
     else leaves it empty.
     Example: 'some/$DROPBOX/path' -> 'some/<expanded>/path'
     """
-    # Regex capturing $SOMETHING with letters, digits, underscore
     pattern = re.compile(r'(\$[A-Za-z0-9_]+)')
     def replacer(match):
-        var_name = match.group(1)[1:]  # remove '$'
-        return os.environ.get(var_name, "")  # if not found, blank
+        var_name = match.group(1)[1:]  # remove the '$'
+        # If the variable is not set, you may decide to return an empty string or a default.
+        return os.environ.get(var_name, "")
     return pattern.sub(replacer, path_str)
 
 
@@ -330,22 +318,30 @@ def create_chapters(
     keep_env_in_path: bool = True,
     parent_path: Optional[Path] = None
 ):
-    """
-    Create folder structure for a list of chapters.
-    Then calls `create_lessons` for any sub-lessons present.
-    """
     template_manager = TemplateManager(templates_dir=templates_dir)
 
-    for chapter_dict in chapters:
+    for idx, chapter_dict in enumerate(chapters):
         raw_chapter_path = chapter_dict.get("path")
         expanded_chapter_path, final_chapter_str = expand_or_preserve_env_vars(
             raw_chapter_path,
             parent_path,
             keep_env_in_path
         )
-
+    
         if create_folders:
-            context = {"type": "chapter", "name": chapter_dict["name"]}
+            # Compute the base prefix from the destination folder.
+            # For example, if there are 5 chapters already, this returns "06" as an integer value 6.
+            base_prefix = int(get_next_numeric_prefix(expanded_chapter_path))
+            # Add the current payload index offset.
+            prefix = f"{base_prefix + idx:02d}"
+            
+            context = {
+                "numeric_prefix": prefix,      # e.g. "06", "07", ...
+                "chapter_name": chapter_dict["name"],
+                "lessons": chapter_dict.get("lessons", []),
+                "name": chapter_dict["name"]
+            }
+    
             result = create_folder_structure(
                 entity_data=context,
                 template_type="chapter",
@@ -358,7 +354,7 @@ def create_chapters(
             chapter_dict["path"] = str(Path(final_chapter_str) / final_folder_name)
         else:
             chapter_dict["path"] = final_chapter_str
-
+    
         # Process lessons if present
         if "lessons" in chapter_dict:
             lessons = chapter_dict["lessons"]
@@ -373,7 +369,6 @@ def create_chapters(
             )
             chapter_dict["lessons"] = lessons  # In case we reassign.
 
-
 def create_lessons(
     lessons: List[Dict[str, Any]],
     templates_dir: Path,
@@ -381,41 +376,42 @@ def create_lessons(
     keep_env_in_path: bool = True,
     parent_path: Optional[Path] = None
 ):
-    """
-    Create folder structure for a list of lessons.
-    """
     template_manager = TemplateManager(templates_dir=templates_dir)
 
-    for lesson_dict in lessons:
+    if parent_path is None:
+        parent_path = Path.home() / "Documents"
+    else:
+        parent_path = Path(parent_path).expanduser()
+
+    for idx, lesson_dict in enumerate(lessons):
         raw_lesson_path = lesson_dict.get("path")
         expanded_lesson_path, final_lesson_str = expand_or_preserve_env_vars(
             raw_lesson_path,
             parent_path,
             keep_env_in_path
         )
-
+    
         if create_folders:
-            # Basic context for the lesson
-            lesson_context = {
-                "type": "lesson",
-                "name": lesson_dict["name"],
-                "ext": lesson_dict.get("ext", "py"),
-            }
-
-            # Subfolder logic if desired
+            # If a subfolder is enabled, add it first.
             enable_subfolder = lesson_dict.get("enable_subfolder", True)
             if enable_subfolder:
-                child_folder_name = lesson_dict.get("child_folder_name")
-                if not child_folder_name:
-                    # Possibly read from the parent template (chapter)
-                    variant = lesson_dict.get("template", "default")
-                    child_folder_name = template_manager.get_child_template_folder_from_parent("chapter", variant)
-                    if not child_folder_name:
-                        child_folder_name = "lessons"
-
+                child_folder_name = lesson_dict.get("child_folder_name") or "lessons"
                 expanded_lesson_path = expanded_lesson_path / child_folder_name
                 final_lesson_str = str(Path(final_lesson_str) / child_folder_name)
-
+    
+            # Compute the base prefix from the destination (final) folder.
+            base_prefix = int(get_next_numeric_prefix(expanded_lesson_path))
+            print(f'Expanded Lesson Path: {expanded_lesson_path}, base prefix: {base_prefix}  final_lesson_string: {final_lesson_str}')
+            # Add the index offset for this lesson.
+            prefix = f"{base_prefix + idx:02d}"
+    
+            lesson_context = {
+                "numeric_prefix": prefix,
+                "lesson_name": lesson_dict["name"],
+                "ext": lesson_dict.get("ext", "md"),
+                "name": lesson_dict["name"]
+            }
+    
             result = create_folder_structure(
                 entity_data=lesson_context,
                 template_type="lesson",
@@ -424,9 +420,7 @@ def create_lessons(
                 parent_path=expanded_lesson_path
             )
             final_disk_path = Path(result["full_path"])
-            # Could be a folder or a single file
-            final_name = final_disk_path.name
-            lesson_dict["path"] = str(Path(final_lesson_str) / final_name)
+            lesson_dict["path"] = str(Path(final_lesson_str) / final_disk_path.name)
         else:
             lesson_dict["path"] = final_lesson_str
 
@@ -532,8 +526,8 @@ if __name__ == "__main__":
     # text_folder_creation()
 
     def test_substitute_env_vars():
-        raw_path = "$DROPBOX/matrix/packages"
-        expanded, final_str = expand_or_preserve_env_vars(raw_path, parent_path=None)
+        parent_path = "$DATALIB/threeD/courses/01_Sample_Course_A/01_Sample_Chapter_A"
+        expanded, final_str = expand_or_preserve_env_vars(raw_path=None, parent_path=parent_path)
         print("Expanded path:", expanded)
         print("Final path string:", final_str)
 
@@ -562,6 +556,7 @@ if __name__ == "__main__":
         else:
             parent_path = Path.home() / "Documents"
 
+
         # Call create_lessons with create_folders=True so that the template is applied.
         # This should result in a file (or folder) created by the lesson template.
         create_lessons(
@@ -576,13 +571,54 @@ if __name__ == "__main__":
         print("Lessons after processing:")
         print(json.dumps(lessons, indent=2))
 
-    # Uncomment to test environment variable substitution.
-    # test_substitute_env_vars()
+    def test_create_chapters():
+        # Locate the payload file for chapters.
+        payload_file = os.path.join(os.path.expanduser("~"), ".incept", "payload", "chapters.json")
+        if not os.path.exists(payload_file):
+            print(f"Payload file not found: {payload_file}")
+            return
+
+        # Load the JSON payload.
+        with open(payload_file, "r", encoding="utf-8") as f:
+            payload_data = json.load(f)
+
+        # Extract the first course and its chapters.
+        try:
+            course = payload_data["courses"][0]
+            chapters = course.get("chapters", [])
+        except (KeyError, IndexError) as e:
+            print("Invalid payload structure:", e)
+            return
+
+        # Determine the parent path for chapters.
+        # IMPORTANT: We pass the raw value so that environment variables (e.g. "$DATALIB")
+        # are preserved in the final JSON output.
+        if "path" in course:
+            parent_path = course["path"]  # Do not expand here!
+        else:
+            parent_path = str(Path.home() / "Documents")
+
+        # Call create_chapters with create_folders=True so that folders/files are actually created.
+        create_chapters(
+            chapters,
+            templates_dir=templates_dir,
+            create_folders=True,     # Change to False if you only want to test JSON modification.
+            keep_env_in_path=True,   # Ensures that the final "path" retains the $ variable.
+            parent_path=parent_path   # Pass the raw string here.
+        )
+
+        # Print the modified chapters (including nested lessons, if any) with updated "path" fields.
+        print("Chapters after processing:")
+        print(json.dumps(chapters, indent=2))
+
 
     # Uncomment the next line to test environment variable substitution.
-    # test_substitute_env_vars()
+    test_substitute_env_vars()
 
     # Run the test for creating lessons.
-    test_create_lessons()
+    # test_create_lessons()
+
+    # Run the test for creating chapters.
+    # test_create_chapters()
  
 
