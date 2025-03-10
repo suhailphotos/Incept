@@ -273,7 +273,6 @@ def create_courses(
                 "course_name": course_dict["name"],
                 "name": course_dict["name"]
             }
-
             result = create_folder_structure(
                 entity_data=context,
                 template_type="course",
@@ -286,7 +285,9 @@ def create_courses(
         else:
             course_dict["path"] = final_course_str
 
+        # Process chapters if present.
         if "chapters" in course_dict and isinstance(course_dict["chapters"], list):
+            # Instead of hardcoding "chapters", we let create_chapters check for enable_subfolder/child_folder_name.
             create_chapters(
                 course_dict["chapters"],
                 templates_dir=templates_dir,
@@ -294,6 +295,7 @@ def create_courses(
                 keep_env_in_path=keep_env_in_path,
                 parent_path=course_dict["path"]
             )
+
 
 def create_chapters(
     chapters: List[Dict[str, Any]],
@@ -307,15 +309,24 @@ def create_chapters(
     Then calls create_lessons for any sub-lessons present.
     """
     template_manager = TemplateManager(templates_dir=templates_dir)
+    # Process parent_path as raw string.
     expanded_parent, raw_parent = expand_or_preserve_env_vars(raw_path=None, parent_path=parent_path, keep_env_in_path=keep_env_in_path)
 
     for chapter_dict in chapters:
         raw_chapter_path = chapter_dict.get("path")
         expanded_chapter_path, final_chapter_str = expand_or_preserve_env_vars(raw_chapter_path, raw_parent, keep_env_in_path)
+        
+        # Check if the chapter should be created in a child folder.
+        # This uses the same logic as for lessons.
+        enable_subfolder = chapter_dict.get("enable_subfolder", True)
+        if enable_subfolder:
+            child_folder_name = chapter_dict.get("child_folder_name") or "chapters"
+            expanded_chapter_path = expanded_chapter_path / child_folder_name
+            final_chapter_str = str(Path(final_chapter_str) / child_folder_name)
 
         if create_folders:
             base_prefix = int(get_next_numeric_prefix(expanded_chapter_path))
-            prefix = f"{base_prefix:02d}"
+            prefix = f"{base_prefix:02d}"  # get_next_numeric_prefix now reflects prior creations
             context = {
                 "numeric_prefix": prefix,
                 "chapter_name": chapter_dict["name"],
@@ -335,6 +346,7 @@ def create_chapters(
         else:
             chapter_dict["path"] = final_chapter_str
 
+        # Process lessons if present.
         if "lessons" in chapter_dict:
             lessons = chapter_dict["lessons"]
             if not isinstance(lessons, list):
@@ -344,9 +356,10 @@ def create_chapters(
                 templates_dir=templates_dir,
                 create_folders=create_folders,
                 keep_env_in_path=keep_env_in_path,
-                parent_path=chapter_dict["path"]
+                parent_path=chapter_dict["path"]  # using the updated chapter path
             )
             chapter_dict["lessons"] = lessons
+
 
 def create_lessons(
     lessons: List[Dict[str, Any]],
@@ -374,7 +387,6 @@ def create_lessons(
 
             ext = f".{lesson_dict.get('ext', 'md')}"
             base_prefix = int(get_next_numeric_prefix(expanded_lesson_path, file_extension=ext))
-            print(f'Expanded Lesson Path: {expanded_lesson_path}, base prefix: {base_prefix}  final_lesson_string: {final_lesson_str}')
             prefix = f"{base_prefix:02d}"
 
             lesson_context = {
@@ -630,13 +642,13 @@ if __name__ == "__main__":
     # test_substitute_env_vars()
 
     # Run the test for creating lessons.
-    # test_create_lessons()
+    test_create_lessons()
 
     # Run the test for creating chapters.
     # test_create_chapters()
 
     # Run the test for creating courses.
-    test_create_courses()
+    # test_create_courses()
 
  
 
