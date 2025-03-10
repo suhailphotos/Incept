@@ -5,14 +5,15 @@
   - It also creates files like notion_sync.json and progress.md.
   - The variable `chapters` is expected to be a list of chapter objects (each rendered via the chapter template).
 #}
+{# Define once here in the template. Do not remove child_folder_name since it defaults to the chapters subfolder. #}
+{% set child_folder_name = "chapters" %}
 {
-  "folder": "{{ course_prefix }}_{{ course_name }}",
+  "folder": "{% if numeric_prefix %}{{ numeric_prefix }}_{% endif %}{{ course_name }}",
   "subfolders": [
     { "folder": "assets" },
     { 
-      "folder": "{{ chapter_folder }}", 
+      "folder": "{{ child_folder_name }}", 
       "subfolders": [
-        {# For each chapter, we include its rendered structure. The rendering code should iterate over chapters and render the chapter template. #}
         {% for chapter in chapters %}
           {{ chapter | tojson }},
         {% endfor %}

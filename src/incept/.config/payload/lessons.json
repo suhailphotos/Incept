@@ -1,45 +1,47 @@
 {
   "courses": [
     {
-      "id": null
+      "id": null,
+      "icon": null,
+      "cover": null,
       "name": "Sample Course A",
       "chapters": [
         {
-          "id": null
-          "name": "Sample Chapter 1",
+          "id": null,
+          "icon": null,
+          "cover": null,
+          "name": "Sample Chapter C",
           "lessons": [
             {
-              "id": null
-              "icon": null
-              "cover": null
+              "id": null,
+              "icon": null,
+              "cover": null,
               "tool": ["149a1865-b187-80f9-b21f-c9c96430bf62"],
-              "name": "lesson1",
+              "name": "Sample Lesson E",
               "description": "This is sample lesson",
               "link": "example.com",
-              "path": "$DATALIB/courses/{course_name}/{chapter_name}/{lesson_name}",
-              "tags": ["Python"],
-              "template": "default"
-             {
-              "id": null
-              "icon": null
-              "cover": null
-              "tool": ["149a1865-b187-80f9-b21f-c9c96430bf62"],
-              "name": "lesson2",
-              "description": "This is sample lesson",
-              "link": "example.com",
-              "path": "$DATALIB/courses/{course_name}/{chapter_name}/{lesson_name}",
               "tags": ["Python"],
               "template": "default"
             },
             {
-              "id": null
-              "icon": null
-              "cover": null
+              "id": null,
+              "icon": null,
+              "cover": null,
               "tool": ["149a1865-b187-80f9-b21f-c9c96430bf62"],
-              "name": "lesson3",
+              "name": "Sample Lesson F",
               "description": "This is sample lesson",
               "link": "example.com",
-              "path": "$DATALIB/courses/{course_name}/{chapter_name}/{lesson_name}",
+              "tags": ["Python"],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": ["149a1865-b187-80f9-b21f-c9c96430bf62"],
+              "name": "Sample Lesson G",
+              "description": "This is sample lesson",
+              "link": "example.com",
               "tags": ["Python"],
               "template": "default"
             }
@@ -49,4 +51,3 @@
     }
   ]
 }
-

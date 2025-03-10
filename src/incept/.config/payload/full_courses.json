@@ -2,13 +2,20 @@
   "courses": [
     {
       "id": null,
-      "name": "Sample Course A",
+      "icon": null,
+      "cover": null,
+      "name": "Sample Course D",
+      "tool": ["149a1865-b187-80f9-b21f-c9c96430bf62"],
+      "description": "This is sample course A for testing",
+      "link": "http://example.com",
+      "tags": ["Python"],
+      "template": "default",
       "chapters": [
         {
           "id": null,
           "icon": null,
           "cover": null,
-          "name": "Sample Chapter D",
+          "name": "Sample Chapter A",
           "tool": ["149a1865-b187-80f9-b21f-c9c96430bf62"],
           "description": "This is a sample chapter",
           "link": "example.com",
@@ -36,17 +43,6 @@
               "link": "example.com",
               "tags": ["Python"],
               "template": "default"
-            },
-            {
-              "id": null,
-              "icon": null,
-              "cover": null,
-              "tool": ["149a1865-b187-80f9-b21f-c9c96430bf62"],
-              "name": "Sample Lesson C",
-              "description": "This is sample lesson",
-              "link": "example.com",
-              "tags": ["Python"],
-              "template": "default"
             }
           ]
         },
@@ -54,18 +50,7 @@
           "id": null,
           "icon": null,
           "cover": null,
-          "name": "Sample Chapter E",
-          "tool": ["149a1865-b187-80f9-b21f-c9c96430bf62"],
-          "description": "This is a sample chapter",
-          "link": "example.com",
-          "tags": ["Python"],
-          "template": "default"
-        },
-        {
-          "id": null,
-          "icon": null,
-          "cover": null,
-          "name": "Sample Chapter F",
+          "name": "Sample Chapter B",
           "tool": ["149a1865-b187-80f9-b21f-c9c96430bf62"],
           "description": "This is a sample chapter",
           "link": "example.com",
@@ -73,6 +58,17 @@
           "template": "default"
         }
       ]
+    },
+    {
+      "id": null,
+      "icon": null,
+      "cover": null,
+      "name": "Sample Course E",
+      "tool": ["149a1865-b187-80f9-b21f-c9c96430bf62"],
+      "description": "This is sample course B for testing",
+      "link": "http://example.com",
+      "tags": ["Python"],
+      "template": "default"
     }
   ]
 }

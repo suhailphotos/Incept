@@ -4,5 +4,5 @@
   - The variable `ext` should be provided (for example, "hip", "py", or "txt").
 #}
 {
-  "file": "{{ lesson_prefix }}_{{ lesson_name }}.{{ ext }}"
+  "file": "{% if numeric_prefix %}{{ numeric_prefix }}_{% endif %}{{ lesson_name }}.{{ ext }}"
 }
