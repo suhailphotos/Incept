@@ -1,0 +1,44 @@
+{
+  "forward_mapping": {
+    "id":        { "target": "id", "return": "str" },
+    "icon":      { "target": "icon", "return": "object" },
+    "cover":     { "target": "cover", "return": "object" },
+    "Name":      { "target": "name",  "type": "title", "return": "str" },
+    "Tool":      { "target": "tool",  "type": "relation", "return": "list" },
+    "Type":      { "target": "type",  "type": "select", "return": "list" },
+    "Course Description": { "target": "description", "type": "rich_text", "return": "str" },
+    "Course Link":        { "target": "link",        "type": "url",       "return": "str" },
+    "Path":      { "target": "path",  "type": "rich_text", "return": "str" },
+    "Template":  { "target": "template", "type": "rich_text", "return": "str", "default": "default" },
+    "Tags":      { "target": "tags",  "type": "multi_select", "return": "list" }
+  },
+  "back_mapping": {
+    "icon":      { "target": "icon", "return": "object" },
+    "cover":     { "target": "cover", "return": "object" },
+    "name":      { "target": "Name",  "type": "title", "return": "str" },
+    "tool":      { "target": "Tool",  "type": "relation", "return": "list", "default": ["149a1865-b187-80f9-b21f-c9c96430bf62"] },
+    "type":      { "target": "Type",  "type": "select",   "return": "list" },
+    "description": { "target": "Course Description", "type": "rich_text", "return": "str" },
+    "link":      { "target": "Course Link", "type": "url", "return": "str" },
+    "path":      { "target": "Path",  "type": "rich_text", "return": "str" },
+    "template":  { "target": "Template", "type": "rich_text", "return": "str" },
+    "tags":      { "target": "Tags",  "type": "multi_select", "return": "list", "default": ["Python"] }
+  },
+  "hierarchy_config": {
+    "root": "courses",
+    "level_1": "chapters",
+    "level_2": "lessons"
+  },
+  "default_icon": {
+    "type": "external",
+    "external": {
+      "url": "https://www.notion.so/icons/graduate_lightgray.svg"
+    }
+  },
+  "default_cover": {
+    "type": "external",
+    "external": {
+      "url": "https://github.com/suhailphotos/notionUtils/blob/main/assets/media/banner/notion_style_banners_lgt_36.jpg?raw=true"
+    }
+  }
+}

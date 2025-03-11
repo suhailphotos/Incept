@@ -11,6 +11,7 @@ from incept.courses import getCourses, addCourses, addChapters, addLessons
 # Set up user configuration directory
 CONFIG_DIR = Path.home() / ".incept"
 ENV_FILE = CONFIG_DIR / ".env"
+MAPPINGS_DIR = CONFIG_DIR / "mapping"
 
 @click.group()
 def main():
@@ -50,7 +51,7 @@ def cli_init():
         click.echo(".env file already exists; not overwriting.")
 
     # 2) Copy the 'payload' and 'templates' directories from the source.
-    for subdir in ["payload", "templates"]:
+    for subdir in ["payload", "templates", "mapping"]:
         src_subdir = config_source / subdir
         dst_subdir = CONFIG_DIR / subdir
         if src_subdir.exists():
