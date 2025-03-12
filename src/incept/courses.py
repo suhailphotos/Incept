@@ -523,7 +523,7 @@ if __name__ == "__main__":
     # test_add_lessons()
 
     # Uncomment to test addChapter.
-    # test_add_chapters()
+    test_add_chapters()
 
     # Uncomment to test addCourses.
-    test_add_courses()
+    # test_add_courses()

@@ -216,8 +216,8 @@ def cli_add_course(api_key, database_id, data_file_path, name, description, link
 @click.option("--api-key", default=None, help="Notion API Key (or from .env).")
 @click.option("--database-id", default=None, help="Notion Database ID (or from .env).")
 @click.option("--data-file-path", default=None, help="Path to JSON file with chapter data.")
-@click.option("--course-name", default=None, help="Name of the existing course.")
-@click.option("--chapter-name", default=None, help="Chapter name (override JSON).")
+@click.option("--course-name", default=None, help="Name of the existing course (only required if no data file is provided).")
+@click.option("--chapter-name", default=None, help="Chapter name (override JSON; only required if no data file is provided).")
 @click.option("--description", default=None, help="Chapter description (override JSON).")
 @click.option("--link", default=None, help="Chapter link/URL (override JSON).")
 @click.option("--path", default=None, help="Local path for folder creation (override JSON), e.g., '$DATALIB/threeD/courses'")
@@ -226,7 +226,6 @@ def cli_add_chapter(api_key, database_id, data_file_path, course_name, chapter_n
     """
     Insert one or more new chapters (and optionally lessons) into an existing course in Notion.
     Either provide --data-file-path or specify details manually (in which case exactly one chapter is inserted).
-    --course-name and --chapter-name are required.
     CLI options override corresponding JSON fields.
     """
     if ENV_FILE.exists():
@@ -238,9 +237,11 @@ def cli_add_chapter(api_key, database_id, data_file_path, course_name, chapter_n
         database_id = os.getenv("NOTION_DATABASE_ID")
     if not api_key or not database_id:
         raise click.ClickException("API_KEY or DATABASE_ID not found.")
-    if not course_name or not chapter_name:
-        raise click.ClickException("--course-name and --chapter-name are required.")
-
+    
+    # If no data file is provided, require course-name and chapter-name from CLI.
+    if not data_file_path and (not course_name or not chapter_name):
+        raise click.ClickException("--course-name and --chapter-name are required when no data file is provided.")
+    
     payload_data = {"courses": []}
     if data_file_path:
         if not os.path.isfile(data_file_path):
@@ -253,7 +254,7 @@ def cli_add_chapter(api_key, database_id, data_file_path, course_name, chapter_n
             file_payload.setdefault("courses", [])
         payload_data = file_payload
 
-    # Build or override payload for a single course with one chapter.
+    # When CLI options are provided, override values in the payload.
     if course_name:
         if not payload_data["courses"]:
             payload_data["courses"] = [{
@@ -284,9 +285,16 @@ def cli_add_chapter(api_key, database_id, data_file_path, course_name, chapter_n
                 "lessons": []
             }
             first_course["chapters"].append(new_chapter)
+    # Else if no CLI override is provided, payload_data will come solely from the file.
 
     if isinstance(payload_data.get("courses"), dict):
         payload_data["courses"] = [payload_data["courses"]]
+
+    if not course_name:
+        try:
+            course_name = payload_data["courses"][0]["name"]
+        except (KeyError, IndexError):
+            raise click.ClickException("Course name not found in the payload.")
 
     inserted_chapters = addChapters(
         payload_data=payload_data,
@@ -299,7 +307,6 @@ def cli_add_chapter(api_key, database_id, data_file_path, course_name, chapter_n
     click.echo("Inserted Chapters:")
     click.echo(json.dumps(inserted_chapters, indent=2))
 
-
 #
 # NEW COMMAND: add-lesson
 #
@@ -307,9 +314,9 @@ def cli_add_chapter(api_key, database_id, data_file_path, course_name, chapter_n
 @click.option("--api-key", default=None, help="Notion API Key (or from .env).")
 @click.option("--database-id", default=None, help="Notion Database ID (or from .env).")
 @click.option("--data-file-path", default=None, help="Path to JSON file with lesson data.")
-@click.option("--course-name", default=None, help="Name of the existing course.")
-@click.option("--chapter-name", default=None, help="Name of the target chapter.")
-@click.option("--lesson-name", default=None, help="Lesson name (override JSON).")
+@click.option("--course-name", default=None, help="Name of the existing course (only required if no data file is provided).")
+@click.option("--chapter-name", default=None, help="Name of the target chapter (only required if no data file is provided).")
+@click.option("--lesson-name", default=None, help="Lesson name (override JSON; only required if no data file is provided).")
 @click.option("--description", default=None, help="Lesson description (override JSON).")
 @click.option("--link", default=None, help="Lesson link/URL (override JSON).")
 @click.option("--path", default=None, help="Local path for folder creation (override JSON), e.g., '$DATALIB/threeD/courses'.")
@@ -335,7 +342,7 @@ def cli_add_lesson(api_key, database_id, data_file_path, course_name, chapter_na
         ]
       }
     If no data file is provided, manual CLI options are used to build a minimal payload.
-    --course-name, --chapter-name, and --lesson-name are required.
+    --course-name, --chapter-name, and --lesson-name are required when no data file is provided.
     CLI options override corresponding JSON fields.
     """
     if ENV_FILE.exists():
@@ -347,8 +354,10 @@ def cli_add_lesson(api_key, database_id, data_file_path, course_name, chapter_na
         database_id = os.getenv("NOTION_DATABASE_ID")
     if not api_key or not database_id:
         raise click.ClickException("API_KEY or DATABASE_ID not found.")
-    if not course_name or not chapter_name or not lesson_name:
-        raise click.ClickException("--course-name, --chapter-name, and --lesson-name are required.")
+
+    # Only require CLI options if no data file is provided.
+    if not data_file_path and (not course_name or not chapter_name or not lesson_name):
+        raise click.ClickException("--course-name, --chapter-name, and --lesson-name are required when no data file is provided.")
 
     payload_data = {"courses": []}
     if data_file_path:
@@ -362,7 +371,7 @@ def cli_add_lesson(api_key, database_id, data_file_path, course_name, chapter_na
             file_payload.setdefault("courses", [])
         payload_data = file_payload
 
-    # Build or override the payload for a single course with one chapter containing one lesson.
+    # When CLI options are provided, override or build payload.
     if course_name:
         if not payload_data["courses"]:
             payload_data["courses"] = [{
@@ -377,7 +386,9 @@ def cli_add_lesson(api_key, database_id, data_file_path, course_name, chapter_na
                         "description": description or None,
                         "link": link or None,
                         "path": path or None,
-                        "template": folder_template or None
+                        "template": folder_template or None,
+                        # Add chapter_name to the lesson payload.
+                        "chapter_name": chapter_name
                     }]
                 }]
             }]
@@ -409,7 +420,9 @@ def cli_add_lesson(api_key, database_id, data_file_path, course_name, chapter_na
                 "description": description or None,
                 "link": link or None,
                 "path": path or None,
-                "template": folder_template or None
+                "template": folder_template or None,
+                # Set the chapter_name from the CLI option.
+                "chapter_name": chapter_name
             }
             lessons.append(new_lesson)
             target_chapter["lessons"] = lessons
@@ -417,8 +430,26 @@ def cli_add_lesson(api_key, database_id, data_file_path, course_name, chapter_na
     if isinstance(payload_data.get("courses"), dict):
         payload_data["courses"] = [payload_data["courses"]]
 
-    # Now call addLessons (which expects a single lesson payload and returns the inserted lesson).
-    # We'll extract the first lesson from the first chapter of the first course.
+    # If course_name was not provided via CLI, extract it from the payload.
+    if not course_name:
+        try:
+            course_name = payload_data["courses"][0]["name"]
+        except (KeyError, IndexError):
+            raise click.ClickException("Course name not found in the payload.")
+
+    # Ensure each lesson in every chapter has a 'chapter_name' field.
+    for course in payload_data["courses"]:
+        for ch in course.get("chapters", []):
+            if "chapter_name" not in ch:
+                ch["chapter_name"] = ch.get("name")
+            lessons = ch.get("lessons", [])
+            if isinstance(lessons, dict):
+                lessons = [lessons]
+            for lesson in lessons:
+                if "chapter_name" not in lesson:
+                    lesson["chapter_name"] = ch.get("name")
+
+    # Now call addLessons (which expects a lesson payload) and returns the inserted lesson(s).
     try:
         course = payload_data["courses"][0]
         chapter = course["chapters"][0]
@@ -430,10 +461,9 @@ def cli_add_lesson(api_key, database_id, data_file_path, course_name, chapter_na
 
     inserted_lessons = []
     for lesson_payload in lessons:
-        # addLessons expects: lesson_payload (dict), course_filter (course name), templates_dir, db, etc.
         inserted = addLessons(
             lesson_payload,
-            course_filter,
+            course_filter=course_name,
             templates_dir=Path.home() / ".incept" / "templates",
             db=db_type,
             api_key=api_key,
