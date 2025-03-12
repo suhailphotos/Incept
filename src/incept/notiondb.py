@@ -2,17 +2,75 @@
 
 import os
 import json
+from pathlib import Path
 from notionmanager.notion import NotionManager
 
-# Default icon/cover constants
-DEFAULT_ICON_URL = "https://www.notion.so/icons/graduate_lightgray.svg"
-DEFAULT_COVER_URL = "https://github.com/suhailphotos/notionUtils/blob/main/assets/media/banner/notion_style_banners_lgt_36.jpg?raw=true"
+# Default mapping file location
+mapping_file_path = Path.home() / ".incept" / "mapping" / "notion_mapping.json"
+
+if mapping_file_path.exists():
+    with open(mapping_file_path, 'r') as f:
+        mapping = json.load(f)
+    forward_mapping = mapping.get("forward_mapping", {})
+    back_mapping = mapping.get("back_mapping", {})
+    hierarchy_config = mapping.get("hierarchy_config", {})
+    DEFAULT_ICON_URL = mapping.get("default_icon", {}).get("external", {}).get("url",
+                          "https://www.notion.so/icons/graduate_lightgray.svg")
+    DEFAULT_COVER_URL = mapping.get("default_cover", {}).get("external", {}).get("url",
+                          "https://github.com/suhailphotos/notionUtils/blob/main/assets/media/banner/notion_style_banners_lgt_36.jpg?raw=true")
+else:
+    forward_mapping = {
+        "id": {"target": "id", "return": "str"},
+        "icon": {"target": "icon", "return": "object"},
+        "cover": {"target": "cover", "return": "object"},
+        "Name": {"target": "name", "type": "title", "return": "str"},
+        "Tool": {"target": "tool", "type": "relation", "return": "list"},
+        "Type": {"target": "type", "type": "select", "return": "list"},
+        "Course Description": {"target": "description", "type": "rich_text", "return": "str"},
+        "Course Link": {"target": "link", "type": "url", "return": "str"},
+        "Path": {"target": "path", "type": "rich_text", "return": "str"},
+        "Template": {"target": "template", "type": "rich_text", "return": "str"},
+        "Tags": {"target": "tags", "type": "multi_select", "return": "list"}
+    }
+    back_mapping = {
+        "icon": {"target": "icon", "return": "object"},
+        "cover": {"target": "cover", "return": "object"},
+        "name": {"target": "Name", "type": "title", "return": "str"},
+        "tool": {"target": "Tool", "type": "relation", "return": "list", "default": ["149a1865-b187-80f9-b21f-c9c96430bf62"]},
+        "type": {"target": "Type", "type": "select", "return": "list"},
+        "description": {"target": "Course Description", "type": "rich_text", "return": "str"},
+        "link": {"target": "Course Link", "type": "url", "return": "str"},
+        "path": {"target": "Path", "type": "rich_text", "return": "str"},
+        "template": {"target": "Template", "type": "rich_text", "return": "str"},
+        "tags": {"target": "Tags", "type": "multi_select", "return": "list", "default": ["Python"]}
+    }
+    hierarchy_config = {
+        "root": "courses",
+        "level_1": "chapters",
+        "level_2": "lessons"
+    }
+    DEFAULT_ICON_URL = "https://www.notion.so/icons/graduate_lightgray.svg"
+    DEFAULT_COVER_URL = "https://github.com/suhailphotos/notionUtils/blob/main/assets/media/banner/notion_style_banners_lgt_36.jpg?raw=true"
 
 class NotionDB:
-    def __init__(self, api_key, database_id):
-        """Wrapper around NotionManager for handling Notion database interactions."""
+
+    def __init__(self, api_key, database_id, mapping_config: dict = None):
+        """
+        Wrapper around NotionManager for handling Notion database interactions.
+        Optionally accepts a mapping_config dict. If not provided, the fallback/global
+        forward_mapping, back_mapping, and hierarchy_config will be used.
+        """
         self.notion = NotionManager(api_key, database_id)
         self.database_id = database_id
+
+        if mapping_config:
+            self.forward_mapping = mapping_config.get("forward_mapping", forward_mapping)
+            self.back_mapping = mapping_config.get("back_mapping", back_mapping)
+            self.hierarchy_config = mapping_config.get("hierarchy_config", hierarchy_config)
+        else:
+            self.forward_mapping = forward_mapping
+            self.back_mapping = back_mapping
+            self.hierarchy_config = hierarchy_config
 
     def _extract_relation(self, properties, relation_property):
         """
@@ -36,25 +94,8 @@ class NotionDB:
           dict: A dictionary with a key (e.g., "courses") containing a list of course objects,
                 each with nested chapters and lessons.
         """
-        # Define the forward transformation mapping.
-        properties_mapping = {
-            "id": {"target": "id", "return": "str"},
-            "icon": {"target": "icon", "return": "object"},
-            "cover": {"target": "cover", "return": "object"},
-            "Name": {"target": "name", "type": "title", "return": "str"},
-            "Tool": {"target": "tool", "type": "relation", "return": "list"},
-            "Type": {"target": "type", "type": "select", "return": "list"},
-            "Course Description": {"target": "description", "type": "rich_text", "return": "str"},
-            "Course Link": {"target": "link", "type": "url", "return": "str"},
-            "Path": {"target": "path", "type": "rich_text", "return": "str"},
-            "Template": {"target": "template", "type": "rich_text", "return": "str"},
-            "Tags": {"target": "tags", "type": "multi_select", "return": "list"}
-        }
-        hierarchy_config = {
-            "root": "courses",       # Top-level key for courses (level 0)
-            "level_1": "chapters",     # Children of courses
-            "level_2": "lessons"       # Children of chapters
-        }
+        properties_mapping = self.forward_mapping
+        config = self.hierarchy_config
 
         # Build filter payload if a "Name" filter is provided.
         filter_payload = None
@@ -70,18 +111,15 @@ class NotionDB:
                 }
 
         if not filter_payload:
-            # Scenario 1: No filter → Retrieve ALL pages
             notion_data = self.notion.get_pages(retrieve_all=True)
             if not notion_data:
-                return {"courses": []}
-            # Build and return the hierarchical structure.
-            courses_hierarchy = self.notion.build_hierarchy(notion_data, hierarchy_config, properties_mapping)
+                return {config.get("root", "courses"): []}
+            courses_hierarchy = self.notion.build_hierarchy(notion_data, config, properties_mapping)
             return courses_hierarchy
         else:
-            # Scenario 2: Filter provided → Retrieve matching course(s) and recursively fetch children.
             filtered_courses = self.notion.get_pages(**filter_payload)
             if not filtered_courses:
-                return {"courses": []}
+                return {config.get("root", "courses"): []}
 
             visited_pages = {}
 
@@ -98,8 +136,9 @@ class NotionDB:
                 fetch_children(course_page["id"])
 
             notion_data = list(visited_pages.values())
-            courses_hierarchy = self.notion.build_hierarchy(notion_data, hierarchy_config, properties_mapping)
+            courses_hierarchy = self.notion.build_hierarchy(notion_data, config, properties_mapping)
             return courses_hierarchy
+
 
     def get_course(self, course_id):
         """
@@ -120,30 +159,16 @@ class NotionDB:
         fetch_children(course_id)
         notion_data = list(visited_pages.values())
 
-        properties_mapping = {
-            "id": {"target": "id", "return": "str"},
-            "icon": {"target": "icon", "return": "object"},
-            "cover": {"target": "cover", "return": "object"},
-            "Name": {"target": "name", "type": "title", "return": "str"},
-            "Tool": {"target": "tool", "type": "relation", "return": "list"},
-            "Type": {"target": "type", "type": "select", "return": "list"},
-            "Course Description": {"target": "description", "type": "rich_text", "return": "str"},
-            "Course Link": {"target": "link", "type": "url", "return": "str"},
-            "Path": {"target": "path", "type": "rich_text", "return": "str"},
-            "Template": {"target": "template", "type": "rich_text", "return": "str"},
-            "Tags": {"target": "tags", "type": "multi_select", "return": "list"}
-        }
-        hierarchy_config = {
-            "root": "courses",
-            "level_1": "chapters",
-            "level_2": "lessons"
-        }
-        courses_hierarchy = self.notion.build_hierarchy(notion_data, hierarchy_config, properties_mapping)
-        # Optionally filter down to just the course with course_id.
-        if courses_hierarchy and "courses" in courses_hierarchy:
-            filtered = [course for course in courses_hierarchy["courses"] if course.get("id") == course_id]
-            return {"courses": filtered} if filtered else {}
+        properties_mapping = self.forward_mapping
+        config = self.hierarchy_config
+
+        courses_hierarchy = self.notion.build_hierarchy(notion_data, config, properties_mapping)
+        root_key = config.get("root", "courses")
+        if courses_hierarchy and root_key in courses_hierarchy:
+            filtered = [course for course in courses_hierarchy[root_key] if course.get("id") == course_id]
+            return {root_key: filtered} if filtered else {}
         return courses_hierarchy
+
 
     def insert_page(self, flat_object, back_mapping, forward_mapping, parent_item=None, parent_icon=None, parent_cover=None, child_key=None):
         """
@@ -247,85 +272,63 @@ if __name__ == "__main__":
         notion_db = NotionDB(api_key=NOTION_API_KEY, database_id=NOTION_DATABASE_ID)
     else:
         print("Missing Notion credentials in the .env file.")
+        exit(1)  # Exit if credentials are missing.
 
     def test_get_courses():
         # Fetch courses hierarchy without any filter.
         courses_hierarchy = notion_db.get_courses()
-
         print("Courses Hierarchy:")
         print(json.dumps(courses_hierarchy, indent=2))
 
     def test_insert_lessons(notion_db):
-       # Assume the payload file is at $HOME/.incept/payload/lessons.json
-       payload_file = os.path.join(os.path.expanduser("~"), ".incept", "payload", "lessons.json")
-       if not os.path.exists(payload_file):
-           print(f"Payload file not found: {payload_file}")
-           return
+        # Assume the payload file is at $HOME/.incept/payload/lessons.json
+        payload_file = os.path.join(os.path.expanduser("~"), ".incept", "payload", "notion_lessons.json")
+        if not os.path.exists(payload_file):
+            print(f"Payload file not found: {payload_file}")
+            return
 
-       with open(payload_file, "r") as f:
-           payload_data = json.load(f)
+        with open(payload_file, "r") as f:
+            payload_data = json.load(f)
 
-       # For testing, assume we want to insert lessons for the first course and first chapter.
-       try:
-           course = payload_data["courses"][0]         # a dict
-           chapter = course["chapters"][0]               # a dict
-           lessons = chapter.get("lessons")              # a list (or dict) of lessons
-       except (KeyError, IndexError):
-           print("Invalid payload structure.")
-           return
+        # For testing, assume we want to insert lessons for the first course and first chapter.
+        try:
+            course = payload_data["courses"][0]         # a dict
+            chapter = course["chapters"][0]               # a dict
+            lessons = chapter.get("lessons")              # a list (or dict) of lessons
+        except (KeyError, IndexError):
+            print("Invalid payload structure.")
+            return
 
-       # Ensure each lesson has a "type": ["Lesson"] field.
-       if isinstance(lessons, list):
-           for lesson in lessons:
-               lesson["type"] = ["Lesson"]
-       elif isinstance(lessons, dict):
-           lessons["type"] = ["Lesson"]
+        # Ensure each lesson has a "type": ["Lesson"] field.
+        if isinstance(lessons, list):
+            for lesson in lessons:
+                lesson["type"] = ["Lesson"]
+        elif isinstance(lessons, dict):
+            lessons["type"] = ["Lesson"]
 
-       # Define the back mapping for lessons.
-       lesson_back_mapping = {
-           "icon": {"target": "icon", "return": "object"},
-           "cover": {"target": "cover", "return": "object"},
-           "name": {"target": "Name", "type": "title", "return": "str"},
-           "tool": {"target": "Tool", "type": "relation", "return": "list", "property_id": "pvso"},
-           "type": {"target": "Type", "type": "select", "return": "list", "property_id": "DCuB"},
-           "description": {"target": "Course Description", "type": "rich_text", "return": "str", "property_id": "XQwN"},
-           "link": {"target": "Course Link", "type": "url", "return": "str", "property_id": "O%3AZR"},
-           "path": {"target": "Path", "type": "rich_text", "return": "str", "property_id": "%3Eua%3C", "code": True},
-           "template": {"target": "Template", "type": "rich_text", "return": "str", "property_id": "NBdS", "code": True},
-           "tags": {"target": "Tags", "type": "multi_select", "return": "list", "property_id": "tWcF"}
-       }
-       # Define the forward mapping for lessons.
-       lesson_forward_mapping = {
-           "id": {"target": "id", "return": "str"},
-           "icon": {"target": "icon", "return": "object"},
-           "cover": {"target": "cover", "return": "object"},
-           "Name": {"target": "name", "type": "title", "return": "str"},
-           "Tool": {"target": "tool", "type": "relation", "return": "list"},
-           "Type": {"target": "type", "type": "select", "return": "list"},
-           "Course Description": {"target": "description", "type": "rich_text", "return": "str"},
-           "Course Link": {"target": "link", "type": "url", "return": "str"},
-           "Path": {"target": "path", "type": "rich_text", "return": "str"},
-           "Template": {"target": "template", "type": "rich_text", "return": "str"},
-           "Tags": {"target": "tags", "type": "multi_select", "return": "list"}
-       }
-       # Use the parent chapter as a dict so that its id (and optionally icon/cover) are used.
-       parent_chapter = chapter
-       parent_chapter_id = parent_chapter.get("id")
-       if not parent_chapter_id:
-           print("Parent chapter ID is missing in payload. Cannot insert lessons.")
-           return
+        # Use the default back and forward mappings from the NotionDB instance.
+        lesson_back_mapping = notion_db.back_mapping
+        lesson_forward_mapping = notion_db.forward_mapping
 
-       # Insert lessons (flat_object is a list of lessons) and specify child_key="lessons".
-       inserted_lessons = notion_db.insert_page(
-           flat_object=lessons,
-           back_mapping=lesson_back_mapping,
-           forward_mapping=lesson_forward_mapping,
-           parent_item=parent_chapter,  # Pass the whole dict.
-           child_key="lessons"
-       )
-       print("Inserted Lessons:")
-       print(json.dumps(inserted_lessons, indent=2)) 
+        # Use the parent chapter as a dict so that its id (and optionally icon/cover) are used.
+        parent_chapter = chapter
+        parent_chapter_id = parent_chapter.get("id")
+        if not parent_chapter_id:
+            print("Parent chapter ID is missing in payload. Cannot insert lessons.")
+            return
 
-#    test_get_courses()
+        # Insert lessons (flat_object is a list of lessons) and specify child_key="lessons".
+        inserted_lessons = notion_db.insert_page(
+            flat_object=lessons,
+            back_mapping=lesson_back_mapping,
+            forward_mapping=lesson_forward_mapping,
+            parent_item=parent_chapter,  # Pass the whole dict.
+            child_key="lessons"
+        )
+        print("Inserted Lessons:")
+        print(json.dumps(inserted_lessons, indent=2))
+
+    # Uncomment to test courses hierarchy.
+    # test_get_courses()
     test_insert_lessons(notion_db)
     

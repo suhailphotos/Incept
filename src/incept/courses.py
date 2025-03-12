@@ -78,76 +78,15 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, **kwargs)
     inserted_courses = []
 
     # Define back/forward mappings for the "course" entity.
-    course_back_mapping = {
-        "icon": {"target": "icon", "return": "object"},
-        "cover": {"target": "cover", "return": "object"},
-        "name": {"target": "Name", "type": "title", "return": "str"},
-        "description": {"target": "Course Description", "type": "rich_text", "return": "str"},
-        "link": {"target": "Course Link", "type": "url", "return": "str"},
-        "path": {"target": "Path", "type": "rich_text", "return": "str", "code": True},
-        "template": {"target": "Template", "type": "rich_text", "return": "str", "code": True},
-        "tags": {"target": "Tags", "type": "multi_select", "return": "list"}
-        # add "tool", "type", etc. if your "course" notion schema requires them
-    }
-    course_forward_mapping = {
-        "id": {"target": "id", "return": "str"},
-        "icon": {"target": "icon", "return": "object"},
-        "cover": {"target": "cover", "return": "object"},
-        "Name": {"target": "name", "type": "title", "return": "str"},
-        "Course Description": {"target": "description", "type": "rich_text", "return": "str"},
-        "Course Link": {"target": "link", "type": "url", "return": "str"},
-        "Path": {"target": "path", "type": "rich_text", "return": "str"},
-        "Template": {"target": "template", "type": "rich_text", "return": "str"},
-        "Tags": {"target": "tags", "type": "multi_select", "return": "list"}
-        # add "Tool", "Type" etc. if your notion schema has them for courses
-    }
+    course_back_mapping = db_client.back_mapping
+    course_forward_mapping = db_client.forward_mapping
 
     # Define minimal inline mappings for chapters & lessons.
-    chapter_back_mapping = {
-        "icon": {"target": "icon", "return": "object"},
-        "cover": {"target": "cover", "return": "object"},
-        "name": {"target": "Name", "type": "title", "return": "str"},
-        "description": {"target": "Course Description", "type": "rich_text", "return": "str"},
-        "link": {"target": "Course Link", "type": "url", "return": "str"},
-        "path": {"target": "Path", "type": "rich_text", "return": "str", "code": True},
-        "template": {"target": "Template", "type": "rich_text", "return": "str", "code": True},
-        "tags": {"target": "Tags", "type": "multi_select", "return": "list"}
-        # add "tool" or "type" if your schema wants them for chapters
-    }
-    chapter_forward_mapping = {
-        "id": {"target": "id", "return": "str"},
-        "icon": {"target": "icon", "return": "object"},
-        "cover": {"target": "cover", "return": "object"},
-        "Name": {"target": "name", "type": "title", "return": "str"},
-        "Course Description": {"target": "description", "type": "rich_text", "return": "str"},
-        "Course Link": {"target": "link", "type": "url", "return": "str"},
-        "Path": {"target": "path", "type": "rich_text", "return": "str"},
-        "Template": {"target": "template", "type": "rich_text", "return": "str"},
-        "Tags": {"target": "tags", "type": "multi_select", "return": "list"}
-    }
+    chapter_back_mapping = db_client.back_mapping
+    chapter_forward_mapping = db_client.forward_mapping
 
-    lesson_back_mapping = {
-        "icon": {"target": "icon", "return": "object"},
-        "cover": {"target": "cover", "return": "object"},
-        "name": {"target": "Name", "type": "title", "return": "str"},
-        "description": {"target": "Course Description", "type": "rich_text", "return": "str"},
-        "link": {"target": "Course Link", "type": "url", "return": "str"},
-        "path": {"target": "Path", "type": "rich_text", "return": "str", "code": True},
-        "template": {"target": "Template", "type": "rich_text", "return": "str", "code": True},
-        "tags": {"target": "Tags", "type": "multi_select", "return": "list"}
-        # add "tool" or "type" if needed
-    }
-    lesson_forward_mapping = {
-        "id": {"target": "id", "return": "str"},
-        "icon": {"target": "icon", "return": "object"},
-        "cover": {"target": "cover", "return": "object"},
-        "Name": {"target": "name", "type": "title", "return": "str"},
-        "Course Description": {"target": "description", "type": "rich_text", "return": "str"},
-        "Course Link": {"target": "link", "type": "url", "return": "str"},
-        "Path": {"target": "path", "type": "rich_text", "return": "str"},
-        "Template": {"target": "template", "type": "rich_text", "return": "str"},
-        "Tags": {"target": "tags", "type": "multi_select", "return": "list"}
-    }
+    lesson_back_mapping = db_client.back_mapping
+    lesson_forward_mapping = db_client.forward_mapping
 
     def insert_lesson_inline(lesson_dict: dict, parent_chapter: dict):
         inserted_lesson = db_client.insert_page(
@@ -262,7 +201,7 @@ def addChapters(payload_data: dict, course_filter: str, templates_dir: Path, db=
       1) Extract the first course from payload_data.
       2) Fetch that course from Notion using getCourses(filter=course_filter).
       3) For each chapter in payload_data's "chapters":
-         a) Check if it already exists by name in the Notion-fetched course -> skip if duplicate
+         a) Check if it already exists by name in the Notion-fetched course -> skip if duplicate.
          b) Create local folders (via create_chapters).
          c) Insert the new chapter as a Notion page (parent = the course).
          d) If the chapter has lessons, insert them in-line.
@@ -272,7 +211,7 @@ def addChapters(payload_data: dict, course_filter: str, templates_dir: Path, db=
 
     # 1) Extract the first course from payload_data.
     try:
-        local_course = payload_data["courses"][0]  # We'll handle the first course only
+        local_course = payload_data["courses"][0]  # We'll handle the first course only.
     except (KeyError, IndexError):
         raise Exception("Payload must have at least one course in 'courses' list.")
 
@@ -300,69 +239,29 @@ def addChapters(payload_data: dict, course_filter: str, templates_dir: Path, db=
     inserted_chapters = []
 
     # --- We'll define the back/forward mappings for 'chapter' insertion in Notion. ---
-    chapter_back_mapping = {
-        "icon": {"target": "icon", "return": "object"},
-        "cover": {"target": "cover", "return": "object"},
-        "name": {"target": "Name", "type": "title", "return": "str"},
-        "tool": {"target": "Tool", "type": "relation", "return": "list"},
-        "description": {"target": "Course Description", "type": "rich_text", "return": "str"},
-        "link": {"target": "Course Link", "type": "url", "return": "str"},
-        "path": {"target": "Path", "type": "rich_text", "return": "str", "code": True},
-        "template": {"target": "Template", "type": "rich_text", "return": "str", "code": True},
-        "tags": {"target": "Tags", "type": "multi_select", "return": "list"}
-    }
-    chapter_forward_mapping = {
-        "id": {"target": "id", "return": "str"},
-        "icon": {"target": "icon", "return": "object"},
-        "cover": {"target": "cover", "return": "object"},
-        "Name": {"target": "name", "type": "title", "return": "str"},
-        "Tool": {"target": "tool", "type": "relation", "return": "list"},
-        "Course Description": {"target": "description", "type": "rich_text", "return": "str"},
-        "Course Link": {"target": "link", "type": "url", "return": "str"},
-        "Path": {"target": "path", "type": "rich_text", "return": "str"},
-        "Template": {"target": "template", "type": "rich_text", "return": "str"},
-        "Tags": {"target": "tags", "type": "multi_select", "return": "list"}
-    }
+    chapter_back_mapping = db_client.back_mapping
+    chapter_forward_mapping = db_client.forward_mapping
 
     # --- We'll define minimal inline mappings for lessons. ---
-    lesson_back_mapping = {
-        "icon": {"target": "icon", "return": "object"},
-        "cover": {"target": "cover", "return": "object"},
-        "name": {"target": "Name", "type": "title", "return": "str"},
-        "tool": {"target": "Tool", "type": "relation", "return": "list"},
-        "description": {"target": "Course Description", "type": "rich_text", "return": "str"},
-        "link": {"target": "Course Link", "type": "url", "return": "str"},
-        "path": {"target": "Path", "type": "rich_text", "return": "str", "code": True},
-        "template": {"target": "Template", "type": "rich_text", "return": "str", "code": True},
-        "tags": {"target": "Tags", "type": "multi_select", "return": "list"}
-    }
-    lesson_forward_mapping = {
-        "id": {"target": "id", "return": "str"},
-        "icon": {"target": "icon", "return": "object"},
-        "cover": {"target": "cover", "return": "object"},
-        "Name": {"target": "name", "type": "title", "return": "str"},
-        "Tool": {"target": "tool", "type": "relation", "return": "list"},
-        "Course Description": {"target": "description", "type": "rich_text", "return": "str"},
-        "Course Link": {"target": "link", "type": "url", "return": "str"},
-        "Path": {"target": "path", "type": "rich_text", "return": "str"},
-        "Template": {"target": "template", "type": "rich_text", "return": "str"},
-        "Tags": {"target": "tags", "type": "multi_select", "return": "list"}
-    }
+    lesson_back_mapping = db_client.back_mapping
+    lesson_forward_mapping = db_client.forward_mapping
 
-    # Inline helper to insert a lesson under a newly inserted chapter
+    # Inline helper to insert a lesson under a newly inserted chapter.
     def insert_lesson_inline(lesson_dict: dict, parent_chapter: dict):
+        # Ensure the lesson payload has the correct type.
+        lesson_dict["type"] = ["Lesson"]
         inserted_lesson = db_client.insert_page(
             flat_object=lesson_dict,
             back_mapping=lesson_back_mapping,
             forward_mapping=lesson_forward_mapping,
-            parent_item=parent_chapter,  # The newly inserted chapter is the parent
+            parent_item=parent_chapter,  # The newly inserted chapter is the parent.
             child_key="lessons"
         )
         # Update local lesson's 'id'
         lesson_dict["id"] = inserted_lesson.get("id")
         return inserted_lesson
 
-    # 3) We'll loop over local_course["chapters"] in the payload.
+    # 3) Loop over local_course["chapters"] in the payload.
     local_chapters = local_course.get("chapters", [])
     if isinstance(local_chapters, dict):
         local_chapters = [local_chapters]
@@ -373,33 +272,36 @@ def addChapters(payload_data: dict, course_filter: str, templates_dir: Path, db=
             print("Skipping a chapter that has no 'name'.")
             continue
 
-        # 3a) Check if it already exists
+        # Set the chapter type to "Chapter"
+        chapter_payload["type"] = ["Chapter"]
+
+        # 3a) Check if it already exists.
         if chapter_name in existing_chapter_names:
             print(f"Chapter '{chapter_name}' already exists; skipping insertion.")
             continue
 
-        # 3b) Create local folders (chapter + lessons) by calling create_chapters on a single chapter
+        # 3b) Create local folders (chapter + lessons) by calling create_chapters on a single chapter.
         create_chapters(
             chapters=[chapter_payload],
             templates_dir=templates_dir,
             create_folders=True,
             keep_env_in_path=True,
-            parent_path=notion_course_path  # The course path from Notion
+            parent_path=notion_course_path  # The course path from Notion.
         )
 
-        # 3c) Insert the new chapter as a Notion page
+        # 3c) Insert the new chapter as a Notion page.
         inserted_chapter = db_client.insert_page(
             flat_object=chapter_payload,
             back_mapping=chapter_back_mapping,
             forward_mapping=chapter_forward_mapping,
-            parent_item=notion_course,  # The Notion-fetched course is the parent
+            parent_item=notion_course,  # The Notion-fetched course is the parent.
             child_key="chapters"
         )
-        chapter_payload["id"] = inserted_chapter.get("id")  # record the new ID
+        chapter_payload["id"] = inserted_chapter.get("id")  # Record the new ID.
         inserted_chapters.append(inserted_chapter)
         existing_chapter_names.add(chapter_name)
 
-        # 3d) If we have lessons, insert them inline
+        # 3d) If the chapter has lessons, insert them inline.
         lessons = chapter_payload.get("lessons")
         if lessons:
             if isinstance(lessons, dict):
@@ -407,7 +309,7 @@ def addChapters(payload_data: dict, course_filter: str, templates_dir: Path, db=
             for lesson_dict in lessons:
                 insert_lesson_inline(lesson_dict, inserted_chapter)
 
-    # 4) Return the newly inserted chapters
+    # 4) Return the newly inserted chapters.
     return inserted_chapters
 
 
@@ -421,7 +323,7 @@ def addLessons(lesson_payload: dict, course_filter: str, templates_dir: Path, db
       3. Check if a lesson with the same name already exists; if yes, skip insertion.
       4. Otherwise, call create_lessons to build the folder structure.
       5. Update the lesson payload with the new "path" (and other info as needed).
-      6. Insert the lesson as a new page in Notion using the DB client.
+      6. Insert the lesson as a new page in Notion using the DB client defaults.
       7. Return the inserted lesson object.
     """
     # 1. Get the course from Notion.
@@ -470,46 +372,17 @@ def addLessons(lesson_payload: dict, course_filter: str, templates_dir: Path, db
     )
     # Now lesson_payload["path"] should be updated.
 
-    
     # 5. Update payload with additional info.
     lesson_payload["type"] = ["Lesson"]
     
     # 6. Insert the lesson into Notion.
-    lesson_back_mapping = {
-        "icon": {"target": "icon", "return": "object"},
-        "cover": {"target": "cover", "return": "object"},
-        "name": {"target": "Name", "type": "title", "return": "str"},
-        "tool": {"target": "Tool", "type": "relation", "return": "list", "property_id": "pvso"},
-        "type": {"target": "Type", "type": "select", "return": "list", "property_id": "DCuB"},
-        "description": {"target": "Course Description", "type": "rich_text", "return": "str", "property_id": "XQwN"},
-        "link": {"target": "Course Link", "type": "url", "return": "str", "property_id": "O%3AZR"},
-        "path": {"target": "Path", "type": "rich_text", "return": "str", "property_id": "%3Eua%3C", "code": True},
-        "template": {"target": "Template", "type": "rich_text", "return": "str", "property_id": "NBdS", "code": True},
-        "tags": {"target": "Tags", "type": "multi_select", "return": "list", "property_id": "tWcF"}
-    }
-    lesson_forward_mapping = {
-        "id": {"target": "id", "return": "str"},
-        "icon": {"target": "icon", "return": "object"},
-        "cover": {"target": "cover", "return": "object"},
-        "Name": {"target": "name", "type": "title", "return": "str"},
-        "Tool": {"target": "tool", "type": "relation", "return": "list"},
-        "Type": {"target": "type", "type": "select", "return": "list"},
-        "Course Description": {"target": "description", "type": "rich_text", "return": "str"},
-        "Course Link": {"target": "link", "type": "url", "return": "str"},
-        "Path": {"target": "path", "type": "rich_text", "return": "str"},
-        "Template": {"target": "template", "type": "rich_text", "return": "str"},
-        "Tags": {"target": "tags", "type": "multi_select", "return": "list"}
-    }
-    
+    # Get the DB client (assumed to be an instance of NotionDB) with its loaded mappings.
     db_client = get_db_client(db, **kwargs)
-    # Use the target chapter as the parent for the lesson.
-    
-
     inserted_lesson = db_client.insert_page(
         flat_object=lesson_payload,
-        back_mapping=lesson_back_mapping,
-        forward_mapping=lesson_forward_mapping,
-        parent_item=target_chapter,
+        back_mapping=db_client.back_mapping,       # Use default back mapping
+        forward_mapping=db_client.forward_mapping,   # Use default forward mapping
+        parent_item=target_chapter,                    # Use target chapter as parent
         child_key="lessons"
     )
     
@@ -650,7 +523,7 @@ if __name__ == "__main__":
     # test_add_lessons()
 
     # Uncomment to test addChapter.
-    # test_add_chapters()
+    test_add_chapters()
 
     # Uncomment to test addCourses.
-    test_add_courses()
+    # test_add_courses()
