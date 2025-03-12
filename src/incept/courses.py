@@ -59,14 +59,13 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, **kwargs)
     Steps:
       1) Fetch all existing courses from Notion (getCourses with no filter).
       2) For each course in payload_data["courses"]:
-         a) Check if that course name already exists in Notion -> skip
+         a) Check if that course name already exists in Notion -> skip.
          b) Ensure "path" is defined (fallback to $COURSE_FOLDER_PATH or ~Documents).
          c) Call create_courses([thatCourse]) to build local folder structure (course/chapters/lessons).
          d) Insert the course as a Notion page (no "parent_item" or a known workspace parent if you prefer).
-         e) Inline: for each new chapter, insert it as a sub-page; for each lesson in that chapter, insert it as a sub-sub-page. 
+         e) Inline: for each new chapter, insert it as a sub-page; for each lesson in that chapter, insert it as a sub-sub-page.
       3) Return the list of newly inserted courses (with updated 'id', etc.).
     """
-
     db_client = get_db_client(db, **kwargs)
 
     # 1) Fetch all existing courses from Notion (with no filter).
@@ -84,11 +83,12 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, **kwargs)
     # Define minimal inline mappings for chapters & lessons.
     chapter_back_mapping = db_client.back_mapping
     chapter_forward_mapping = db_client.forward_mapping
-
     lesson_back_mapping = db_client.back_mapping
     lesson_forward_mapping = db_client.forward_mapping
 
     def insert_lesson_inline(lesson_dict: dict, parent_chapter: dict):
+        # Set lesson type.
+        lesson_dict["type"] = ["Lesson"]
         inserted_lesson = db_client.insert_page(
             flat_object=lesson_dict,
             back_mapping=lesson_back_mapping,
@@ -100,6 +100,8 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, **kwargs)
         return inserted_lesson
 
     def insert_chapter_inline(chapter_dict: dict, parent_course: dict):
+        # Set chapter type.
+        chapter_dict["type"] = ["Chapter"]
         inserted_chapter = db_client.insert_page(
             flat_object=chapter_dict,
             back_mapping=chapter_back_mapping,
@@ -108,34 +110,34 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, **kwargs)
             child_key="chapters"
         )
         chapter_dict["id"] = inserted_chapter.get("id")
-
-        # If the chapter has lessons, insert them inline
+        # If the chapter has lessons, insert them inline.
         lessons = chapter_dict.get("lessons", [])
         if isinstance(lessons, dict):
             lessons = [lessons]
         for lesson_dict in lessons:
             insert_lesson_inline(lesson_dict, inserted_chapter)
-
         return inserted_chapter
 
-    # 2) We'll loop over courses in payload_data["courses"].
+    # 2) Loop over courses in payload_data["courses"].
     local_courses = payload_data.get("courses", [])
     if isinstance(local_courses, dict):
         local_courses = [local_courses]
 
-    existing_course_names = existing_course_names  # from earlier: set of all existing course names
     for local_course in local_courses:
         course_name = local_course.get("name")
         if not course_name:
             print("Skipping a course that has no 'name' field.")
             continue
 
-        # 2a) If course_name is already in existing_course_names, skip
+        # Set course type.
+        local_course["type"] = ["Course"]
+
+        # 2a) If course_name is already in existing_course_names, skip.
         if course_name in existing_course_names:
             print(f"Course '{course_name}' already exists; skipping insertion.")
             continue
 
-        # 2b) Ensure "path" is defined (fallback to $COURSE_FOLDER_PATH or ~Documents).
+        # 2b) Ensure "path" is defined (fallback to $COURSE_FOLDER_PATH or ~/Documents).
         if "path" not in local_course or not local_course["path"]:
             env_course_folder = os.environ.get("COURSE_FOLDER_PATH")
             if env_course_folder and os.path.isdir(os.path.expandvars(env_course_folder)):
@@ -143,8 +145,7 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, **kwargs)
             else:
                 local_course["path"] = str(Path.home() / "Documents")
 
-        # 2c) Create local folders. We'll call create_courses on [local_course].
-        #     This also calls create_chapters inside, which calls create_lessons.
+        # 2c) Create local folders.
         create_courses(
             courses=[local_course],
             templates_dir=templates_dir,
@@ -153,7 +154,7 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, **kwargs)
             parent_path=None  # let create_courses handle the parent's logic
         )
 
-        # 2d) Insert the course as a new Notion page (since this is top-level, no parent_item).
+        # 2d) Insert the course as a new Notion page.
         inserted_course = db_client.insert_page(
             flat_object=local_course,
             back_mapping=course_back_mapping,
@@ -165,16 +166,15 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, **kwargs)
         inserted_courses.append(inserted_course)
         existing_course_names.add(course_name)
 
-        # 2e) Now insert the chapters (and their lessons) inline. Because create_courses
-        #     has already set local_course["chapters"][...]["path"], etc. We skip duplicates here if you want.
+        # 2e) Now insert the chapters (and their lessons) inline.
         local_chapters = local_course.get("chapters", [])
         if isinstance(local_chapters, dict):
             local_chapters = [local_chapters]
         for local_chapter in local_chapters:
-            # If you want to skip duplicates again, you can do so, but we already do it up above if you want.
             insert_chapter_inline(local_chapter, inserted_course)
 
     return inserted_courses
+
 
 def addChapters(payload_data: dict, course_filter: str, templates_dir: Path, db=DEFAULT_DB, **kwargs):
     """
@@ -523,7 +523,7 @@ if __name__ == "__main__":
     # test_add_lessons()
 
     # Uncomment to test addChapter.
-    test_add_chapters()
+    # test_add_chapters()
 
     # Uncomment to test addCourses.
-    # test_add_courses()
+    test_add_courses()
