@@ -17,7 +17,7 @@ if mapping_file_path.exists():
     DEFAULT_ICON_URL = mapping.get("default_icon", {}).get("external", {}).get("url",
                           "https://www.notion.so/icons/graduate_lightgray.svg")
     DEFAULT_COVER_URL = mapping.get("default_cover", {}).get("external", {}).get("url",
-                          "https://github.com/suhailphotos/notionUtils/blob/main/assets/media/banner/notion_style_banners_lgt_36.jpg?raw=true")
+                          "https://res.cloudinary.com/dicttuyma/image/upload/w_1500,h_600,c_fill,g_auto/v1742094799/banner/notion_21.jpg")
 else:
     forward_mapping = {
         "id": {"target": "id", "return": "str"},
@@ -28,6 +28,8 @@ else:
         "Type": {"target": "type", "type": "select", "return": "list"},
         "Course Description": {"target": "description", "type": "rich_text", "return": "str"},
         "Course Link": {"target": "link", "type": "url", "return": "str"},
+        "Instructor": {"target": "instructor", "type": "select", "return": "list"},
+        "Institute": {"target":"institute", "type":"select", "return":"list"},
         "Path": {"target": "path", "type": "rich_text", "return": "str"},
         "Template": {"target": "template", "type": "rich_text", "return": "str"},
         "Tags": {"target": "tags", "type": "multi_select", "return": "list"}
@@ -40,6 +42,8 @@ else:
         "type": {"target": "Type", "type": "select", "return": "list"},
         "description": {"target": "Course Description", "type": "rich_text", "return": "str"},
         "link": {"target": "Course Link", "type": "url", "return": "str"},
+        "instructor": {"target": "Instructor", "type": "select", "return": "list"},
+        "institute": {"target":"Institute", "type":"select", "return":"list"},
         "path": {"target": "Path", "type": "rich_text", "return": "str"},
         "template": {"target": "Template", "type": "rich_text", "return": "str"},
         "tags": {"target": "Tags", "type": "multi_select", "return": "list", "default": ["Python"]}
@@ -50,7 +54,7 @@ else:
         "level_2": "lessons"
     }
     DEFAULT_ICON_URL = "https://www.notion.so/icons/graduate_lightgray.svg"
-    DEFAULT_COVER_URL = "https://github.com/suhailphotos/notionUtils/blob/main/assets/media/banner/notion_style_banners_lgt_36.jpg?raw=true"
+    DEFAULT_COVER_URL = "https://res.cloudinary.com/dicttuyma/image/upload/w_1500,h_600,c_fill,g_auto/v1742094799/banner/notion_21.jpg"
 
 class NotionDB:
 
