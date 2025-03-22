@@ -17,8 +17,8 @@ include = [
 incept = "incept.cli:main"
 
 [tool.poetry.dependencies]
-python = "^3.11"
-notionmanager = "^0.1.5"
+python = "^3.11.7"
+notionmanager = "^0.1.14"
 oauthmanager = "^0.1.1"
 platformdirs = "^3.0"
 tabulate = "^0.9.0"
