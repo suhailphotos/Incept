@@ -28,7 +28,7 @@ class Poster:
         self.logo_public_id = logo_public_id
         self.instructor_name = instructor_name.upper()
         self.course_title = course_title.upper()
-        self.chapter_title = chapter_title.upper()
+        self.chapter_title = chapter_title
         self.lesson_title = lesson_title.upper()
         self.link_text = link_text
         self.bounding_box = bounding_box
@@ -125,17 +125,18 @@ class Poster:
         text_color = (255, 255, 255, 255)
 
         # Instructor name.
-        instr_x, instr_y = 70, 300
-        draw.text((instr_x, instr_y), self.instructor_name, font=self.font_instructor, fill=text_color)
         instr_w, instr_h = self._get_text_size(draw, self.instructor_name, self.font_instructor)
+        instr_x, instr_y = (base_w - instr_w)*0.5, 750
+        draw.text((instr_x, instr_y), self.instructor_name, font=self.font_instructor, fill=text_color)
+        
         line_y = instr_y + instr_h + 10
-        draw.line((instr_x, line_y, instr_x + instr_w, line_y), fill=text_color, width=1)
+        # draw.line((instr_x, line_y, instr_x + instr_w, line_y), fill=text_color, width=1)
 
         # Course title.
         course_x, course_y = instr_x, line_y + 40
         draw.text((course_x, course_y), self.course_title, font=self.font_course, fill=text_color)
         course_w, course_h = self._get_text_size(draw, self.course_title, self.font_course)
-        course_line_y = course_y + course_h + 10
+        course_line_y = course_y + course_h - 15
         draw.line((course_x, course_line_y, course_x + course_w, course_line_y), fill=text_color, width=1)
 
         # Chapter title.
