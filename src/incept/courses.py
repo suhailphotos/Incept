@@ -404,7 +404,7 @@ if __name__ == "__main__":
 
     # Retrieve Notion credentials from environment variables.
     NOTION_API_KEY = os.getenv("NOTION_API_KEY")
-    NOTION_DATABASE_ID = os.getenv("NOTION_DATABASE_ID")
+    NOTION_COURSE_DATABASE_ID = os.getenv("NOTION_COURSE_DATABASE_ID")
 
     def test_add_lessons():
     
@@ -442,7 +442,7 @@ if __name__ == "__main__":
                 course_filter,
                 templates_dir=templates_dir,
                 api_key=os.getenv("NOTION_API_KEY"),
-                database_id=os.getenv("NOTION_DATABASE_ID")
+                database_id=os.getenv("NOTION_COURSE_DATABASE_ID")
             )
             inserted_lessons.append(inserted)
     
@@ -482,7 +482,7 @@ if __name__ == "__main__":
            course_filter=course_filter,
            templates_dir=templates_dir,
            api_key=NOTION_API_KEY,
-           database_id=NOTION_DATABASE_ID
+           database_id=NOTION_COURSE_DATABASE_ID
        )
 
        print("Inserted Chapters:")
@@ -512,7 +512,7 @@ if __name__ == "__main__":
             payload_data=payload_data,
             templates_dir=templates_dir,
             api_key=NOTION_API_KEY,
-            database_id=NOTION_DATABASE_ID
+            database_id=NOTION_COURSE_DATABASE_ID
         )
 
         print("Inserted Courses:")

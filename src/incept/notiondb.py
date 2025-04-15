@@ -269,11 +269,11 @@ if __name__ == "__main__":
 
     # Retrieve credentials from environment variables.
     NOTION_API_KEY = os.getenv("NOTION_API_KEY")
-    NOTION_DATABASE_ID = os.getenv("NOTION_DATABASE_ID")
+    NOTION_COURSE_DATABASE_ID = os.getenv("NOTION_COURSE_DATABASE_ID")
 
-    if NOTION_API_KEY and NOTION_DATABASE_ID:
+    if NOTION_API_KEY and NOTION_COURSE_DATABASE_ID:
         # Initialize NotionDB.
-        notion_db = NotionDB(api_key=NOTION_API_KEY, database_id=NOTION_DATABASE_ID)
+        notion_db = NotionDB(api_key=NOTION_API_KEY, database_id=NOTION_COURSE_DATABASE_ID)
     else:
         print("Missing Notion credentials in the .env file.")
         exit(1)  # Exit if credentials are missing.
