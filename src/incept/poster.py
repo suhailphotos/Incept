@@ -144,7 +144,7 @@ class Poster:
 
         # 5) Prepare to draw text
         draw = ImageDraw.Draw(base_img)
-        text_color = (125, 125, 125, 255)  # you can tweak these values
+        text_color = (65, 65, 65, 255)  # you can tweak these values
 
         # Measure text widths/heights in advance
         instr_w, instr_h   = self._get_text_size(draw, self.instructor_name, self.font_instructor)
@@ -211,6 +211,6 @@ if __name__ == "__main__":
     }
 
     # You can pass brightness_factor via from_flat_object(...) or directly to Poster(...)
-    poster = Poster.from_flat_object(flat_object, brightness_factor=0.5)
+    poster = Poster.from_flat_object(flat_object, brightness_factor=1.0)
     output_file = "/Users/suhail/Desktop/poster.jpg"
     poster.generate(output_file)
