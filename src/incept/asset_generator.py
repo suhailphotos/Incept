@@ -263,7 +263,7 @@ class PosterGenerator(BaseGenerator):
 
         # 4) draw text
         draw = ImageDraw.Draw(base)
-        y   = 750
+        y   = 800
         gap = 40
 
         # instructor
@@ -297,11 +297,74 @@ class PosterGenerator(BaseGenerator):
             y += 250
             draw_center(
                 draw, self.chapter_title, y,
-                get_font("coresansc45.otf", 40),
+                get_font("coresansc25.otf", 70),
                 self.TEXT_COLOUR
             )
 
         # 5) save out as JPEG
+        base.convert("RGB").save(out_path, "JPEG", quality=95)
+
+class ThumbGenerator(BaseGenerator):
+    # default base image (already includes the open‑book icon on the right)
+    DEFAULT_BASE_PUBLIC_ID = "thumb/base_image"
+
+    # text styling
+    TEXT_COLOUR            = (65, 65, 65, 255)
+    INSTRUCTOR_FONT_FILE   = "coresansc35.otf"
+    INSTRUCTOR_FONT_SIZE   = 100
+    COURSE_FONT_FILE       = "coresansc75.otf"
+    COURSE_FONT_SIZE       = 120
+    GAP                    = 60  # vertical gap between instructor and course
+    LEFT_REGION_RATIO      = 0.5  # use left 50% of canvas for text
+    HORIZONTAL_OFFSET      = 250 # Horizontal offset
+
+    def __init__(
+        self,
+        *,
+        instructor: str,
+        course_title: str,
+        base_public_id: str = DEFAULT_BASE_PUBLIC_ID,
+        **_,
+    ):
+        super().__init__()
+        self.base_public_id = base_public_id
+        self.instructor    = instructor.upper()
+        self.course_title  = course_title.upper()
+
+    def generate(self, out_path: str):
+        # 1) fetch base image
+        base = fetch_rgba(self.base_public_id, self.manager)
+        draw = ImageDraw.Draw(base)
+        w, h = base.size
+
+        # 2) prepare fonts
+        font_instr = get_font(self.INSTRUCTOR_FONT_FILE, self.INSTRUCTOR_FONT_SIZE)
+        font_course= get_font(self.COURSE_FONT_FILE, self.COURSE_FONT_SIZE)
+
+        # 3) compute text region (left half)
+        region_w = int(w * self.LEFT_REGION_RATIO)
+
+        # 4) draw instructor name
+        y = int(h * 0.45)
+        instr_w, instr_h = draw.textbbox((0, 0), self.instructor, font=font_instr)[2:4]
+        x_instr = (region_w - instr_w) // 2 + self.HORIZONTAL_OFFSET
+        draw.text((x_instr, y), self.instructor, font=font_instr, fill=self.TEXT_COLOUR)
+
+        # 5) draw underline based on course title width
+        y += instr_h + self.GAP
+        course_w, _ = draw.textbbox((0, 0), self.course_title, font=font_course)[2:4]
+        x_line = (region_w - course_w) // 2 + self.HORIZONTAL_OFFSET
+        draw.line((x_line, y, x_line + course_w, y),
+                  fill=self.TEXT_COLOUR, width=2)
+
+        # 6) draw course title
+        y += self.GAP - 20
+        course_w, course_h = draw.textbbox((0, 0), self.course_title, font=font_course)[2:4]
+        x_course = (region_w - course_w) // 2 + self.HORIZONTAL_OFFSET
+        draw.text((x_course, y), self.course_title,
+                  font=font_course, fill=self.TEXT_COLOUR)
+
+        # 7) save
         base.convert("RGB").save(out_path, "JPEG", quality=95)
 
 
@@ -313,6 +376,7 @@ if __name__ == "__main__":
         LogoGenerator,
         PosterGenerator,
         PosterVariant,
+        ThumbGenerator,
     )
 
     parser = argparse.ArgumentParser(
@@ -386,6 +450,26 @@ if __name__ == "__main__":
         help="Filename for the generated poster JPEG",
     )
 
+    # Thumb
+    parser.add_argument(
+        "--thumb-instructor",
+        help="Instructor name for thumbnail (landscape)",
+    )
+    parser.add_argument(
+        "--thumb-course-title",
+        help="Course title for thumbnail (landscape)",
+    )
+    parser.add_argument(
+        "--thumb-base-public-id",
+        default=ThumbGenerator.DEFAULT_BASE_PUBLIC_ID,
+        help="Public ID for the thumb base image",
+    )
+    parser.add_argument(
+        "--thumb-output",
+        default="thumb.jpg",
+        help="Filename for the generated thumbnail",
+    )
+
     args = parser.parse_args()
 
     did_something = False
@@ -409,7 +493,7 @@ if __name__ == "__main__":
         did_something = True
         lg = LogoGenerator(logo_public_id=args.logo_public_id)
         lg.generate(args.logo_output)
-        print(f"Logo      → {args.logo-output} (transparent PNG)")
+        print(f"Logo      → {args.logo_output} (transparent PNG)")
 
     # 4) Poster
     if args.poster_variant:
@@ -435,6 +519,21 @@ if __name__ == "__main__":
         )
         pg.generate(args.poster_output)
         print(f"Poster ({args.poster_variant}) → {args.poster_output}")
+
+    # 5) Thumb
+    if args.thumb_instructor or args.thumb_course_title:
+        if not (args.thumb_instructor and args.thumb_course_title):
+            parser.error(
+                "--thumb-instructor and --thumb-course-title are both required for a thumb"
+            )
+        did_something = True
+        tg = ThumbGenerator(
+            instructor     = args.thumb_instructor,
+            course_title   = args.thumb_course_title,
+            base_public_id = args.thumb_base_public_id,
+        )
+        tg.generate(args.thumb_output)
+        print(f"Thumb     → {args.thumb_output}")
 
     if not did_something:
         parser.print_help()
