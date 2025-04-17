@@ -1,0 +1,49 @@
+{# video_lesson.j2 #}
+{#
+  Generates:
+    - sXXeYY_<lesson_slug>.mkv
+    - sXXeYY_<lesson_slug>.nfo (with template_content)
+    - sXXeYY_<lesson_slug>_poster.jpg
+    - sXXeYY_<lesson_slug>_fanart.jpg
+    - sXXeYY_<lesson_slug>_banner.jpg
+    - sXXeYY_<lesson_slug>_background.jpg
+    - sXXeYY_<lesson_slug>_thumb.jpg
+    - sXXeYY_<lesson_slug>_logo.png
+#}
+{
+  "files": [
+    {
+      "file": "s{{ season_number|default(numeric_prefix) }}e{{ episode_number|default(numeric_prefix) }}_{{ lesson_slug|lower }}.mkv"
+    },
+    {
+      "file": "s{{ season_number|default(numeric_prefix) }}e{{ episode_number|default(numeric_prefix) }}_{{ lesson_slug|lower }}.nfo",
+      "template_content": "<episodedetails>\n"
+                          "  <title>{{ lesson_title }}</title>\n"
+                          "  <season>{{ season_number|default(numeric_prefix) }}</season>\n"
+                          "  <episode>{{ episode_number|default(numeric_prefix) }}</episode>\n"
+                          "  <plot>{{ description }}</plot>\n"
+                          "  <aired>{{ aired|default(\"2025-01-01\") }}</aired>\n"
+                          "  <director>{% if instructor %}{{ instructor|join(', ') }}{% else %}Unknown{% endif %}</director>\n"
+                          "  <studio>{% if institute %}{{ institute|join(', ') }}{% else %}Unknown{% endif %}</studio>\n"
+                          "</episodedetails>"
+    },
+    {
+      "file": "s{{ season_number|default(numeric_prefix) }}e{{ episode_number|default(numeric_prefix) }}_{{ lesson_slug|lower }}_poster.jpg"
+    },
+    {
+      "file": "s{{ season_number|default(numeric_prefix) }}e{{ episode_number|default(numeric_prefix) }}_{{ lesson_slug|lower }}_fanart.jpg"
+    },
+    {
+      "file": "s{{ season_number|default(numeric_prefix) }}e{{ episode_number|default(numeric_prefix) }}_{{ lesson_slug|lower }}_banner.jpg"
+    },
+    {
+      "file": "s{{ season_number|default(numeric_prefix) }}e{{ episode_number|default(numeric_prefix) }}_{{ lesson_slug|lower }}_background.jpg"
+    },
+    {
+      "file": "s{{ season_number|default(numeric_prefix) }}e{{ episode_number|default(numeric_prefix) }}_{{ lesson_slug|lower }}_thumb.jpg"
+    },
+    {
+      "file": "s{{ season_number|default(numeric_prefix) }}e{{ episode_number|default(numeric_prefix) }}_{{ lesson_slug|lower }}_logo.png"
+    }
+  ]
+}

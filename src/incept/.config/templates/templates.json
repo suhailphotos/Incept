@@ -1,6 +1,7 @@
 {
   "course": {
     "default": "default_course.j2",
+    "video": "video_course.j2",
     "python": "python_course.j2",
     "blender": "blender_course.j2",
     "houdini": "houdini_course.j2",
@@ -8,6 +9,7 @@
   },
   "chapter": {
     "default": "default_chapter.j2",
+    "video": "video_chapter.j2",
     "python": "python_chapter.j2",
     "blender": "blender_chapter.j2",
     "houdini": "houdini_chapter.j2",
@@ -15,6 +17,7 @@
   },
   "lesson": {
     "default": "default_lesson.j2",
+    "video": "video_lesson.j2",
     "python": "python_lesson.j2",
     "blender": "blender_lesson.j2",
     "houdini": "houdini_lesson.j2",

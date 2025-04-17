@@ -1,19 +1,16 @@
 {
   "courses": [
     {
-      "id": null,
+      "id": "195a1865-b187-8036-b481-dfb62afee3d6",
+      "icon": null,
+      "cover": null,
       "name": "Sample Course A",
       "chapters": [
         {
-          "id": null,
+          "id": "1b2a1865-b187-8102-8288-fcbb72902923",
           "icon": null,
           "cover": null,
-          "name": "Sample Chapter F",
-          "tool": ["149a1865-b187-80f9-b21f-c9c96430bf62"],
-          "description": "This is a sample chapter",
-          "link": "example.com",
-          "tags": ["Python"],
-          "template": "default",
+          "name": "Sample Chapter E",
           "lessons": [
             {
               "id": null,
@@ -49,28 +46,6 @@
               "template": "default"
             }
           ]
-        },
-        {
-          "id": null,
-          "icon": null,
-          "cover": null,
-          "name": "Sample Chapter G",
-          "tool": ["149a1865-b187-80f9-b21f-c9c96430bf62"],
-          "description": "This is a sample chapter",
-          "link": "example.com",
-          "tags": ["Python"],
-          "template": "default"
-        },
-        {
-          "id": null,
-          "icon": null,
-          "cover": null,
-          "name": "Sample Chapter H",
-          "tool": ["149a1865-b187-80f9-b21f-c9c96430bf62"],
-          "description": "This is a sample chapter",
-          "link": "example.com",
-          "tags": ["Python"],
-          "template": "default"
         }
       ]
     }
