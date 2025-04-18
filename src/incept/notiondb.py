@@ -32,7 +32,8 @@ else:
         "Institute": {"target":"institute", "type":"select", "return":"list"},
         "Path": {"target": "path", "type": "rich_text", "return": "str"},
         "Template": {"target": "template", "type": "rich_text", "return": "str"},
-        "Tags": {"target": "tags", "type": "multi_select", "return": "list"}
+        "Tags": {"target": "tags", "type": "multi_select", "return": "list"},
+        "Video": {"target": "video", "type": "checkbox", "return": "boolean"}
     }
     back_mapping = {
         "icon": {"target": "icon", "return": "object"},
@@ -46,7 +47,8 @@ else:
         "institute": {"target":"Institute", "type":"select", "return":"list"},
         "path": {"target": "Path", "type": "rich_text", "return": "str"},
         "template": {"target": "Template", "type": "rich_text", "return": "str"},
-        "tags": {"target": "Tags", "type": "multi_select", "return": "list", "default": ["Python"]}
+        "tags": {"target": "Tags", "type": "multi_select", "return": "list", "default": ["Python"]},
+        "video": {"target": "Video", "type": "checkbox", "return": "boolean"}
     }
     hierarchy_config = {
         "root": "courses",
