@@ -3,7 +3,6 @@
 import os
 import re
 from pathlib import Path
-from dotenv import load_dotenv
 from incept.dbfactory import get_db_client
 from incept.utils import create_lessons, create_chapters, create_courses, expand_or_preserve_env_vars
 
@@ -394,10 +393,6 @@ if __name__ == "__main__":
     import os, json
     from pathlib import Path
     from dotenv import load_dotenv
-
-    # Load environment variables.
-    env_path = os.path.join(os.path.dirname(__file__), ".env")
-    load_dotenv(dotenv_path=env_path)
 
     raw_templates_dir = os.environ.get("JINJA_TEMPLATES_PATH", str(Path.home() / ".incept" / "templates"))
     templates_dir = Path(os.path.expandvars(raw_templates_dir)).expanduser()
