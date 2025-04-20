@@ -15,6 +15,21 @@ from typing import Optional, Any, Dict, List, Tuple
 # Import TemplateManager
 from incept.templates import TemplateManager
 
+# Import asset_generator
+from incept.asset_generator import (
+    BackgroundGenerator,
+    FanartGenerator,
+    LogoGenerator,
+    PosterGenerator,
+    PosterVariant,
+    ThumbGenerator,
+)
+
+# Default asset IDs for video‑mode generation
+DEFAULT_LOGO_PUBLIC_ID   = "icon/rebelway_logo.png"
+DEFAULT_FANART_PUBLIC_ID = "banner/fanart"
+DEFAULT_POSTER_BASE_ID   = PosterGenerator.DEFAULT_BASE_PUBLIC_ID
+DEFAULT_THUMB_BASE_ID    = ThumbGenerator.DEFAULT_BASE_PUBLIC_ID
 
 def get_default_documents_folder() -> Path:
     """
@@ -167,12 +182,39 @@ def create_structure_recursive(structure: dict, context: dict, base_path: Path) 
 
         # Handle files inside this folder.
         for file_item in structure.get("files", []):
-            file_name_expr = file_item.get("file")
-            if not file_name_expr:
+            fn_expr = file_item.get("file")
+            if not fn_expr:
                 continue
-            file_name_rendered = render_expression(file_name_expr, context)
-            file_name_rendered = sanitize_dir_name(file_name_rendered)
-            (top_dir / file_name_rendered).touch()
+            fn = sanitize_dir_name(render_expression(fn_expr, context))
+            dst = top_dir / fn
+            # if there's template_content, write it; otherwise just touch()
+            content = file_item.get("template_content")
+            if content is not None:
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                # content is already unescaped (Jinja did tojson→string→parsed by json.loads)
+                with open(dst, "w", encoding="utf-8") as f:
+                    f.write(content)
+            else:
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                lower = dst.name.lower()
+                if lower.endswith("background.jpg") and context.get("logo_public_id"):
+                    BackgroundGenerator(**context).generate(str(dst))
+                elif lower.endswith("fanart.jpg") and context.get("fanart_public_id"):
+                    FanartGenerator(public_id=context["fanart_public_id"]).generate(str(dst))
+                elif lower.endswith("logo.png") and context.get("logo_public_id"):
+                    LogoGenerator(**context).generate(str(dst))
+                elif lower.endswith("poster.jpg"):
+                    # pick CHAPTER vs COURSE based on presence of chapter_title
+                    variant = PosterVariant.CHAPTER if context.get("chapter_title") else PosterVariant.COURSE
+                    PosterGenerator(variant=variant, **context).generate(str(dst))
+                elif lower.endswith("thumb.jpg") and context.get("course_title"):
+                    ThumbGenerator(
+                        instructor=context["instructor"],
+                        course_title=context["course_title"],
+                        base_public_id=context.get("thumb_base_id"),
+                    ).generate(str(dst))
+                else:
+                    dst.touch()
 
         return top_dir
 
@@ -219,6 +261,8 @@ def create_folder_structure(
     # e.g. "name" → "chapter_name" or "lesson_name"
     name_key = f"{template_type}_name"
     entity_data[name_key] = sanitize_dir_name(entity_data["name"])
+    # so create_structure_recursive knows which generator to pick:
+    entity_data["template_type"] = template_type
 
     # 3. Render the JSON structure from the template
     rendered_json_str = template_obj.render(**entity_data)
@@ -324,14 +368,25 @@ def create_courses(
         # ---------------------------------------------------------------
         if include_video:
             video_parent_path = get_video_root_path(Path(course_dict["path"]))
+            # instructors can be a list; generators expect a single string
+            raw_instr = course_dict.get("instructor", [])
+            instr_str = ", ".join(raw_instr) if isinstance(raw_instr, (list, tuple)) else str(raw_instr or "")
+
             video_ctx = {
-                "numeric_prefix": prefix,                     # ← same 01 prefix
-                "course_slug": sanitize_dir_name(course_dict["name"]).lower(),
+                "numeric_prefix": prefix,
+                "course_slug": sanitize_dir_name(course_dict["name"]),
                 "course_title": course_dict["name"],
                 "description": course_dict.get("description", ""),
                 "institute": course_dict.get("institute", []),
+                "logo_public_id": course_dict.get("logo_public_id")    or DEFAULT_LOGO_PUBLIC_ID,
+                "fanart_public_id": course_dict.get("fanart_public_id") or DEFAULT_FANART_PUBLIC_ID,
+                "base_public_id": course_dict.get("poster_base_id")     or DEFAULT_POSTER_BASE_ID,
+                "thumb_base_id": course_dict.get("thumb_base_id")       or DEFAULT_THUMB_BASE_ID,
+                # now a single string, not a list
+                "instructor": instr_str,
                 "chapters": course_dict.get("chapters", []),
                 "name": course_dict["name"],
+                "year": course_dict.get("year", datetime.datetime.now().year),
             }
             video_result = create_folder_structure(
                 entity_data=video_ctx,
@@ -362,7 +417,14 @@ def create_courses(
             # 2) Optional video hierarchy (seasons/episodes)
             if include_video:
                 # Deep‑copy so that video‑specific keys don't pollute text entries
+                # → also inject course‑level asset IDs & titles into each chapter_dict
                 video_chapters = copy.deepcopy(course_dict["chapters"])
+                for chap in video_chapters:
+                    chap["logo_public_id"]   = video_ctx["logo_public_id"]
+                    chap["fanart_public_id"] = video_ctx["fanart_public_id"]
+                    chap["poster_base_id"]   = video_ctx["base_public_id"]
+                    chap["course_title"]     = video_ctx["course_title"]
+                    chap["instructor"]       = video_ctx["instructor"]
                 create_chapters(
                     video_chapters,
                     templates_dir=templates_dir,
@@ -390,7 +452,7 @@ def create_chapters(
     # Process parent_path as raw string.
     expanded_parent, raw_parent = expand_or_preserve_env_vars(raw_path=None, parent_path=parent_path, keep_env_in_path=keep_env_in_path)
 
-    for chapter_dict in chapters:
+    for i, chapter_dict in enumerate(chapters, start=1):
         raw_chapter_path = chapter_dict.get(path_key)
         expanded_chapter_path, final_chapter_str = expand_or_preserve_env_vars(raw_chapter_path, raw_parent, keep_env_in_path)
         
@@ -404,14 +466,31 @@ def create_chapters(
             final_chapter_str = str(Path(final_chapter_str) / child_folder_name)
 
         if create_folders:
-            base_prefix = int(get_next_numeric_prefix(expanded_chapter_path))
-            prefix = f"{base_prefix:02d}"  # get_next_numeric_prefix now reflects prior creations
+            if include_video:
+                # for video we want one season per chapter in payload
+                prefix = f"{i:02d}"
+            else:
+                base_prefix = int(get_next_numeric_prefix(expanded_chapter_path))
+                prefix = f"{base_prefix:02d}"
             context = {
                 "numeric_prefix": prefix,
                 "chapter_name": chapter_dict["name"],
-                "lessons": chapter_dict.get("lessons", []),
-                "name": chapter_dict["name"],
+                "lessons":      chapter_dict.get("lessons", []),
+                "name":         chapter_dict["name"],
             }
+
+            # in video mode, carry along the course assets & titles so
+            # our image‐dispatch will fire inside this season folder
+            if include_video:
+                context.update({
+                    "logo_public_id":   chapter_dict.get("logo_public_id")   or DEFAULT_LOGO_PUBLIC_ID,
+                    "fanart_public_id": chapter_dict.get("fanart_public_id") or DEFAULT_FANART_PUBLIC_ID,
+                    "base_public_id":   chapter_dict.get("poster_base_id")   or DEFAULT_POSTER_BASE_ID,
+                    "thumb_base_id":    chapter_dict.get("thumb_base_id")    or DEFAULT_THUMB_BASE_ID,
+                    "course_title":     chapter_dict.get("course_title"),
+                    "instructor":       chapter_dict.get("instructor"),
+                    "chapter_title":    chapter_dict["name"],
+                })
 
             template_used = "chapter"
             variant_used  = "video" if include_video else chapter_dict.get("template", "default")
