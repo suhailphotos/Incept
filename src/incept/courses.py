@@ -27,7 +27,7 @@ def getCourses(db=DEFAULT_DB, filter=None, **kwargs):
     else:
         return db_client.get_courses()
 
-def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, **kwargs):
+def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, include_video: bool = False, **kwargs):
     """
     Add one or more courses (including their chapters and lessons) to Notion.
     The payload_data is expected to follow your standard internal format, e.g.:
@@ -150,7 +150,8 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, **kwargs)
             templates_dir=templates_dir,
             create_folders=True,
             keep_env_in_path=True,
-            parent_path=None  # let create_courses handle the parent's logic
+            parent_path=None, # let create_courses handle the parent's logic
+            include_video=include_video
         )
 
         # 2d) Insert the course as a new Notion page.
@@ -175,7 +176,12 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, **kwargs)
     return inserted_courses
 
 
-def addChapters(payload_data: dict, course_filter: str, templates_dir: Path, db=DEFAULT_DB, **kwargs):
+def addChapters(payload_data: dict,
+               course_filter: str,
+               templates_dir: Path,
+               db=DEFAULT_DB,
+               include_video: bool = False,
+               **kwargs):
     """
     Add one or more chapters (and optionally lessons) to a single course in Notion.
     The payload_data is expected to follow the standard internal format:
@@ -285,7 +291,8 @@ def addChapters(payload_data: dict, course_filter: str, templates_dir: Path, db=
             templates_dir=templates_dir,
             create_folders=True,
             keep_env_in_path=True,
-            parent_path=notion_course_path  # The course path from Notion.
+            parent_path=notion_course_path,  # The course path from Notion.
+            include_video=include_video
         )
 
         # 3c) Insert the new chapter as a Notion page.
@@ -367,6 +374,7 @@ def addLessons(lesson_payload: dict, course_filter: str, templates_dir: Path, db
         templates_dir=templates_dir,
         create_folders=True,
         keep_env_in_path=True,
+        include_video=include_video,
         parent_path=parent_path
     )
     # Now lesson_payload["path"] should be updated.
@@ -512,13 +520,50 @@ if __name__ == "__main__":
 
         print("Inserted Courses:")
         print(json.dumps(inserted_courses, indent=2))
+
+    def test_add_courses_with_video():
+        """Create BOTH text and video hierarchies for all courses in cine_light.json."""
+        payload_file = os.path.join(
+            os.path.expanduser("~"),
+            ".incept",
+            "payload",
+            "cine_light.json",
+        )
+        if not os.path.exists(payload_file):
+            print(f"Payload file not found: {payload_file}")
+            return
+
+        with open(payload_file, "r", encoding="utf-8") as f:
+            payload_data = json.load(f)
+
+        # Ensure that "courses" is a list
+        courses = payload_data.get("courses", [])
+        if isinstance(courses, dict):
+            courses = [courses]
+        payload_data["courses"] = courses
+
+        # Call addCourses with include_video=True
+        inserted_courses = addCourses(
+            payload_data=payload_data,
+            templates_dir=templates_dir,
+            include_video=True,
+            api_key=NOTION_API_KEY,
+            database_id=NOTION_COURSE_DATABASE_ID
+        )
+
+        print("Inserted Courses with Video:")
+        print(json.dumps(inserted_courses, indent=2))
+
+
+    # Uncomment to test addCourses + video:
+    test_add_courses_with_video()
   
 
     # Uncomment to test addLessons.
     # test_add_lessons()
 
     # Uncomment to test addChapter.
-    test_add_chapters()
+    # test_add_chapters()
 
     # Uncomment to test addCourses.
     # test_add_courses()
