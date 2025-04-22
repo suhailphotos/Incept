@@ -549,23 +549,33 @@ def create_lessons(
                 final_lesson_str = str(Path(final_lesson_str) / child_folder_name)
 
             ext = ".mkv" if include_video else f".{lesson_dict.get('ext', 'md')}"
-            base_prefix = int(get_next_numeric_prefix(expanded_lesson_path, file_extension=ext))
-            prefix = f"{base_prefix:02d}"
-
-            lesson_context = {
-                "numeric_prefix": prefix,
-                "lesson_name": lesson_dict["name"],
-                "name": lesson_dict["name"],
-            }
-
             if include_video:
-                lesson_context.update({
-                    "lesson_slug": sanitize_dir_name(lesson_dict["name"]).lower(),
-                    "lesson_title": lesson_dict["name"],
-                    "episode_number": prefix,
-                })
+                # pull season number from the parent folder, which is named "season_##"
+                season_folder = Path(parent_path).name
+                m = re.search(r'(\d{2})$', season_folder)
+                season_prefix = m.group(1) if m else "01"
+                # episode index is just the enumerate index +1
+                episode_number = f"{idx+1:02d}"
+
+                lesson_context = {
+                    "name":           lesson_dict["name"],                        # avoid KeyError
+                    "numeric_prefix": season_prefix,                              # for s##e##  
+                    "episode_number": episode_number,
+                    "lesson_slug":    sanitize_dir_name(lesson_dict["name"]).lower(),
+                    "lesson_title":   lesson_dict["name"],
+                    # pass through extra fields your template uses:
+                    "description":    lesson_dict.get("description", ""),
+                    "aired":          lesson_dict.get("aired", None),
+                }
             else:
-                lesson_context["ext"] = lesson_dict.get("ext", "md")
+                # text mode: just enumerate by existing files
+                base_prefix = int(get_next_numeric_prefix(expanded_lesson_path, file_extension=ext))
+                lesson_context = {
+                    "name":           lesson_dict["name"],                        # avoid KeyError
+                    "numeric_prefix": f"{base_prefix:02d}",
+                    "lesson_name":    lesson_dict["name"],
+                    "ext":            lesson_dict.get("ext", "md"),
+                }
 
             template_used  = "lesson"
             variant_used   = "video" if include_video else lesson_dict.get("template", "default")
