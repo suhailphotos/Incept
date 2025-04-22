@@ -7,6 +7,7 @@ import shutil
 from dotenv import load_dotenv
 from pathlib import Path
 from incept.courses import getCourses, addCourses, addChapters, addLessons
+from incept.payload import build_payload
 
 # Set up user configuration directory
 CONFIG_DIR = Path.home() / ".incept"
@@ -473,6 +474,74 @@ def cli_add_lesson(api_key, database_id, data_file_path, course_name, chapter_na
 
     click.echo("Inserted Lessons:")
     click.echo(json.dumps(inserted_lessons, indent=2))
+
+
+
+@main.command("build-payload")
+@click.option("--course-name",              required=True, help="Course title")
+@click.option("--course-desc",              required=True, help="Full course description")
+@click.option("--intro-link",               required=True, help="Course intro URL")
+@click.option("--chapters",                 required=True, type=click.Path(exists=True),
+              help="Path to chapters.csv")
+@click.option("--lessons",                  required=True, type=click.Path(exists=True),
+              help="Path to lessons.csv")
+
+# ← new flag for naming template
+@click.option("--chapter-name-template", default=None,
+              help="Python .format() expression for chapter name, e.g. 'Week {i:02d}'")
+
+# ← existing overrides
+@click.option("--tool",        multiple=True, help="Tool UUID(s); repeat or omit for default")
+@click.option("--instructor",  multiple=True, help="Instructor name(s); repeat or omit for default")
+@click.option("--institute",   multiple=True, help="Institute name(s); repeat or omit for default")
+@click.option("--tags",        multiple=True, help="Tag(s); repeat or omit for default")
+@click.option("--template",    "template_override", help="Folder‐template variant; omit for default")
+
+@click.option("--logo-public-id",        default=None, help="Override logo public ID")
+@click.option("--fanart-public-id",      default=None, help="Override fanart public ID")
+@click.option("--poster-base-public-id", default=None, help="Override poster base public ID")
+@click.option("--thumb-base-public-id",  default=None, help="Override thumb base public ID")
+
+@click.option("--templates-dir", default=str(Path.home() / ".incept" / "templates"),
+              help="Your Jinja2 templates folder")
+@click.option("--out",           default="payload.json", help="Where to write the final JSON")
+def cli_build_payload(
+    course_name, course_desc, intro_link,
+    chapters, lessons,
+    chapter_name_template,
+    tool, instructor, institute, tags, template_override,
+    logo_public_id, fanart_public_id, poster_base_public_id, thumb_base_public_id,
+    templates_dir, out
+):
+    """
+    Build a nested course→chapters→lessons payload from two CSVs + defaults/overrides.
+    """
+    payload = build_payload(
+      course_name=course_name,
+      course_desc=course_desc,
+      intro_link=intro_link,
+      chapters_csv=Path(chapters),
+      lessons_csv=Path(lessons),
+      chapter_name_template=chapter_name_template,
+      templates_dir=Path(templates_dir),
+
+      tool=list(tool) or None,
+      instructor=list(instructor) or None,
+      institute=list(institute) or None,
+      tags=list(tags) or None,
+      template=template_override or None,
+
+      logo_public_id=logo_public_id,
+      fanart_public_id=fanart_public_id,
+      poster_base_public_id=poster_base_public_id,
+      thumb_base_public_id=thumb_base_public_id,
+    )
+
+    with open(out, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2)
+
+    click.echo(f"payload written to {out}")
+
 
 if __name__ == "__main__":
     main()
