@@ -362,12 +362,29 @@ def create_courses(
             course_dict["path"] = str(Path(final_course_str) / final_disk_path.name)
         else:
             course_dict["path"] = final_course_str
+            # when video is disabled, still record the field for Notion
+            course_dict["video_path"] = "NA"
 
         # ---------------------------------------------------------------
-        #  Optional: generate Jellyfin‑compatible *video* hierarchy
+        #  Optional: generate Jellyfin-compatible *video* hierarchy
         # ---------------------------------------------------------------
         if include_video:
-            video_parent_path = get_video_root_path(Path(course_dict["path"]))
+            # 1) pick up the raw env-var path ($VIDEO_COURSE_FOLDER_PATH) or fallback
+            raw_video_root = os.environ.get("VIDEO_COURSE_FOLDER_PATH")
+            if not raw_video_root or not os.path.isdir(os.path.expandvars(raw_video_root)):
+                # fallback to ~/Videos/courses
+                raw_video_root = str(Path.home() / "Videos" / "courses")
+
+            # 2) expand it for actual file-system use
+            expanded_video_root = Path(os.path.expandvars(raw_video_root)).expanduser()
+
+            # 3) if you explicitly want inline (VIDEO_IN_COURSE_FOLDER=1), override
+            if os.environ.get("VIDEO_IN_COURSE_FOLDER") == "1":
+                raw_video_root = course_dict["path"]
+                expanded_video_root = Path(os.path.expandvars(raw_video_root)).expanduser()
+
+            # that’s your season root
+            video_parent_path = expanded_video_root
             # instructors can be a list; generators expect a single string
             raw_instr = course_dict.get("instructor", [])
             instr_str = ", ".join(raw_instr) if isinstance(raw_instr, (list, tuple)) else str(raw_instr or "")
@@ -395,7 +412,10 @@ def create_courses(
                 templates_dir=templates_dir,
                 parent_path=video_parent_path,
             )
-            course_dict["video_path"] = video_result["full_path"]
+
+            # record the **un-expanded** “$DATALIB/…” style path
+            video_folder_name = Path(video_result["full_path"]).name
+            course_dict["video_path"] = f"{raw_video_root}/{video_folder_name}"
 
         # ------------------------------------------------------------------
         #  Process sub‑chapters
@@ -433,6 +453,18 @@ def create_courses(
                     parent_path=course_dict["video_path"],
                     include_video=True,
                 )
+            # ───────────────────────────────────────────────────────────────
+            # propagate video_path back onto the original chapters & lessons
+            for orig_chap, vid_chap in zip(course_dict["chapters"], video_chapters):
+                # copy season (chapter) path
+                orig_chap["video_path"] = vid_chap.get("video_path")
+                # copy each episode (lesson) path
+                for orig_lesson, vid_lesson in zip(
+                    orig_chap.get("lessons", []),
+                    vid_chap.get("lessons", [])
+                ):
+                    orig_lesson["video_path"] = vid_lesson.get("video_path")
+            # ───────────────────────────────────────────────────────────────
 
 
 def create_chapters(
@@ -502,9 +534,16 @@ def create_chapters(
                 parent_path=expanded_chapter_path,
             )
             final_disk_path = Path(result["full_path"])
-            chapter_dict[path_key] = str(Path(final_chapter_str) / final_disk_path.name)
+            # final_chapter_str already preserved raw env-var for parent
+            this_raw = str(Path(final_chapter_str) / final_disk_path.name)
+            chapter_dict[path_key] = this_raw
+            if include_video:
+                # point the `video_path` at the season folder
+                chapter_dict["video_path"] = this_raw
         else:
             chapter_dict[path_key] = final_chapter_str
+            # ensure chapter.video_path even if not creating video
+            chapter_dict["video_path"] = "NA"
 
         # Process lessons if present.
         if "lessons" in chapter_dict:
@@ -587,9 +626,16 @@ def create_lessons(
                 parent_path=expanded_lesson_path,
             )
             final_disk_path = Path(result["full_path"])
-            lesson_dict[path_key] = str(Path(final_lesson_str) / final_disk_path.name)
+            # final_lesson_str preserves the raw parent env-var path
+            this_raw = str(Path(final_lesson_str) / final_disk_path.name)
+            lesson_dict[path_key] = this_raw
+            if include_video:
+                # for lessons, video_path points to the .mp4
+                lesson_dict["video_path"] = this_raw
         else:
             lesson_dict[path_key] = final_lesson_str
+            # ensure lesson.video_path even if not creating video
+            lesson_dict["video_path"] = "NA"
 
 
 if __name__ == "__main__":
