@@ -86,6 +86,8 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, include_v
     lesson_forward_mapping = db_client.forward_mapping
 
     def insert_lesson_inline(lesson_dict: dict, parent_chapter: dict):
+        # Carry the video flag into the lesson
+        lesson_dict["video"] = include_video
         # Set lesson type.
         lesson_dict["type"] = ["Lesson"]
         inserted_lesson = db_client.insert_page(
@@ -99,6 +101,8 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, include_v
         return inserted_lesson
 
     def insert_chapter_inline(chapter_dict: dict, parent_course: dict):
+        # Carry the video flag into the chapter
+        chapter_dict["video"] = include_video
         # Set chapter type.
         chapter_dict["type"] = ["Chapter"]
         inserted_chapter = db_client.insert_page(
@@ -154,7 +158,8 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, include_v
             include_video=include_video
         )
 
-        # 2d) Insert the course as a new Notion page.
+        # 2d) Make sure the `video` flag is carried into Notion
+        local_course["video"] = include_video
         inserted_course = db_client.insert_page(
             flat_object=local_course,
             back_mapping=course_back_mapping,
@@ -253,6 +258,8 @@ def addChapters(payload_data: dict,
 
     # Inline helper to insert a lesson under a newly inserted chapter.
     def insert_lesson_inline(lesson_dict: dict, parent_chapter: dict):
+        # Carry the video flag into the lesson
+        lesson_dict["video"] = include_video
         # Ensure the lesson payload has the correct type.
         lesson_dict["type"] = ["Lesson"]
         inserted_lesson = db_client.insert_page(
@@ -295,7 +302,9 @@ def addChapters(payload_data: dict,
             include_video=include_video
         )
 
-        # 3c) Insert the new chapter as a Notion page.
+        # 3c) Carry the video flag into chapter (if desired)
+        chapter_payload["video"] = include_video
+        # 3d) Insert the new chapter as a Notion page.
         inserted_chapter = db_client.insert_page(
             flat_object=chapter_payload,
             back_mapping=chapter_back_mapping,
@@ -319,7 +328,7 @@ def addChapters(payload_data: dict,
     return inserted_chapters
 
 
-def addLessons(lesson_payload: dict, course_filter: str, templates_dir: Path, db=DEFAULT_DB, **kwargs):
+def addLessons(lesson_payload: dict, course_filter: str, templates_dir: Path, db=DEFAULT_DB, include_video: bool = False, **kwargs):
     """
     Add a lesson to a course in Notion.
     
@@ -379,7 +388,9 @@ def addLessons(lesson_payload: dict, course_filter: str, templates_dir: Path, db
     )
     # Now lesson_payload["path"] should be updated.
 
-    # 5. Update payload with additional info.
+    # 5. Carry the video flag into the lesson payload
+    lesson_payload["video"] = include_video
+    # 6. Update payload with additional info.
     lesson_payload["type"] = ["Lesson"]
     
     # 6. Insert the lesson into Notion.
