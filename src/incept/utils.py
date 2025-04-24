@@ -30,6 +30,7 @@ DEFAULT_LOGO_PUBLIC_ID   = "icon/rebelway_logo.png"
 DEFAULT_FANART_PUBLIC_ID = "banner/fanart"
 DEFAULT_POSTER_BASE_ID   = PosterGenerator.DEFAULT_BASE_PUBLIC_ID
 DEFAULT_THUMB_BASE_ID    = ThumbGenerator.DEFAULT_BASE_PUBLIC_ID
+DEFAULT_VIDEO_EXT = os.environ.get("VIDEO_EXTENSION", "mp4")
 
 def get_default_documents_folder() -> Path:
     """
@@ -596,12 +597,16 @@ def create_lessons(
                 # episode index is just the enumerate index +1
                 episode_number = f"{idx+1:02d}"
 
+                # pick the desired container extension, defaulting to env-var or mp4
+                video_ext = lesson_dict.get("video_ext", DEFAULT_VIDEO_EXT)
+
                 lesson_context = {
                     "name":           lesson_dict["name"],                        # avoid KeyError
                     "numeric_prefix": season_prefix,                              # for s##e##  
                     "episode_number": episode_number,
                     "lesson_slug":    sanitize_dir_name(lesson_dict["name"]).lower(),
                     "lesson_title":   lesson_dict["name"],
+                    "video_ext":      video_ext,
                     # pass through extra fields your template uses:
                     "description":    lesson_dict.get("description", ""),
                     "aired":          lesson_dict.get("aired", None),
@@ -627,10 +632,16 @@ def create_lessons(
             )
             final_disk_path = Path(result["full_path"])
             # final_lesson_str preserves the raw parent env-var path
-            this_raw = str(Path(final_lesson_str) / final_disk_path.name)
+            # ── text vs. video ──────────────────────────────────────────────
+            if include_video:
+                # The rendered JSON → {"folder":".","files":[{"file": "...mp4"}, …]}
+                first_file = sanitize_dir_name(result["structure"]["files"][0]["file"])
+                this_raw   = str(Path(final_lesson_str) / first_file)   # full video file
+            else:
+                this_raw   = str(Path(final_lesson_str) / final_disk_path.name)
             lesson_dict[path_key] = this_raw
             if include_video:
-                # for lessons, video_path points to the .mp4
+                # point video_path at the actual episode file
                 lesson_dict["video_path"] = this_raw
         else:
             lesson_dict[path_key] = final_lesson_str

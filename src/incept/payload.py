@@ -8,7 +8,7 @@ from typing import List, Dict
 from jinja2 import Environment, FileSystemLoader
 from incept.templates import TemplateManager
 
-# — course‑wide defaults (can be overridden) —
+# — course-wide defaults (can be overridden) —
 DEFAULT_TOOL                    = "149a1865-b187-80f9-b21f-c9c96430bf62"
 DEFAULT_INSTRUCTOR              = ["Nick Chamberlain"]
 DEFAULT_INSTITUTE               = ["Rebelway"]
@@ -23,46 +23,58 @@ DEFAULT_THUMB_BASE_PUBLIC_ID    = "thumb/base_image"
 
 def load_chapters(
     csv_path: Path,
-    name_template: str | None = None
+    name_template: str | None,
+    tool_list: List[str],
+    instr_list: List[str],
+    insti_list: List[str],
+    tags_list: List[str],
+    template_str: str
 ) -> List[Dict]:
     """
     Reads chapters.csv and returns a list of chapter dicts.
-    If the CSV row has a 'name' column, use that;
-    elif name_template is provided, use name_template.format(i=i);
-    else default to 'Chapter {i}'.
+    Uses the passed-in lists rather than hardcoded defaults.
     """
     chapters: List[Dict] = []
     with open(csv_path, mode='r', encoding='utf-8-sig', newline='') as f:
         reader = csv.DictReader(f)
         for i, r in enumerate(reader, start=1):
-            if "name" in r and r["name"].strip():
+            # decide name from CSV, template, or fallback
+            if r.get("name", "").strip():
                 name = r["name"].strip()
             elif name_template:
                 name = name_template.format(i=i)
             else:
                 name = f"Chapter {i}"
+
             chapters.append({
                 "index":       i,
                 "id":          None,
                 "icon":        None,
                 "cover":       None,
                 "name":        name,
-                "tool":        [DEFAULT_TOOL],
+                "tool":        tool_list,
                 "description": r["description"],
                 "link":        r["link"],
-                "instructor":  DEFAULT_INSTRUCTOR,
-                "institute":   DEFAULT_INSTITUTE,
-                "tags":        DEFAULT_TAGS,
-                "template":    DEFAULT_TEMPLATE,
-                "lessons":     []  # filled in by build_payload
+                "instructor":  instr_list,
+                "institute":   insti_list,
+                "tags":        tags_list,
+                "template":    template_str,
+                "lessons":     []  # filled below
             })
     return chapters
 
 
-def load_lessons(csv_path: Path) -> Dict[int, List[Dict]]:
+def load_lessons(
+    csv_path: Path,
+    tool_list: List[str],
+    instr_list: List[str],
+    insti_list: List[str],
+    tags_list: List[str],
+    template_str: str
+) -> Dict[int, List[Dict]]:
     """
     Reads lessons.csv, grouping each row under its chapter_index.
-    Returns a dict: { chapter_index: [lesson_dict, ...], ... }
+    Uses the passed-in lists rather than hardcoded defaults.
     """
     by_chap: Dict[int, List[Dict]] = {}
     with open(csv_path, mode='r', encoding='utf-8-sig', newline='') as f:
@@ -73,14 +85,14 @@ def load_lessons(csv_path: Path) -> Dict[int, List[Dict]]:
                 "id":          None,
                 "icon":        None,
                 "cover":       None,
-                "tool":        [DEFAULT_TOOL],
+                "tool":        tool_list,
                 "name":        r["name"],
                 "description": r["description"],
                 "link":        r["link"],
-                "instructor":  DEFAULT_INSTRUCTOR,
-                "institute":   DEFAULT_INSTITUTE,
-                "tags":        DEFAULT_TAGS,
-                "template":    DEFAULT_TEMPLATE,
+                "instructor":  instr_list,
+                "institute":   insti_list,
+                "tags":        tags_list,
+                "template":    template_str,
             }
             by_chap.setdefault(ci, []).append(lesson)
     return by_chap
@@ -95,25 +107,24 @@ def build_payload(
     lessons_csv: Path,
     templates_dir: Path,
 
-    # ← new override, optional
     chapter_name_template: str | None = None,
 
-    # ← existing overrides, optional
-    tool:               List[str] | None = None,
-    instructor:         List[str] | None = None,
-    institute:          List[str] | None = None,
-    tags:               List[str] | None = None,
-    template:           str        | None = None,
+    tool:       List[str] | None = None,
+    instructor: List[str] | None = None,
+    institute:  List[str] | None = None,
+    tags:       List[str] | None = None,
+    template:   str        | None = None,
 
-    logo_public_id:     str        | None = None,
-    fanart_public_id:   str        | None = None,
-    poster_base_public_id: str     | None = None,
-    thumb_base_public_id:  str     | None = None,
+    logo_public_id:       str | None = None,
+    fanart_public_id:     str | None = None,
+    poster_base_public_id:str | None = None,
+    thumb_base_public_id: str | None = None,
 ) -> dict:
     """
-    Build the complete nested payload for one course.
+    Build the complete nested payload for one course,
+    propagating the overrides into every chapter/lesson.
     """
-    # pick up defaults vs overrides
+    # 1) pick overrides or fall back to defaults
     tool_list    = tool       if tool       is not None else [DEFAULT_TOOL]
     instr_list   = instructor if instructor is not None else DEFAULT_INSTRUCTOR
     insti_list   = institute  if institute  is not None else DEFAULT_INSTITUTE
@@ -125,13 +136,20 @@ def build_payload(
     poster_id = poster_base_public_id or DEFAULT_POSTER_BASE_PUBLIC_ID
     thumb_id  = thumb_base_public_id  or DEFAULT_THUMB_BASE_PUBLIC_ID
 
-    # load & name chapters + attach lessons
-    chap_list = load_chapters(chapters_csv, chapter_name_template)
-    les_map   = load_lessons(lessons_csv)
+    # 2) load & name chapters + attach lessons, passing in overrides
+    chap_list = load_chapters(
+        chapters_csv,
+        chapter_name_template,
+        tool_list, instr_list, insti_list, tags_list, template_str
+    )
+    les_map = load_lessons(
+        lessons_csv,
+        tool_list, instr_list, insti_list, tags_list, template_str
+    )
     for chap in chap_list:
         chap["lessons"] = les_map.get(chap["index"], [])
 
-    # assemble course
+    # 3) assemble course dict
     course = {
       "id": None, "icon": None, "cover": None,
       "name":           course_name,
@@ -149,7 +167,7 @@ def build_payload(
       "chapters":       chap_list
     }
 
-    # render via Jinja
+    # 4) render via Jinja
     tm       = TemplateManager(templates_dir)
     tpl_path = tm.get_template_path("rebelway", "default")
     env      = Environment(

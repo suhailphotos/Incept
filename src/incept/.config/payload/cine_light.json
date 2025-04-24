@@ -1,0 +1,2846 @@
+{
+  "courses": [
+    {
+      "id": null,
+      "icon": null,
+      "cover": null,
+      "name": "Cinematic Lighting in Houdini",
+      "tool": [
+        "166a1865-b187-8138-8316-dc8288897458"
+      ],
+      "description": "Master shading and lighting workflows in Solaris, then render production-ready assets with Karma or Arnold. Nick Chamberlain distills five years of studio-tested techniques into a streamlined pipeline that saves time and delivers cinematic results.",
+      "logo_public_id": "icon/rebelway_logo",
+      "fanart_public_id": "banner/fanart",
+      "poster_base_id": "poster/base_image",
+      "thumb_base_id": "thumb/base_image",
+      "link": "https://rebelway.academy/lessons/introduction-6/",
+      "instructor": [
+        "Nick Chamberlain"
+      ],
+      "institute": [
+        "Rebelway"
+      ],
+      "tags": [
+        "Python",
+        "Houdini"
+      ],
+      "template": "default",
+      "chapters": [
+        {
+          "id": null,
+          "icon": null,
+          "cover": null,
+          "name": "Week 1",
+          "tool": [
+            "166a1865-b187-8138-8316-dc8288897458"
+          ],
+          "description": "Discover why USD and Solaris are essential for efficient lighting workflows-from core terminology and scene structure to geometry, materials, cinematic lighting principles, storytelling techniques, and rendering in Solaris.",
+          "link": "https://rebelway.academy/lessons/week1-52/",
+          "instructor": [
+            "Nick Chamberlain"
+          ],
+          "institute": [
+            "Rebelway"
+          ],
+          "tags": [
+            "Python",
+            "Houdini"
+          ],
+          "template": "default",
+          "lessons": [
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Course Overview",
+              "description": "Course Overview",
+              "link": "https://rebelway.academy/topic/01_course_overview-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week 1 Overview",
+              "description": "Week 1 Overview",
+              "link": "https://rebelway.academy/topic/02_week_1_overview-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "The Benefits Of USD",
+              "description": "The Benefits Of USD",
+              "link": "https://rebelway.academy/topic/03_the_benefits_of_usd-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "USD And Solaris Basics",
+              "description": "USD And Solaris Basics",
+              "link": "https://rebelway.academy/topic/04_usd_and_solaris_basics-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Basic Geometry And Materials",
+              "description": "Basic Geometry And Materials",
+              "link": "https://rebelway.academy/topic/05_basic_geometry_and_materials-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Cinematic Lighting Principles Part 1",
+              "description": "Cinematic Lighting Principles Part 1",
+              "link": "https://rebelway.academy/topic/06_cinematic_lighting_principles_part_1-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Cinematic Lighting Principles Part 2",
+              "description": "Cinematic Lighting Principles Part 2",
+              "link": "https://rebelway.academy/topic/07_cinematic_lighting_principles_part_2-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Light Types In Solaris",
+              "description": "Light Types In Solaris",
+              "link": "https://rebelway.academy/topic/08_light_types_in_solaris-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Lighting Tools In Solaris",
+              "description": "Lighting Tools In Solaris",
+              "link": "https://rebelway.academy/topic/09_lighting_tools_in_solaris-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Applying Our Lighting Principles",
+              "description": "Applying Our Lighting Principles",
+              "link": "https://rebelway.academy/topic/10_applying_our_lighting_principles-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week 01 Assignment",
+              "description": "Week 01 Assignment",
+              "link": "https://rebelway.academy/topic/11_week_01_assignment-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Bonus Dappled Light Overview",
+              "description": "Bonus Dappled Light Overview",
+              "link": "https://rebelway.academy/topic/12_bonus_dappled_light_overview-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            }
+          ]
+        },
+        {
+          "id": null,
+          "icon": null,
+          "cover": null,
+          "name": "Week 2",
+          "tool": [
+            "166a1865-b187-8138-8316-dc8288897458"
+          ],
+          "description": "Dive into USD layers and composition arcs to see how data is organized, master color management, automate material setups, explore exporting strategies, leverage variants, optimize assets with proxy geometry, and configure payloads in Solaris.",
+          "link": "https://rebelway.academy/lessons/week2-52/",
+          "instructor": [
+            "Nick Chamberlain"
+          ],
+          "institute": [
+            "Rebelway"
+          ],
+          "tags": [
+            "Python",
+            "Houdini"
+          ],
+          "template": "default",
+          "lessons": [
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week 02 Overview",
+              "description": "Week 02 Overview",
+              "link": "https://rebelway.academy/topic/01_week_02_overview-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "USD Layers",
+              "description": "USD Layers",
+              "link": "https://rebelway.academy/topic/02_usd_layers-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Sublayers And References",
+              "description": "Sublayers And References",
+              "link": "https://rebelway.academy/topic/03_sublayers_and_references-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Writing USD Layers",
+              "description": "Writing USD Layers",
+              "link": "https://rebelway.academy/topic/04_writing_usd_layers-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Folder Structure & Geometry",
+              "description": "Folder Structure & Geometry",
+              "link": "https://rebelway.academy/topic/05_folder_structure_&_geometry-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Colorspace",
+              "description": "Colorspace",
+              "link": "https://rebelway.academy/topic/06_colorspace-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Asset Materials",
+              "description": "Asset Materials",
+              "link": "https://rebelway.academy/topic/07_asset_materials-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Asset Render Properties",
+              "description": "Asset Render Properties",
+              "link": "https://rebelway.academy/topic/08_asset_render_properties-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Variants",
+              "description": "Variants",
+              "link": "https://rebelway.academy/topic/09_variants-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Payloads",
+              "description": "Payloads",
+              "link": "https://rebelway.academy/topic/10_payloads-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Export Asset",
+              "description": "Export Asset",
+              "link": "https://rebelway.academy/topic/11_export_asset-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week 02 Assigment",
+              "description": "Week 02 Assigment",
+              "link": "https://rebelway.academy/topic/12_week_02_assigment-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            }
+          ]
+        },
+        {
+          "id": null,
+          "icon": null,
+          "cover": null,
+          "name": "Week 3",
+          "tool": [
+            "166a1865-b187-8138-8316-dc8288897458"
+          ],
+          "description": "Master USD kinds and component builder workflows: compare Houdini-default asset template, customize node structures, choose referencing vs. grafting strategies, understand inheritance and arc strength, save asset templates, and export a sample cruiser.",
+          "link": "https://rebelway.academy/lessons/week3-76/",
+          "instructor": [
+            "Nick Chamberlain"
+          ],
+          "institute": [
+            "Rebelway"
+          ],
+          "tags": [
+            "Python",
+            "Houdini"
+          ],
+          "template": "default",
+          "lessons": [
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week 3 Overview",
+              "description": "Week 3 Overview",
+              "link": "https://rebelway.academy/topic/01_week_3_overview-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Kinds",
+              "description": "Kinds",
+              "link": "https://rebelway.academy/topic/02_kinds-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Component Builder Basics",
+              "description": "Component Builder Basics",
+              "link": "https://rebelway.academy/topic/03_component_builder_basics-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Customizing The Component Builder Part 1",
+              "description": "Customizing The Component Builder Part 1",
+              "link": "https://rebelway.academy/topic/04_customizing_the_component_builder_part_1-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Referencing Vs Grafting",
+              "description": "Referencing Vs Grafting",
+              "link": "https://rebelway.academy/topic/05_referencing_vs_grafting-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Customizing The Component Builder Part 2",
+              "description": "Customizing The Component Builder Part 2",
+              "link": "https://rebelway.academy/topic/06_customizing_the_component_builder_part_2-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Inherit Composition Arc",
+              "description": "Inherit Composition Arc",
+              "link": "https://rebelway.academy/topic/07_inherit_composition_arc-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Template Creation",
+              "description": "Template Creation",
+              "link": "https://rebelway.academy/topic/08_template_creation-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Cruiser Asset",
+              "description": "Cruiser Asset",
+              "link": "https://rebelway.academy/topic/09_cruiser_asset-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Assignment",
+              "description": "Assignment",
+              "link": "https://rebelway.academy/topic/10_assignment-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            }
+          ]
+        },
+        {
+          "id": null,
+          "icon": null,
+          "cover": null,
+          "name": "Week 4",
+          "tool": [
+            "166a1865-b187-8138-8316-dc8288897458"
+          ],
+          "description": "Build a project asset gallery and automate USD pipelines-from TOPs-driven loops and kitbash processing to BMS library workflows-then set up triplanar shading, primvar-driven materials, procedural instancing shaders, and turntable exports.",
+          "link": "https://rebelway.academy/lessons/week4-75/",
+          "instructor": [
+            "Nick Chamberlain"
+          ],
+          "institute": [
+            "Rebelway"
+          ],
+          "tags": [
+            "Python",
+            "Houdini"
+          ],
+          "template": "default",
+          "lessons": [
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week 4 overview",
+              "description": "Week 4 overview",
+              "link": "https://rebelway.academy/topic/01_week_4_overview-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Layout Asset Gallery",
+              "description": "Layout Asset Gallery",
+              "link": "https://rebelway.academy/topic/02_layout_asset_gallery-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Kitbash 3D Part 1",
+              "description": "Kitbash 3D Part 1",
+              "link": "https://rebelway.academy/topic/03_kitbash_3d_part_1-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Kitbash 3D Part 2",
+              "description": "Kitbash 3D Part 2",
+              "link": "https://rebelway.academy/topic/04_kitbash_3d_part_2-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Big Medium Small Part 1",
+              "description": "Big Medium Small Part 1",
+              "link": "https://rebelway.academy/topic/05_big_medium_small_part_1-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Triplaner Setup",
+              "description": "Triplaner Setup",
+              "link": "https://rebelway.academy/topic/06_triplaner_setup-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Big Medium Small Part 2",
+              "description": "Big Medium Small Part 2",
+              "link": "https://rebelway.academy/topic/07_big_medium_small_part_2-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Big Medium Small Part 3",
+              "description": "Big Medium Small Part 3",
+              "link": "https://rebelway.academy/topic/08_big_medium_small_part_3-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Procedural Shading Part 1",
+              "description": "Procedural Shading Part 1",
+              "link": "https://rebelway.academy/topic/09_procedural_shading_part_1-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Procedural Shading Part 2",
+              "description": "Procedural Shading Part 2",
+              "link": "https://rebelway.academy/topic/10_procedural_shading_part_2-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Procedural Shading Part 3",
+              "description": "Procedural Shading Part 3",
+              "link": "https://rebelway.academy/topic/11_procedural_shading_part_3-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Look Dev Setup",
+              "description": "Look Dev Setup",
+              "link": "https://rebelway.academy/topic/12_look_dev_setup-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Assignment",
+              "description": "Assignment",
+              "link": "https://rebelway.academy/topic/13_assignment-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            }
+          ]
+        },
+        {
+          "id": null,
+          "icon": null,
+          "cover": null,
+          "name": "Week 5",
+          "tool": [
+            "166a1865-b187-8138-8316-dc8288897458"
+          ],
+          "description": "Establish cinematic composition and stage organization: select references that make shots pop, keep your stage tidy with presets, manage native and point instancing for USD efficiency, apply basic animation constraints, survey layout tools, and deploy quick \u201a\u00c4\u00f2lazy\u201a\u00c4\u00f4 lighting.",
+          "link": "https://rebelway.academy/lessons/week5-36/",
+          "instructor": [
+            "Nick Chamberlain"
+          ],
+          "institute": [
+            "Rebelway"
+          ],
+          "tags": [
+            "Python",
+            "Houdini"
+          ],
+          "template": "default",
+          "lessons": [
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Overview",
+              "description": "Overview",
+              "link": "https://rebelway.academy/topic/01_overview-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Cinematic Compostion Principles",
+              "description": "Cinematic Compostion Principles",
+              "link": "https://rebelway.academy/topic/02_cinematic_compostion_principles-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Reference Analysis",
+              "description": "Reference Analysis",
+              "link": "https://rebelway.academy/topic/03_reference_analysis-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Initial Project Setup",
+              "description": "Initial Project Setup",
+              "link": "https://rebelway.academy/topic/04_initial_project_setup-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Instanceable Primitives",
+              "description": "Instanceable Primitives",
+              "link": "https://rebelway.academy/topic/05_instanceable_primitives-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Point Instancing Part 1",
+              "description": "Point Instancing Part 1",
+              "link": "https://rebelway.academy/topic/06_point_instancing_part_1-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Point Instancing Part 2",
+              "description": "Point Instancing Part 2",
+              "link": "https://rebelway.academy/topic/07_point_instancing_part_2-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Point Instancing Part 3",
+              "description": "Point Instancing Part 3",
+              "link": "https://rebelway.academy/topic/08_point_instancing_part_3-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Animation And Contraints",
+              "description": "Animation And Contraints",
+              "link": "https://rebelway.academy/topic/09_animation_and_contraints-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Layout Tools",
+              "description": "Layout Tools",
+              "link": "https://rebelway.academy/topic/10_layout_tools-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Lazy Lighting",
+              "description": "Lazy Lighting",
+              "link": "https://rebelway.academy/topic/11_lazy_lighting-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Assignment",
+              "description": "Assignment",
+              "link": "https://rebelway.academy/topic/12_assignment-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            }
+          ]
+        },
+        {
+          "id": null,
+          "icon": null,
+          "cover": null,
+          "name": "Week 6",
+          "tool": [
+            "166a1865-b187-8138-8316-dc8288897458"
+          ],
+          "description": "Add final polish with fog details, VDB volume integration, ocean procedural effects, and lighting tweaks; dive into sampling theory for noise removal, test render sequences, configure render settings/AOVs, and coordinate multi-artist USD workflows.",
+          "link": "https://rebelway.academy/lessons/week6-36/",
+          "instructor": [
+            "Nick Chamberlain"
+          ],
+          "institute": [
+            "Rebelway"
+          ],
+          "tags": [
+            "Python",
+            "Houdini"
+          ],
+          "template": "default",
+          "lessons": [
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week Overview",
+              "description": "Week Overview",
+              "link": "https://rebelway.academy/topic/01_week_overview-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Fog Details",
+              "description": "Fog Details",
+              "link": "https://rebelway.academy/topic/02_fog_details-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Smoke Trails",
+              "description": "Smoke Trails",
+              "link": "https://rebelway.academy/topic/03_smoke_trails-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Ocean FX",
+              "description": "Ocean FX",
+              "link": "https://rebelway.academy/topic/04_ocean_fx-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "USD Render Primitives",
+              "description": "USD Render Primitives",
+              "link": "https://rebelway.academy/topic/05_usd_render_primitives-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Noise And Sampling",
+              "description": "Noise And Sampling",
+              "link": "https://rebelway.academy/topic/06_noise_and_sampling-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Shot Render Passes",
+              "description": "Shot Render Passes",
+              "link": "https://rebelway.academy/topic/07_shot_render_passes-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Artist Workflow",
+              "description": "Artist Workflow",
+              "link": "https://rebelway.academy/topic/08_artist_workflow-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week6 Assigment",
+              "description": "Week6 Assigment",
+              "link": "https://rebelway.academy/topic/09_week6_assigment-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            }
+          ]
+        },
+        {
+          "id": null,
+          "icon": null,
+          "cover": null,
+          "name": "Week 7",
+          "tool": [
+            "166a1865-b187-8138-8316-dc8288897458"
+          ],
+          "description": "Prepare and light CG to footage: capture essential on-set data, integrate Nuke toolsets for plate prep, align 3D scenes accurately, and apply both Karma and Arnold lighting techniques using spatial and storytelling principles.",
+          "link": "https://rebelway.academy/lessons/week7-37/",
+          "instructor": [
+            "Nick Chamberlain"
+          ],
+          "institute": [
+            "Rebelway"
+          ],
+          "tags": [
+            "Python",
+            "Houdini"
+          ],
+          "template": "default",
+          "lessons": [
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week7 Overview",
+              "description": "Week7 Overview",
+              "link": "https://rebelway.academy/topic/01_week7_overview-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Production Data for Lighting",
+              "description": "Production Data for Lighting",
+              "link": "https://rebelway.academy/topic/02_production_data_for_lighting-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Lighting to Footage Workflow",
+              "description": "Lighting to Footage Workflow",
+              "link": "https://rebelway.academy/topic/03_lighting_to_footage_workflow-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Shot 010 Plate Prep",
+              "description": "Shot 010 Plate Prep",
+              "link": "https://rebelway.academy/topic/04_shot_010_plate_prep-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Shot 010 Layout And Lighting",
+              "description": "Shot 010 Layout And Lighting",
+              "link": "https://rebelway.academy/topic/05_shot_010_layout_and_lighting-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Shot 010 Slapcomp",
+              "description": "Shot 010 Slapcomp",
+              "link": "https://rebelway.academy/topic/06_shot_010_slapcomp-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Shot 020 Prep And Layout",
+              "description": "Shot 020 Prep And Layout",
+              "link": "https://rebelway.academy/topic/07_shot_020_prep_and_layout-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Shot 020 Karma Lighting",
+              "description": "Shot 020 Karma Lighting",
+              "link": "https://rebelway.academy/topic/08_shot_020_karma_lighting-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Shot 020 Arnold Lighting",
+              "description": "Shot 020 Arnold Lighting",
+              "link": "https://rebelway.academy/topic/09_shot_020_arnold_lighting-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Shot 020 Slapcomp",
+              "description": "Shot 020 Slapcomp",
+              "link": "https://rebelway.academy/topic/10_shot_020_slapcomp-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Spatial Lighting",
+              "description": "Spatial Lighting",
+              "link": "https://rebelway.academy/topic/11_spatial_lighting-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week 07 Assigment",
+              "description": "Week 07 Assigment",
+              "link": "https://rebelway.academy/topic/12_week_07_assigment-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Bonus LIDAR Scan",
+              "description": "Bonus LIDAR Scan",
+              "link": "https://rebelway.academy/topic/13_bonus_lidar_scan-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Bonus HDR Stitch",
+              "description": "Bonus HDR Stitch",
+              "link": "https://rebelway.academy/topic/14_bonus_hdr_stitch-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            }
+          ]
+        },
+        {
+          "id": null,
+          "icon": null,
+          "cover": null,
+          "name": "Week 8",
+          "tool": [
+            "166a1865-b187-8138-8316-dc8288897458"
+          ],
+          "description": "Tackle minimal-reference lighting challenges: light with little info, analyze sequences for reusable elements, match multi-light plates, balance realism vs. aesthetics, use particles with motion blur, auto-generate Arnold light groups, loop Solaris primitives, and reuse shot USD.",
+          "link": "https://rebelway.academy/lessons/week8-36/",
+          "instructor": [
+            "Nick Chamberlain"
+          ],
+          "institute": [
+            "Rebelway"
+          ],
+          "tags": [
+            "Python",
+            "Houdini"
+          ],
+          "template": "default",
+          "lessons": [
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week 8 Overview",
+              "description": "Week 8 Overview",
+              "link": "https://rebelway.academy/topic/01_week_8_overview-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Sequence Analysis",
+              "description": "Sequence Analysis",
+              "link": "https://rebelway.academy/topic/02_sequence_analysis-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Footage Prep",
+              "description": "Footage Prep",
+              "link": "https://rebelway.academy/topic/03_footage_prep-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Layout Hero Shot",
+              "description": "Layout Hero Shot",
+              "link": "https://rebelway.academy/topic/04_layout_hero_shot-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Base Lighting Setup",
+              "description": "Base Lighting Setup",
+              "link": "https://rebelway.academy/topic/05_base_lighting_setup-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "FG Build Pt01",
+              "description": "FG Build Pt01",
+              "link": "https://rebelway.academy/topic/06_fg_build_pt01-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "FG Build Pt02",
+              "description": "FG Build Pt02",
+              "link": "https://rebelway.academy/topic/07_fg_build_pt02-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "BG Build",
+              "description": "BG Build",
+              "link": "https://rebelway.academy/topic/08_bg_build-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Sparks",
+              "description": "Sparks",
+              "link": "https://rebelway.academy/topic/09_sparks-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Arnold Auto Light Groups",
+              "description": "Arnold Auto Light Groups",
+              "link": "https://rebelway.academy/topic/10_arnold_auto_light_groups-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week 8 Overview 2",
+              "description": "Week 8 Overview 2",
+              "link": "https://rebelway.academy/topic/11_week_8_overview_2-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Render Products",
+              "description": "Render Products",
+              "link": "https://rebelway.academy/topic/12_render_products-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Render Passes",
+              "description": "Render Passes",
+              "link": "https://rebelway.academy/topic/13_render_passes-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Slapcomp",
+              "description": "Slapcomp",
+              "link": "https://rebelway.academy/topic/14_slapcomp-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week 08 Assigment",
+              "description": "Week 08 Assigment",
+              "link": "https://rebelway.academy/topic/15_week_08_assigment-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            }
+          ]
+        },
+        {
+          "id": null,
+          "icon": null,
+          "cover": null,
+          "name": "Week 9",
+          "tool": [
+            "166a1865-b187-8138-8316-dc8288897458"
+          ],
+          "description": "Scale your sequence lighting: develop hero shots to guide child shots, build single-artist master projects and multi-artist previs pipelines, and leverage context options to control USD outputs across a full CG sequence.",
+          "link": "https://rebelway.academy/lessons/week9-20/",
+          "instructor": [
+            "Nick Chamberlain"
+          ],
+          "institute": [
+            "Rebelway"
+          ],
+          "tags": [
+            "Python",
+            "Houdini"
+          ],
+          "template": "default",
+          "lessons": [
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week 09 Overview",
+              "description": "Week 09 Overview",
+              "link": "https://rebelway.academy/topic/01_week_09_overview-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Master Project Pt 1",
+              "description": "Master Project Pt 1",
+              "link": "https://rebelway.academy/topic/02_master_project_pt_1-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Master Project Pt 2",
+              "description": "Master Project Pt 2",
+              "link": "https://rebelway.academy/topic/03_master_project_pt_2-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Slapcomp",
+              "description": "Slapcomp",
+              "link": "https://rebelway.academy/topic/04_slapcomp-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Previs And Ref Analysis",
+              "description": "Previs And Ref Analysis",
+              "link": "https://rebelway.academy/topic/05_previs_and_ref_analysis-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Principle Shot Part 01",
+              "description": "Principle Shot Part 01",
+              "link": "https://rebelway.academy/topic/06_principle_shot_part_01-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Principle Shot Part 02",
+              "description": "Principle Shot Part 02",
+              "link": "https://rebelway.academy/topic/07_principle_shot_part_02-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Child Shots Part 01",
+              "description": "Child Shots Part 01",
+              "link": "https://rebelway.academy/topic/08_child_shots_part_01-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Child Shots Part 02",
+              "description": "Child Shots Part 02",
+              "link": "https://rebelway.academy/topic/09_child_shots_part_02-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Assignment",
+              "description": "Assignment",
+              "link": "https://rebelway.academy/topic/10_assignment-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            }
+          ]
+        },
+        {
+          "id": null,
+          "icon": null,
+          "cover": null,
+          "name": "Week 10",
+          "tool": [
+            "166a1865-b187-8138-8316-dc8288897458"
+          ],
+          "description": "Composite and polish all major class shots in Nuke: integrate USD geometry via the scene graph, project cameras, craft lens imperfection recipes, utilize AOVs for accurate motion blur, match grain, blend shadow passes, and master basic keying workflows.",
+          "link": "https://rebelway.academy/lessons/week10-15/",
+          "instructor": [
+            "Nick Chamberlain"
+          ],
+          "institute": [
+            "Rebelway"
+          ],
+          "tags": [
+            "Python",
+            "Houdini"
+          ],
+          "template": "default",
+          "lessons": [
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Overview",
+              "description": "Overview",
+              "link": "https://rebelway.academy/topic/01_overview-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week9 Comp Part 1",
+              "description": "Week9 Comp Part 1",
+              "link": "https://rebelway.academy/topic/02_week9_comp_part_1-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week9 Comp Part 2",
+              "description": "Week9 Comp Part 2",
+              "link": "https://rebelway.academy/topic/03_week9_comp_part_2-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Matching Grain",
+              "description": "Matching Grain",
+              "link": "https://rebelway.academy/topic/04_matching_grain-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Shadow Integration",
+              "description": "Shadow Integration",
+              "link": "https://rebelway.academy/topic/05_shadow_integration-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week8 Comp Part 1",
+              "description": "Week8 Comp Part 1",
+              "link": "https://rebelway.academy/topic/06_week8_comp_part_1-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week8 Comp Part 2",
+              "description": "Week8 Comp Part 2",
+              "link": "https://rebelway.academy/topic/07_week8_comp_part_2-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week8 Comp Part 3",
+              "description": "Week8 Comp Part 3",
+              "link": "https://rebelway.academy/topic/08_week8_comp_part_3-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Week 5 Comp",
+              "description": "Week 5 Comp",
+              "link": "https://rebelway.academy/topic/09_week_5_comp-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            },
+            {
+              "id": null,
+              "icon": null,
+              "cover": null,
+              "tool": [
+                "166a1865-b187-8138-8316-dc8288897458"
+              ],
+              "name": "Assignment",
+              "description": "Assignment",
+              "link": "https://rebelway.academy/topic/10_assignment-5/",
+              "instructor": [
+                "Nick Chamberlain"
+              ],
+              "institute": [
+                "Rebelway"
+              ],
+              "tags": [
+                "Python",
+                "Houdini"
+              ],
+              "template": "default"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

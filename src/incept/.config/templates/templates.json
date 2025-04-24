@@ -22,5 +22,8 @@
     "blender": "blender_lesson.j2",
     "houdini": "houdini_lesson.j2",
     "usd": "usd_lesson.j2"
+  },
+  "rebelway": {
+    "default": "rebelway.j2"
   }
 }

@@ -12,7 +12,9 @@
     "Institute": {"target":"institute", "type":"select", "return":"list"},
     "Path":      { "target": "path",  "type": "rich_text", "return": "str" },
     "Template":  { "target": "template", "type": "rich_text", "return": "str", "default": "default" },
-    "Tags":      { "target": "tags",  "type": "multi_select", "return": "list" }
+    "Tags":      { "target": "tags",  "type": "multi_select", "return": "list" },
+    "Video":     { "target": "video", "type": "checkbox", "return": "boolean" },
+    "Video Path":{ "target": "video_path", "type": "rich_text", "return": "str"}
   },
   "back_mapping": {
     "icon":      { "target": "icon", "return": "object" },
@@ -26,7 +28,9 @@
     "institute": {"target":"Institute", "type":"select", "return":"list"},
     "path":      { "target": "Path",  "type": "rich_text", "return": "str", "code": true },
     "template":  { "target": "Template", "type": "rich_text", "return": "str", "code": true },
-    "tags":      { "target": "Tags",  "type": "multi_select", "return": "list", "default": ["Python"] }
+    "tags":      { "target": "Tags",  "type": "multi_select", "return": "list", "default": ["Python"] },
+    "video":     { "target": "Video", "type": "checkbox", "return": "boolean" },
+    "video_path":{ "target": "Video Path", "type": "rich_text", "return": "str", "code": true}
   },
   "hierarchy_config": {
     "root": "courses",

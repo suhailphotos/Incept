@@ -87,7 +87,7 @@ def cli_get_courses(api_key, database_id, filter):
         api_key = os.getenv("NOTION_API_KEY")
     # 4) Similarly, get database ID.
     if not database_id:
-        database_id = os.getenv("NOTION_DATABASE_ID")
+        database_id = os.getenv("NOTION_COURSE_DATABASE_ID")
     # 5) If missing credentials, raise an error.
     if not api_key or not database_id:
         raise click.ClickException("API_KEY or DATABASE_ID not found. Provide via CLI options or .env file.")
@@ -116,7 +116,14 @@ def cli_get_courses(api_key, database_id, filter):
 @click.option("--link", default=None, help="Course link/URL (override JSON).")
 @click.option("--path", default=None, help="Local path for folder creation (override JSON). e.g., '$DATALIB/threeD/courses'")
 @click.option("--folder-template", default=None, help="Template folder name for local structure (override JSON). e.g. 'default'")
-def cli_add_course(api_key, database_id, data_file_path, name, description, link, path, folder_template):
+# Jellyfin / video hierarchy
+@click.option(
+    "--include-video/--no-video",
+    default=False,
+    help="Also create Jellyfin-ready video folders and store full episode paths in Notion."
+)
+def cli_add_course(api_key, database_id, data_file_path, name, description, link,
+                   path, folder_template, include_video):
     """
     Insert one or more new courses (including chapters/lessons) into Notion.
     Either provide --data-file-path or specify the details manually 
@@ -135,7 +142,7 @@ def cli_add_course(api_key, database_id, data_file_path, name, description, link
     if not api_key:
         api_key = os.getenv("NOTION_API_KEY")
     if not database_id:
-        database_id = os.getenv("NOTION_DATABASE_ID")
+        database_id = os.getenv("NOTION_COURSE_DATABASE_ID")
     if not api_key or not database_id:
         raise click.ClickException("API_KEY or DATABASE_ID not found. Provide via CLI or .env file.")
 
@@ -203,6 +210,7 @@ def cli_add_course(api_key, database_id, data_file_path, name, description, link
         payload_data=payload_data,
         templates_dir=Path.home() / ".incept" / "templates",
         db=db_type,
+        include_video=include_video,
         api_key=api_key,
         database_id=database_id
     )
@@ -223,7 +231,13 @@ def cli_add_course(api_key, database_id, data_file_path, name, description, link
 @click.option("--link", default=None, help="Chapter link/URL (override JSON).")
 @click.option("--path", default=None, help="Local path for folder creation (override JSON), e.g., '$DATALIB/threeD/courses'")
 @click.option("--folder-template", default=None, help="Template folder name for local structure (override JSON), e.g., 'default'")
-def cli_add_chapter(api_key, database_id, data_file_path, course_name, chapter_name, description, link, path, folder_template):
+@click.option(
+    "--include-video/--no-video",
+    default=False,
+    help="Mirror the new chapter as a season inside the video tree."
+)
+def cli_add_chapter(api_key, database_id, data_file_path, course_name, chapter_name,
+                    description, link, path, folder_template, include_video):
     """
     Insert one or more new chapters (and optionally lessons) into an existing course in Notion.
     Either provide --data-file-path or specify details manually (in which case exactly one chapter is inserted).
@@ -235,7 +249,7 @@ def cli_add_chapter(api_key, database_id, data_file_path, course_name, chapter_n
     if not api_key:
         api_key = os.getenv("NOTION_API_KEY")
     if not database_id:
-        database_id = os.getenv("NOTION_DATABASE_ID")
+        database_id = os.getenv("NOTION_COURSE_DATABASE_ID")
     if not api_key or not database_id:
         raise click.ClickException("API_KEY or DATABASE_ID not found.")
     
@@ -302,6 +316,7 @@ def cli_add_chapter(api_key, database_id, data_file_path, course_name, chapter_n
         course_filter=course_name,
         templates_dir=Path.home() / ".incept" / "templates",
         db=db_type,
+        include_video=include_video,
         api_key=api_key,
         database_id=database_id
     )
@@ -322,7 +337,13 @@ def cli_add_chapter(api_key, database_id, data_file_path, course_name, chapter_n
 @click.option("--link", default=None, help="Lesson link/URL (override JSON).")
 @click.option("--path", default=None, help="Local path for folder creation (override JSON), e.g., '$DATALIB/threeD/courses'.")
 @click.option("--folder-template", default=None, help="Template folder name for local structure (override JSON), e.g., 'default'.")
-def cli_add_lesson(api_key, database_id, data_file_path, course_name, chapter_name, lesson_name, description, link, path, folder_template):
+@click.option(
+    "--include-video/--no-video",
+    default=False,
+    help="Treat the lesson as a Jellyfin episode and capture the full .mp4 path."
+)
+def cli_add_lesson(api_key, database_id, data_file_path, course_name, chapter_name,
+                   lesson_name, description, link, path, folder_template, include_video):
     """
     Insert one or more lessons into an existing chapter of a course in Notion.
     The JSON file (if provided) should follow the standard internal format:
@@ -352,7 +373,7 @@ def cli_add_lesson(api_key, database_id, data_file_path, course_name, chapter_na
     if not api_key:
         api_key = os.getenv("NOTION_API_KEY")
     if not database_id:
-        database_id = os.getenv("NOTION_DATABASE_ID")
+        database_id = os.getenv("NOTION_COURSE_DATABASE_ID")
     if not api_key or not database_id:
         raise click.ClickException("API_KEY or DATABASE_ID not found.")
 
@@ -467,6 +488,7 @@ def cli_add_lesson(api_key, database_id, data_file_path, course_name, chapter_na
             course_filter=course_name,
             templates_dir=Path.home() / ".incept" / "templates",
             db=db_type,
+            include_video=include_video,
             api_key=api_key,
             database_id=database_id
         )
