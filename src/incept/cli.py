@@ -205,6 +205,7 @@ def cli_add_course(api_key, database_id, data_file_path, name, description, link
     if isinstance(payload_data.get("courses"), dict):
         payload_data["courses"] = [payload_data["courses"]]
 
+
     # 4) Call addCourses with the final payload
     inserted_courses = addCourses(
         payload_data=payload_data,

@@ -571,7 +571,7 @@ if __name__ == "__main__":
         if isinstance(courses, dict):
             courses = [courses]
         payload_data["courses"] = courses
-
+    
         # Call addCourses with include_video=True
         inserted_courses = addCourses(
             payload_data=payload_data,
