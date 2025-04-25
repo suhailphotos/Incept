@@ -557,7 +557,7 @@ if __name__ == "__main__":
             os.path.expanduser("~"),
             ".incept",
             "payload",
-            "cine_light.json",
+            "cine_light_subset.json",
         )
         if not os.path.exists(payload_file):
             print(f"Payload file not found: {payload_file}")
