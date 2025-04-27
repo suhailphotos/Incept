@@ -55,9 +55,11 @@ def sanitize_dir_name(name: str) -> str:
         base = re.sub(r"[^\w\s-]", "", base)
         base = base.replace("-", "_")
         base = re.sub(r"\s+", "_", base)
+        # collapse runs of “__” but keep a single leading underscore
         base = re.sub(r"_+", "_", base)
-        base = base.strip("_")
-        # Return the sanitized base with the original extension.
+        if not base.startswith("_"):          # allow _publish, _render, …
+            base = base.strip("_")            # still trim trailing “_”
+            # Return the sanitized base with the original extension.
         return f"{base}.{ext}"
     else:
         # Otherwise, sanitize normally.
@@ -65,9 +67,12 @@ def sanitize_dir_name(name: str) -> str:
         name = name.replace("-", "_")
         name = re.sub(r"\s+", "_", name)
         name = re.sub(r"_+", "_", name)
-        return name.strip("_")
-
-
+        # keep a single leading underscore if present
+        if name.startswith("_"):
+            name = name.rstrip("_")      # only trim trailing underscores
+        else:
+            name = name.strip("_")       # trim both ends
+        return name
 # ---------------------------------------------------------------------------
 #  Video‑specific helpers
 # ---------------------------------------------------------------------------
@@ -106,36 +111,40 @@ def normalize_placeholder(placeholder: str) -> str:
     return placeholder
 
 
-def get_next_numeric_prefix(base_dir: Path, file_extension: Optional[str] = None) -> str:
+def get_next_numeric_prefix(
+        base_dir: Path,
+        file_extension: Optional[str] = None
+) -> str:
     """
-    Scans base_dir for subfolders (if file_extension is None) or files with the given file_extension
-    whose names start with a two-digit prefix followed by an underscore.
-    Returns the next available two-digit number as a string (e.g. "10").
+    Return the next two-digit index found either in *files* (filtered by
+    ``file_extension`` when given) **or** in *sub-directories*.
 
-    Parameters:
-    - base_dir (Path): The directory to scan.
-    - file_extension (Optional[str]): The file extension to filter by (e.g., ".txt"). 
-                                      If None, the function will scan directories.
+    Works for:
+        01_Intro.md     → captures 01
+        01_Intro        → captures 01
+        010             → captures 01
     """
-    import re
-    existing_numbers = []
+    rx = re.compile(r'^(\d{2})\d*(?:_|$)')      # first 2 digits
+    existing: list[int] = []
 
-    if base_dir.exists():
-        for entry in base_dir.iterdir():
-            if file_extension:
-                # Ensure we only process files and that the file has the specified extension.
-                if entry.is_file() and entry.suffix == file_extension:
-                    # Use the stem (name without extension) for matching.
-                    m = re.match(r'^(\d{2})_', entry.stem)
-                    if m:
-                        existing_numbers.append(int(m.group(1)))
-            else:
-                if entry.is_dir():
-                    m = re.match(r'^(\d{2})_', entry.name)
-                    if m:
-                        existing_numbers.append(int(m.group(1)))
-    
-    next_num = (max(existing_numbers) + 1) if existing_numbers else 1
+    if not base_dir.exists():
+        return "01"
+
+    for entry in base_dir.iterdir():
+        # -------- files --------
+        if entry.is_file():
+            if file_extension and entry.suffix != file_extension:
+                continue          # ignore other files
+            candidate = entry.stem            # filename without ext
+        else:
+            # -------- directories --------
+            candidate = entry.name
+
+        m = rx.search(candidate)
+        if m:
+            existing.append(int(m.group(1)))
+
+    next_num = (max(existing) + 1) if existing else 1
     return f"{next_num:02d}"
 
 
@@ -174,7 +183,6 @@ def create_structure_recursive(structure: dict, context: dict, base_path: Path) 
 
         top_dir = base_path / folder_name
         top_dir.mkdir(parents=True, exist_ok=True)
-
         # Recurse into subfolders. Skip any empty dictionaries or those without 'folder' or 'file' keys.
         for subf in structure.get("subfolders", []):
             if not subf or not ("folder" in subf or "file" in subf):
@@ -344,13 +352,26 @@ def create_courses(
         raw_course_path = course_dict.get("path")
         expanded_course_path, final_course_str = expand_or_preserve_env_vars(raw_course_path, raw_parent, keep_env_in_path)
 
+        # ────────────────────────────────────────────────────────────────
+        # Discover the chapter “bucket” (child_folder_name) declared in
+        # the *course* template we’re about to use – so that ad-hoc
+        # chapter creation later on will automatically land in the right
+        # place (e.g. "chapters", "course_materials", "usd/shots", …).
+        # ────────────────────────────────────────────────────────────────
+        course_variant      = course_dict.get("template", "default")
+        course_child_folder = template_manager.get_child_template_folder_from_parent(
+            "course",
+            course_variant,
+        )
+
         if create_folders:
             base_prefix = int(get_next_numeric_prefix(expanded_course_path))
             prefix = f"{base_prefix:02d}"
             context = {
                 "numeric_prefix": prefix,
                 "course_name": course_dict["name"],
-                "name": course_dict["name"]
+                "name": course_dict["name"],
+                "chapters": course_dict.get("chapters", [])
             }
             result = create_folder_structure(
                 entity_data=context,
@@ -361,6 +382,10 @@ def create_courses(
             )
             final_disk_path = Path(result["full_path"])
             course_dict["path"] = str(Path(final_course_str) / final_disk_path.name)
+            # Make the discovered child-folder metadata available to
+            # downstream chapter creation calls.
+            course_dict.setdefault("child_folder_name", course_child_folder)
+            course_dict.setdefault("template_variant",  course_variant)
         else:
             course_dict["path"] = final_course_str
             # when video is disabled, still record the field for Notion
@@ -433,6 +458,8 @@ def create_courses(
                 keep_env_in_path=keep_env_in_path,
                 parent_path=course_dict["path"],
                 include_video=False,
+                parent_course_template_variant=course_variant,
+                parent_child_folder_name=course_child_folder,
             )
 
             # 2) Optional video hierarchy (seasons/episodes)
@@ -475,6 +502,8 @@ def create_chapters(
     keep_env_in_path: bool = True,
     parent_path: Optional[Path] = None,
     include_video: bool = False,
+    parent_course_template_variant: str = "default",
+    parent_child_folder_name: Optional[str] = None,
 ):
     """
     Create folder structure for a list of chapters.
@@ -489,22 +518,45 @@ def create_chapters(
         raw_chapter_path = chapter_dict.get(path_key)
         expanded_chapter_path, final_chapter_str = expand_or_preserve_env_vars(raw_chapter_path, raw_parent, keep_env_in_path)
         
-        # Check if the chapter should be created in a child folder.
-        # This uses the same logic as for lessons.
-        # Skip extra nesting when we are creating season folders for Jellyfin
-        enable_subfolder = False if include_video else chapter_dict.get("enable_subfolder", True)
-        if enable_subfolder:
-            child_folder_name = chapter_dict.get("child_folder_name") or "chapters"
+        # ────────────────────────────────────────────────────────────────
+        # Decide (template-driven) where the chapter folder belongs.
+        # Priority:
+        #   1) explicit chapter_dict["child_folder_name"]
+        #   2) parent_child_folder_name passed from create_courses
+        #   3) lookup “child_folder_name” in the *course* template
+        # If the final value is an empty string  →  no extra nesting.
+        # ------------------------------------------------------------------
+        # In VIDEO mode we never want an extra “chapters” folder (seasons
+        # already live inside season_NN).  Force empty unless the user
+        # overrides explicitly.
+        # ------------------------------------------------------------------
+        if include_video:
+            child_folder_name = chapter_dict.get("child_folder_name", "")
+        else:
+            child_folder_name = chapter_dict.get("child_folder_name")
+        if child_folder_name is None:
+            child_folder_name = parent_child_folder_name
+        if child_folder_name is None:
+            child_folder_name = template_manager.get_child_template_folder_from_parent(
+                "course",
+                parent_course_template_variant,
+            )
+
+        # Persist metadata for the benefit of create_lessons():
+        chapter_dict.setdefault("parent_child_folder_name", child_folder_name)
+        chapter_dict.setdefault("parent_course_template_variant", parent_course_template_variant)
+
+        if child_folder_name:          # skip when "", None, or False
             expanded_chapter_path = expanded_chapter_path / child_folder_name
-            final_chapter_str = str(Path(final_chapter_str) / child_folder_name)
+            final_chapter_str     = str(Path(final_chapter_str) / child_folder_name)
 
         if create_folders:
-            if include_video:
-                # for video we want one season per chapter in payload
-                prefix = f"{i:02d}"
-            else:
-                base_prefix = int(get_next_numeric_prefix(expanded_chapter_path))
-                prefix = f"{base_prefix:02d}"
+            # One generic algorithm that works for *all* templates:
+            base_prefix = int(get_next_numeric_prefix(expanded_chapter_path))
+            # If nothing matched (==1) *and* we’re iterating, fall back to loop index.
+            if base_prefix == 1 and any(Path(expanded_chapter_path).iterdir()):
+                base_prefix = i
+            prefix = f"{base_prefix:02d}"
             context = {
                 "numeric_prefix": prefix,
                 "chapter_name": chapter_dict["name"],
@@ -558,6 +610,7 @@ def create_chapters(
                 keep_env_in_path=keep_env_in_path,
                 parent_path=chapter_dict[path_key],
                 include_video=include_video,
+                parent_chapter_template_variant=variant_used,
             )
             chapter_dict["lessons"] = lessons
 
@@ -569,6 +622,7 @@ def create_lessons(
     keep_env_in_path: bool = True,
     parent_path: Optional[Path] = None,
     include_video: bool = False,
+    parent_chapter_template_variant: str = "default",
 ):
     """
     Create folder/file structure for a list of lessons.
@@ -582,11 +636,23 @@ def create_lessons(
         expanded_lesson_path, final_lesson_str = expand_or_preserve_env_vars(raw_lesson_path, raw_parent, keep_env_in_path)
 
         if create_folders:
-            enable_subfolder = False if include_video else lesson_dict.get("enable_subfolder", True)
-            if enable_subfolder:
-                child_folder_name = lesson_dict.get("child_folder_name") or "lessons"
+            # ────────────────────────────────────────────────────────────
+            # Where does the lesson live? Let the *chapter* template tell
+            # us – unless the payload specified something explicit.
+            # ────────────────────────────────────────────────────────────
+            if include_video:
+                child_folder_name = lesson_dict.get("child_folder_name", "")
+            else:
+                child_folder_name = lesson_dict.get("child_folder_name")
+            if child_folder_name is None:
+                child_folder_name = template_manager.get_child_template_folder_from_parent(
+                    "chapter",
+                    parent_chapter_template_variant,
+                )
+
+            if child_folder_name:      # empty string  →  no nesting
                 expanded_lesson_path = expanded_lesson_path / child_folder_name
-                final_lesson_str = str(Path(final_lesson_str) / child_folder_name)
+                final_lesson_str     = str(Path(final_lesson_str) / child_folder_name)
 
             ext = ".mkv" if include_video else f".{lesson_dict.get('ext', 'md')}"
             if include_video:

@@ -9,6 +9,8 @@ from pathlib import Path
 from incept.courses import getCourses, addCourses, addChapters, addLessons
 from incept.payload import build_payload
 
+from incept.dl_rebelway import download_rebelway, report_broken_sources
+
 # Set up user configuration directory
 CONFIG_DIR = Path.home() / ".incept"
 ENV_FILE = CONFIG_DIR / ".env"
@@ -564,6 +566,23 @@ def cli_build_payload(
         json.dump(payload, f, indent=2)
 
     click.echo(f"payload written to {out}")
+
+@main.command("dl-rebelway")
+@click.option("--excel",     "excel_path", required=True, type=click.Path(exists=True))
+@click.option("--output",    "out_dir",    required=True, type=click.Path())
+@click.option("--skip-first", default=0,     help="Rows to skip (zero-based).")
+@click.option("--chrome-port", default=9222, help="Chrome remote debug port.")
+def cli_dl_rebelway(excel_path, out_dir, skip_first, chrome_port):
+    """Download SOURCE MP4s from Rebelway lessons.xlsx."""
+    download_rebelway(excel_path, out_dir, skip_first, chrome_port)
+
+@main.command("report-broken")
+@click.option("--excel",  "excel_path", required=True, type=click.Path(exists=True))
+@click.option("--output", "out_csv",    required=True, type=click.Path())
+@click.option("--chrome-port", default=9222, help="Chrome remote debug port.")
+def cli_report_broken(excel_path, out_csv, chrome_port):
+    """Report lessons with missing SOURCE links to a CSV."""
+    report_broken_sources(excel_path, out_csv, chrome_port)
 
 
 if __name__ == "__main__":
