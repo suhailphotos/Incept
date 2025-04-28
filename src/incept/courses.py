@@ -442,7 +442,14 @@ def addLessons(lesson_payload: dict, course_filter: str, templates_dir: Path, db
     # ----------------------------------------------------------
     lesson_payload["type"]  = ["Lesson"]
     lesson_payload["video"] = include_video
-    
+
+    # -----------------------------------------------------------
+    #  Gather chapter-template metadata so the lesson helper
+    #  can decide whether to add a sub-folder or not.
+    # -----------------------------------------------------------
+    chap_variant      = target_chapter.get("template", "default")
+    chap_child_folder = target_chapter.get("child_folder_name")
+
     # --- TEXT hierarchy (always) -------------------------------
     create_lessons(
         lessons=[lesson_payload],
@@ -451,6 +458,8 @@ def addLessons(lesson_payload: dict, course_filter: str, templates_dir: Path, db
         keep_env_in_path=True,
         include_video=False,                      # <- text first
         parent_path=target_chapter["path"],
+        parent_chapter_template_variant=chap_variant,
+        parent_child_folder_name=chap_child_folder,
     )
     text_path = lesson_payload["path"]           # now guaranteed
 
@@ -464,6 +473,8 @@ def addLessons(lesson_payload: dict, course_filter: str, templates_dir: Path, db
             keep_env_in_path=True,
             include_video=True,                  # <- build episode
             parent_path=target_chapter["video_path"],
+            parent_chapter_template_variant=target_chapter.get("template", "video"),
+            parent_child_folder_name="",               # seasons never want an extra bucket
         )
         lesson_payload["video_path"] = video_copy["video_path"]
     else:

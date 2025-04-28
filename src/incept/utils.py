@@ -90,8 +90,6 @@ def get_video_root_path(course_path: Path) -> Path:
     if in_course:
         return course_path
 
-    raw = os.environ.get("VIDEO_COURSE_FOLDER_PATH")
-    print(raw)
     if raw and os.path.isdir(os.path.expandvars(raw)):
         return Path(os.path.expandvars(raw)).expanduser()
 
@@ -476,18 +474,18 @@ def create_courses(
                     parent_path=course_dict["video_path"],
                     include_video=True,
                 )
-            # ───────────────────────────────────────────────────────────────
-            # propagate video_path back onto the original chapters & lessons
-            for orig_chap, vid_chap in zip(course_dict["chapters"], video_chapters):
-                # copy season (chapter) path
-                orig_chap["video_path"] = vid_chap.get("video_path")
-                # copy each episode (lesson) path
-                for orig_lesson, vid_lesson in zip(
-                    orig_chap.get("lessons", []),
-                    vid_chap.get("lessons", [])
-                ):
-                    orig_lesson["video_path"] = vid_lesson.get("video_path")
-            # ───────────────────────────────────────────────────────────────
+                # ───────────────────────────────────────────────────────────────
+                # propagate video_path back onto the original chapters & lessons
+                for orig_chap, vid_chap in zip(course_dict["chapters"], video_chapters):
+                    # copy season (chapter) path
+                    orig_chap["video_path"] = vid_chap.get("video_path")
+                    # copy each episode (lesson) path
+                    for orig_lesson, vid_lesson in zip(
+                        orig_chap.get("lessons", []),
+                        vid_chap.get("lessons", [])
+                    ):
+                        orig_lesson["video_path"] = vid_lesson.get("video_path")
+                # ───────────────────────────────────────────────────────────────
 
 
 def create_chapters(
@@ -606,11 +604,11 @@ def create_chapters(
                 parent_path=chapter_dict[path_key],
                 include_video=include_video,
                 parent_chapter_template_variant=variant_used,
+                parent_child_folder_name=child_folder_name,
             )
             chapter_dict["lessons"] = lessons
 
-
- def create_lessons(
+def create_lessons(
      lessons: List[Dict[str, Any]],
      templates_dir: Path,
      create_folders: bool = True,
@@ -663,7 +661,13 @@ def create_chapters(
                 video_ext = lesson_dict.get("video_ext", DEFAULT_VIDEO_EXT)
             
                 season_folder = Path(parent_path).name
-                season_prefix = re.search(r'(\d{2})$', season_folder).group(1)  # “08”
+                season_match  = re.search(r'(\d{2})$', season_folder)
+                if not season_match:                      # graceful failure if folder renamed
+                    raise ValueError(
+                        f"Unable to extract 2-digit season prefix from '{season_folder}'. "
+                        "Expected something like 'WK08', 'season_08', etc."
+                    )
+                season_prefix = season_match.group(1)     # “08”
             
                 # scan only *.mp4 (or whatever) and extract eNN
                 existing = []
