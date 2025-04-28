@@ -394,8 +394,9 @@ def addChapters(payload_data: dict,
     # 4) Return the newly inserted chapters.
     return inserted_chapters
 
-
-def addLessons(lesson_payload: dict, course_filter: str, templates_dir: Path, db=DEFAULT_DB, include_video: bool = False, **kwargs):
+def addLessons(lesson_payload: dict, *, course_obj: dict | None = None,
+               course_filter: str | None = None, templates_dir: Path,
+               db=DEFAULT_DB, include_video: bool = False, **kwargs):
     """
     Add a lesson to a course in Notion.
     
@@ -409,12 +410,12 @@ def addLessons(lesson_payload: dict, course_filter: str, templates_dir: Path, db
       7. Return the inserted lesson object.
     """
     # 1. Get the course from Notion.
-    courses_hierarchy = getCourses(db=db, filter=course_filter, **kwargs)
-    if not courses_hierarchy or "courses" not in courses_hierarchy or not courses_hierarchy["courses"]:
-        raise Exception("Course not found using filter: " + course_filter)
-    
-    # For simplicity, assume the first course is the target.
-    course = courses_hierarchy["courses"][0]
+    # 1. Get (or receive) the course from Notion.
+    if course_obj is None:
+        if course_filter is None:
+            raise ValueError("Need either course_obj or course_filter")
+        course_obj = getCourses(db=db, filter=course_filter, **kwargs)["courses"][0]
+    course = course_obj
     
     # 2. Identify the target chapter.
     # We expect the lesson_payload to include a "chapter_name" key.

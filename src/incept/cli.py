@@ -484,18 +484,27 @@ def cli_add_lesson(api_key, database_id, data_file_path, course_name, chapter_na
     except (KeyError, IndexError):
         raise click.ClickException("Invalid payload structure for lessons.")
 
+    # ─── pull the course ONCE and pass it to every call ──────────────────
+    notion_course = getCourses(
+        db=db_type,
+        filter=course_name,
+        api_key=api_key,
+        database_id=database_id
+    )["courses"][0]
+
     inserted_lessons = []
     for lesson_payload in lessons:
-        inserted = addLessons(
-            lesson_payload,
-            course_filter=course_name,
-            templates_dir=Path.home() / ".incept" / "templates",
-            db=db_type,
-            include_video=include_video,
-            api_key=api_key,
-            database_id=database_id
+        inserted_lessons.append(
+            addLessons(
+                lesson_payload,
+                course_obj       = notion_course,         # new positional arg
+                templates_dir    = Path.home() / ".incept" / "templates",
+                db               = db_type,
+                include_video    = include_video,
+                api_key          = api_key,
+                database_id      = database_id,
+            )
         )
-        inserted_lessons.append(inserted)
 
     click.echo("Inserted Lessons:")
     click.echo(json.dumps(inserted_lessons, indent=2))
