@@ -111,35 +111,30 @@ def normalize_placeholder(placeholder: str) -> str:
     return placeholder
 
 
-def get_next_numeric_prefix(
-        base_dir: Path,
-        file_extension: Optional[str] = None
-) -> str:
+def get_next_numeric_prefix(base_dir: Path,
+                            file_extension: Optional[str] = None) -> str:
     """
-    Return the next two-digit index found either in *files* (filtered by
-    ``file_extension`` when given) **or** in *sub-directories*.
+    Return the next free two-digit index found either in *files*
+    (filtered by ``file_extension`` when given) **or** in *sub-dirs*.
 
     Works for:
-        01_Intro.md     → captures 01
-        01_Intro        → captures 01
-        010             → captures 01
+        01_Intro.md  → 01
+        WK03         → 03
+        season_07    → 07
+        010          → 01
     """
-    rx = re.compile(r'^(\d{2})\d*(?:_|$)')      # first 2 digits
+    rx = re.compile(r'(\d{2})')          # ← one-liner change
     existing: list[int] = []
 
     if not base_dir.exists():
         return "01"
 
     for entry in base_dir.iterdir():
-        # -------- files --------
-        if entry.is_file():
-            if file_extension and entry.suffix != file_extension:
-                continue          # ignore other files
-            candidate = entry.stem            # filename without ext
-        else:
-            # -------- directories --------
-            candidate = entry.name
+        # ignore files with the wrong extension
+        if entry.is_file() and file_extension and entry.suffix != file_extension:
+            continue
 
+        candidate = entry.stem if entry.is_file() else entry.name
         m = rx.search(candidate)
         if m:
             existing.append(int(m.group(1)))
@@ -615,14 +610,15 @@ def create_chapters(
             chapter_dict["lessons"] = lessons
 
 
-def create_lessons(
-    lessons: List[Dict[str, Any]],
-    templates_dir: Path,
-    create_folders: bool = True,
-    keep_env_in_path: bool = True,
-    parent_path: Optional[Path] = None,
-    include_video: bool = False,
-    parent_chapter_template_variant: str = "default",
+ def create_lessons(
+     lessons: List[Dict[str, Any]],
+     templates_dir: Path,
+     create_folders: bool = True,
+     keep_env_in_path: bool = True,
+     parent_path: Optional[Path] = None,
+     include_video: bool = False,
+     parent_chapter_template_variant: str = "default",
+     parent_child_folder_name: Optional[str] = None,     # NEW
 ):
     """
     Create folder/file structure for a list of lessons.
@@ -640,10 +636,15 @@ def create_lessons(
             # Where does the lesson live? Let the *chapter* template tell
             # us – unless the payload specified something explicit.
             # ────────────────────────────────────────────────────────────
+            # ── child-folder resolution (same priority order as create_chapters) ──
             if include_video:
                 child_folder_name = lesson_dict.get("child_folder_name", "")
             else:
                 child_folder_name = lesson_dict.get("child_folder_name")
+
+            if child_folder_name is None:
+                child_folder_name = parent_child_folder_name          # ← NEW step
+
             if child_folder_name is None:
                 child_folder_name = template_manager.get_child_template_folder_from_parent(
                     "chapter",
@@ -653,33 +654,44 @@ def create_lessons(
             if child_folder_name:      # empty string  →  no nesting
                 expanded_lesson_path = expanded_lesson_path / child_folder_name
                 final_lesson_str     = str(Path(final_lesson_str) / child_folder_name)
+            # ---------- text-mode helpers ---------------------------------
+            # Needed later for both prefix detection *and* template context.
+            ext = f".{lesson_dict.get('ext', 'md')}"
 
-            ext = ".mkv" if include_video else f".{lesson_dict.get('ext', 'md')}"
+
             if include_video:
-                # pull season number from the parent folder, which is named "season_##"
-                season_folder = Path(parent_path).name
-                m = re.search(r'(\d{2})$', season_folder)
-                season_prefix = m.group(1) if m else "01"
-                # episode index is just the enumerate index +1
-                episode_number = f"{idx+1:02d}"
-
-                # pick the desired container extension, defaulting to env-var or mp4
                 video_ext = lesson_dict.get("video_ext", DEFAULT_VIDEO_EXT)
-
+            
+                season_folder = Path(parent_path).name
+                season_prefix = re.search(r'(\d{2})$', season_folder).group(1)  # “08”
+            
+                # scan only *.mp4 (or whatever) and extract eNN
+                existing = []
+                for f in expanded_lesson_path.glob(f"*.{video_ext}"):
+                    m = re.search(r"e(\d{2})", f.stem, flags=re.I)
+                    if m:
+                        existing.append(int(m.group(1)))
+                episode_number = f"{(max(existing)+1) if existing else 1:02d}"
+            
+            
                 lesson_context = {
-                    "name":           lesson_dict["name"],                        # avoid KeyError
-                    "numeric_prefix": season_prefix,                              # for s##e##  
-                    "episode_number": episode_number,
+                    "name":           lesson_dict["name"],
+                    "numeric_prefix": season_prefix,           # s**04**e02
+                    "episode_number": episode_number,          # e**02**
                     "lesson_slug":    sanitize_dir_name(lesson_dict["name"]).lower(),
                     "lesson_title":   lesson_dict["name"],
                     "video_ext":      video_ext,
-                    # pass through extra fields your template uses:
                     "description":    lesson_dict.get("description", ""),
                     "aired":          lesson_dict.get("aired", None),
                 }
             else:
                 # text mode: just enumerate by existing files
-                base_prefix = int(get_next_numeric_prefix(expanded_lesson_path, file_extension=ext))
+                base_prefix = int(
+                    get_next_numeric_prefix(
+                        expanded_lesson_path,
+                        file_extension=ext,
+                    )
+                )
                 lesson_context = {
                     "name":           lesson_dict["name"],                        # avoid KeyError
                     "numeric_prefix": f"{base_prefix:02d}",
