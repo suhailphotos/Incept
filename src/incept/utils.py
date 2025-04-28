@@ -604,7 +604,6 @@ def create_chapters(
                 parent_path=chapter_dict[path_key],
                 include_video=include_video,
                 parent_chapter_template_variant=variant_used,
-                parent_child_folder_name=child_folder_name,
             )
             chapter_dict["lessons"] = lessons
 
