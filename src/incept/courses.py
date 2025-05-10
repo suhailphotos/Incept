@@ -2,8 +2,8 @@
 
 import os
 import re
+import copy
 from pathlib import Path
-from dotenv import load_dotenv
 from incept.dbfactory import get_db_client
 from incept.utils import create_lessons, create_chapters, create_courses, expand_or_preserve_env_vars
 
@@ -28,7 +28,7 @@ def getCourses(db=DEFAULT_DB, filter=None, **kwargs):
     else:
         return db_client.get_courses()
 
-def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, **kwargs):
+def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, include_video: bool = False, **kwargs):
     """
     Add one or more courses (including their chapters and lessons) to Notion.
     The payload_data is expected to follow your standard internal format, e.g.:
@@ -87,6 +87,10 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, **kwargs)
     lesson_forward_mapping = db_client.forward_mapping
 
     def insert_lesson_inline(lesson_dict: dict, parent_chapter: dict):
+        # Carry the video flag into the lesson
+        lesson_dict["video"] = include_video
+        # Ensure video_path is set or NA
+        lesson_dict["video_path"] = lesson_dict.get("video_path") if include_video else "NA"
         # Set lesson type.
         lesson_dict["type"] = ["Lesson"]
         inserted_lesson = db_client.insert_page(
@@ -100,6 +104,10 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, **kwargs)
         return inserted_lesson
 
     def insert_chapter_inline(chapter_dict: dict, parent_course: dict):
+        # Carry the video flag into the chapter
+        chapter_dict["video"] = include_video
+        # Ensure video_path is set or NA
+        chapter_dict["video_path"] = chapter_dict.get("video_path") if include_video else "NA"
         # Set chapter type.
         chapter_dict["type"] = ["Chapter"]
         inserted_chapter = db_client.insert_page(
@@ -151,10 +159,15 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, **kwargs)
             templates_dir=templates_dir,
             create_folders=True,
             keep_env_in_path=True,
-            parent_path=None  # let create_courses handle the parent's logic
+            parent_path=None, # let create_courses handle the parent's logic
+            include_video=include_video
         )
+        # Ensure course-level video_path is set or NA
+        if not include_video:
+            local_course["video_path"] = "NA"
 
-        # 2d) Insert the course as a new Notion page.
+        # 2d) Make sure the `video` flag is carried into Notion
+        local_course["video"] = include_video
         inserted_course = db_client.insert_page(
             flat_object=local_course,
             back_mapping=course_back_mapping,
@@ -176,7 +189,12 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, **kwargs)
     return inserted_courses
 
 
-def addChapters(payload_data: dict, course_filter: str, templates_dir: Path, db=DEFAULT_DB, **kwargs):
+def addChapters(payload_data: dict,
+               course_filter: str,
+               templates_dir: Path,
+               db=DEFAULT_DB,
+               include_video: bool = False,
+               **kwargs):
     """
     Add one or more chapters (and optionally lessons) to a single course in Notion.
     The payload_data is expected to follow the standard internal format:
@@ -248,6 +266,10 @@ def addChapters(payload_data: dict, course_filter: str, templates_dir: Path, db=
 
     # Inline helper to insert a lesson under a newly inserted chapter.
     def insert_lesson_inline(lesson_dict: dict, parent_chapter: dict):
+        # Carry the video flag into the lesson
+        lesson_dict["video"] = include_video
+        # Ensure video_path is set or NA
+        lesson_dict["video_path"] = lesson_dict.get("video_path") if include_video else "NA"
         # Ensure the lesson payload has the correct type.
         lesson_dict["type"] = ["Lesson"]
         inserted_lesson = db_client.insert_page(
@@ -281,15 +303,70 @@ def addChapters(payload_data: dict, course_filter: str, templates_dir: Path, db=
             continue
 
         # 3b) Create local folders (chapter + lessons) by calling create_chapters on a single chapter.
+        # ---------- TEXT hierarchy (always) ----------
         create_chapters(
-            chapters=[chapter_payload],
-            templates_dir=templates_dir,
-            create_folders=True,
-            keep_env_in_path=True,
-            parent_path=notion_course_path  # The course path from Notion.
+            chapters        = [chapter_payload],
+            templates_dir   = templates_dir,
+            create_folders  = True,
+            keep_env_in_path= True,
+            parent_path     = notion_course_path,
+            include_video   = False,
+            parent_course_template_variant = notion_course.get("template", "default"),
+            parent_child_folder_name       = notion_course.get("child_folder_name"),
         )
+        
+        # ---------- VIDEO hierarchy (optional) ----------
+        if include_video:
+            video_parent = notion_course.get("video_path")
+            if not video_parent:
+                raise Exception(
+                    "Course was never created with --include-video; no 'video_path' to attach seasons under."
+                )
+        
+            video_chap = copy.deepcopy(chapter_payload)
+            # carry course-level artwork & titles so image dispatch works
+            video_chap.update({
+                "logo_public_id":   notion_course.get("logo_public_id"),
+                "fanart_public_id": notion_course.get("fanart_public_id"),
+                "poster_base_id":   notion_course.get("poster_base_id"),
+                "thumb_base_id":    notion_course.get("thumb_base_id"),
+                "course_title":     notion_course.get("name"),
+                "instructor":       ", ".join(notion_course.get("instructor", [])),
+            })
+        
+            create_chapters(
+                chapters        = [video_chap],
+                templates_dir   = templates_dir,
+                create_folders  = True,
+                keep_env_in_path= True,
+                parent_path     = video_parent,      # <-- correct root
+                include_video   = True,
+            )
+        
+            # bubble the season path back so Notion gets it
+            chapter_payload["video_path"] = video_chap.get("video_path")
 
-        # 3c) Insert the new chapter as a Notion page.
+            # ─── copy episode paths (works for list *or* single-dict) ──────────
+            orig_ls_list = chapter_payload.get("lessons", [])
+            if isinstance(orig_ls_list, dict):
+                orig_ls_list = [orig_ls_list]
+            
+            vid_ls_list = video_chap.get("lessons", [])
+            if isinstance(vid_ls_list, dict):
+                vid_ls_list = [vid_ls_list]
+            
+            for orig_ls, vid_ls in zip(orig_ls_list, vid_ls_list):
+                orig_ls["video_path"] = vid_ls.get("video_path")
+            # ───────────────────────────────────────────────────────────────────
+
+        # make sure the column is *always* present
+        if "video_path" not in chapter_payload:
+            chapter_payload["video_path"] = "NA"
+
+        # 3c) Carry the video flag into chapter (if desired)
+        chapter_payload["video"] = include_video
+
+        # 3d) Insert the new chapter as a Notion page.
         inserted_chapter = db_client.insert_page(
             flat_object=chapter_payload,
             back_mapping=chapter_back_mapping,
@@ -306,14 +383,20 @@ def addChapters(payload_data: dict, course_filter: str, templates_dir: Path, db=
         if lessons:
             if isinstance(lessons, dict):
                 lessons = [lessons]
+            # before inserting lessons, ensure each one has video_path
+            if not include_video:
+                for ls in lessons:
+                    ls["video_path"] = "NA"
+
             for lesson_dict in lessons:
                 insert_lesson_inline(lesson_dict, inserted_chapter)
 
     # 4) Return the newly inserted chapters.
     return inserted_chapters
 
-
-def addLessons(lesson_payload: dict, course_filter: str, templates_dir: Path, db=DEFAULT_DB, **kwargs):
+def addLessons(lesson_payload: dict, *, course_obj: dict | None = None,
+               course_filter: str | None = None, templates_dir: Path,
+               db=DEFAULT_DB, include_video: bool = False, **kwargs):
     """
     Add a lesson to a course in Notion.
     
@@ -327,12 +410,12 @@ def addLessons(lesson_payload: dict, course_filter: str, templates_dir: Path, db
       7. Return the inserted lesson object.
     """
     # 1. Get the course from Notion.
-    courses_hierarchy = getCourses(db=db, filter=course_filter, **kwargs)
-    if not courses_hierarchy or "courses" not in courses_hierarchy or not courses_hierarchy["courses"]:
-        raise Exception("Course not found using filter: " + course_filter)
-    
-    # For simplicity, assume the first course is the target.
-    course = courses_hierarchy["courses"][0]
+    # 1. Get (or receive) the course from Notion.
+    if course_obj is None:
+        if course_filter is None:
+            raise ValueError("Need either course_obj or course_filter")
+        course_obj = getCourses(db=db, filter=course_filter, **kwargs)["courses"][0]
+    course = course_obj
     
     # 2. Identify the target chapter.
     # We expect the lesson_payload to include a "chapter_name" key.
@@ -355,25 +438,48 @@ def addLessons(lesson_payload: dict, course_filter: str, templates_dir: Path, db
             print(f"Lesson '{lesson_name}' already exists; skipping insertion.")
             return existing  # or return a status/message
     
-    # 4. Create folder structure for the new lesson.
-    # Use the chapter's "path" as the parent. (Assume chapter["path"] is set.)
-    parent_path = target_chapter.get("path")
-    if not parent_path:
-        raise Exception("Target chapter does not have a valid 'path' field.")
-    
-    # Call create_lessons on a list containing our lesson_payload.
-    # This updates lesson_payload with a proper "path".
+    # ----------------------------------------------------------
+    # 4.  Book-keeping fields expected by Notion
+    # ----------------------------------------------------------
+    lesson_payload["type"]  = ["Lesson"]
+    lesson_payload["video"] = include_video
+
+    # -----------------------------------------------------------
+    #  Gather chapter-template metadata so the lesson helper
+    #  can decide whether to add a sub-folder or not.
+    # -----------------------------------------------------------
+    chap_variant      = target_chapter.get("template", "default")
+    chap_child_folder = target_chapter.get("child_folder_name")
+
+    # --- TEXT hierarchy (always) -------------------------------
     create_lessons(
         lessons=[lesson_payload],
         templates_dir=templates_dir,
         create_folders=True,
         keep_env_in_path=True,
-        parent_path=parent_path
+        include_video=False,                      # <- text first
+        parent_path=target_chapter["path"],
+        parent_chapter_template_variant=chap_variant,
+        parent_child_folder_name=chap_child_folder,
     )
-    # Now lesson_payload["path"] should be updated.
+    text_path = lesson_payload["path"]           # now guaranteed
 
-    # 5. Update payload with additional info.
-    lesson_payload["type"] = ["Lesson"]
+    # --- VIDEO hierarchy (optional) ----------------------------
+    if include_video:
+        video_copy = copy.deepcopy(lesson_payload)
+        create_lessons(
+            lessons=[video_copy],
+            templates_dir=templates_dir,
+            create_folders=True,
+            keep_env_in_path=True,
+            include_video=True,                  # <- build episode
+            parent_path=target_chapter["video_path"],
+            parent_chapter_template_variant=target_chapter.get("template", "video"),
+            parent_child_folder_name="",               # seasons never want an extra bucket
+        )
+        lesson_payload["video_path"] = video_copy["video_path"]
+    else:
+        lesson_payload["video_path"] = "NA"
     
     # 6. Insert the lesson into Notion.
     # Get the DB client (assumed to be an instance of NotionDB) with its loaded mappings.
@@ -394,10 +500,6 @@ if __name__ == "__main__":
     import os, json
     from pathlib import Path
     from dotenv import load_dotenv
-
-    # Load environment variables.
-    env_path = os.path.join(os.path.dirname(__file__), ".env")
-    load_dotenv(dotenv_path=env_path)
 
     raw_templates_dir = os.environ.get("JINJA_TEMPLATES_PATH", str(Path.home() / ".incept" / "templates"))
     templates_dir = Path(os.path.expandvars(raw_templates_dir)).expanduser()
@@ -517,13 +619,50 @@ if __name__ == "__main__":
 
         print("Inserted Courses:")
         print(json.dumps(inserted_courses, indent=2))
+
+    def test_add_courses_with_video():
+        """Create BOTH text and video hierarchies for all courses in cine_light.json."""
+        payload_file = os.path.join(
+            os.path.expanduser("~"),
+            ".incept",
+            "payload",
+            "cine_light_subset.json",
+        )
+        if not os.path.exists(payload_file):
+            print(f"Payload file not found: {payload_file}")
+            return
+
+        with open(payload_file, "r", encoding="utf-8") as f:
+            payload_data = json.load(f)
+
+        # Ensure that "courses" is a list
+        courses = payload_data.get("courses", [])
+        if isinstance(courses, dict):
+            courses = [courses]
+        payload_data["courses"] = courses
+    
+        # Call addCourses with include_video=True
+        inserted_courses = addCourses(
+            payload_data=payload_data,
+            templates_dir=templates_dir,
+            include_video=True,
+            api_key=NOTION_API_KEY,
+            database_id=NOTION_COURSE_DATABASE_ID
+        )
+
+        print("Inserted Courses with Video:")
+        print(json.dumps(inserted_courses, indent=2))
+
+
+    # Uncomment to test addCourses + video:
+    test_add_courses_with_video()
   
 
     # Uncomment to test addLessons.
     # test_add_lessons()
 
     # Uncomment to test addChapter.
-    test_add_chapters()
+    # test_add_chapters()
 
     # Uncomment to test addCourses.
     # test_add_courses()

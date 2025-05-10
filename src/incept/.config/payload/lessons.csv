@@ -1,0 +1,118 @@
+﻿chapter_index,name,description,link
+1,Course Overview,Course Overview,https://rebelway.academy/topic/01_course_overview-5/
+1,Week 1 Overview,Week 1 Overview,https://rebelway.academy/topic/02_week_1_overview-5/
+1,The Benefits Of USD,The Benefits Of USD,https://rebelway.academy/topic/03_the_benefits_of_usd-5/
+1,USD And Solaris Basics,USD And Solaris Basics,https://rebelway.academy/topic/04_usd_and_solaris_basics-5/
+1,Basic Geometry And Materials,Basic Geometry And Materials,https://rebelway.academy/topic/05_basic_geometry_and_materials-5/
+1,Cinematic Lighting Principles Part 1,Cinematic Lighting Principles Part 1,https://rebelway.academy/topic/06_cinematic_lighting_principles_part_1-5/
+1,Cinematic Lighting Principles Part 2,Cinematic Lighting Principles Part 2,https://rebelway.academy/topic/07_cinematic_lighting_principles_part_2-5/
+1,Light Types In Solaris,Light Types In Solaris,https://rebelway.academy/topic/08_light_types_in_solaris-5/
+1,Lighting Tools In Solaris,Lighting Tools In Solaris,https://rebelway.academy/topic/09_lighting_tools_in_solaris-5/
+1,Applying Our Lighting Principles,Applying Our Lighting Principles,https://rebelway.academy/topic/10_applying_our_lighting_principles-5/
+1,Week 01 Assignment,Week 01 Assignment,https://rebelway.academy/topic/11_week_01_assignment-5/
+1,Bonus Dappled Light Overview,Bonus Dappled Light Overview,https://rebelway.academy/topic/12_bonus_dappled_light_overview-5/
+2,Week 02 Overview,Week 02 Overview,https://rebelway.academy/topic/01_week_02_overview-5/
+2,USD Layers,USD Layers,https://rebelway.academy/topic/02_usd_layers-5/
+2,Sublayers And References,Sublayers And References,https://rebelway.academy/topic/03_sublayers_and_references-5/
+2,Writing USD Layers,Writing USD Layers,https://rebelway.academy/topic/04_writing_usd_layers-5/
+2,Folder Structure & Geometry,Folder Structure & Geometry,https://rebelway.academy/topic/05_folder_structure_&_geometry-5/
+2,Colorspace,Colorspace,https://rebelway.academy/topic/06_colorspace-5/
+2,Asset Materials,Asset Materials,https://rebelway.academy/topic/07_asset_materials-5/
+2,Asset Render Properties,Asset Render Properties,https://rebelway.academy/topic/08_asset_render_properties-5/
+2,Variants,Variants,https://rebelway.academy/topic/09_variants-5/
+2,Payloads,Payloads,https://rebelway.academy/topic/10_payloads-5/
+2,Export Asset,Export Asset,https://rebelway.academy/topic/11_export_asset-5/
+2,Week 02 Assigment,Week 02 Assigment,https://rebelway.academy/topic/12_week_02_assigment-5/
+3,Week 3 Overview,Week 3 Overview,https://rebelway.academy/topic/01_week_3_overview-5/
+3,Kinds,Kinds,https://rebelway.academy/topic/02_kinds-5/
+3,Component Builder Basics,Component Builder Basics,https://rebelway.academy/topic/03_component_builder_basics-5/
+3,Customizing The Component Builder Part 1,Customizing The Component Builder Part 1,https://rebelway.academy/topic/04_customizing_the_component_builder_part_1-5/
+3,Referencing Vs Grafting,Referencing Vs Grafting,https://rebelway.academy/topic/05_referencing_vs_grafting-5/
+3,Customizing The Component Builder Part 2,Customizing The Component Builder Part 2,https://rebelway.academy/topic/06_customizing_the_component_builder_part_2-5/
+3,Inherit Composition Arc,Inherit Composition Arc,https://rebelway.academy/topic/07_inherit_composition_arc-5/
+3,Template Creation,Template Creation,https://rebelway.academy/topic/08_template_creation-5/
+3,Cruiser Asset,Cruiser Asset,https://rebelway.academy/topic/09_cruiser_asset-5/
+3,Assignment,Assignment,https://rebelway.academy/topic/10_assignment-5/
+4,Week 4 overview,Week 4 overview,https://rebelway.academy/topic/01_week_4_overview-5/
+4,Layout Asset Gallery,Layout Asset Gallery,https://rebelway.academy/topic/02_layout_asset_gallery-5/
+4,Kitbash 3D Part 1,Kitbash 3D Part 1,https://rebelway.academy/topic/03_kitbash_3d_part_1-5/
+4,Kitbash 3D Part 2,Kitbash 3D Part 2,https://rebelway.academy/topic/04_kitbash_3d_part_2-5/
+4,Big Medium Small Part 1,Big Medium Small Part 1,https://rebelway.academy/topic/05_big_medium_small_part_1-5/
+4,Triplaner Setup,Triplaner Setup,https://rebelway.academy/topic/06_triplaner_setup-5/
+4,Big Medium Small Part 2,Big Medium Small Part 2,https://rebelway.academy/topic/07_big_medium_small_part_2-5/
+4,Big Medium Small Part 3,Big Medium Small Part 3,https://rebelway.academy/topic/08_big_medium_small_part_3-5/
+4,Procedural Shading Part 1,Procedural Shading Part 1,https://rebelway.academy/topic/09_procedural_shading_part_1-5/
+4,Procedural Shading Part 2,Procedural Shading Part 2,https://rebelway.academy/topic/10_procedural_shading_part_2-5/
+4,Procedural Shading Part 3,Procedural Shading Part 3,https://rebelway.academy/topic/11_procedural_shading_part_3-5/
+4,Look Dev Setup,Look Dev Setup,https://rebelway.academy/topic/12_look_dev_setup-5/
+4,Assignment,Assignment,https://rebelway.academy/topic/13_assignment-5/
+5,Overview,Overview,https://rebelway.academy/topic/01_overview-5/
+5,Cinematic Compostion Principles,Cinematic Compostion Principles,https://rebelway.academy/topic/02_cinematic_compostion_principles-5/
+5,Reference Analysis,Reference Analysis,https://rebelway.academy/topic/03_reference_analysis-5/
+5,Initial Project Setup,Initial Project Setup,https://rebelway.academy/topic/04_initial_project_setup-5/
+5,Instanceable Primitives,Instanceable Primitives,https://rebelway.academy/topic/05_instanceable_primitives-5/
+5,Point Instancing Part 1,Point Instancing Part 1,https://rebelway.academy/topic/06_point_instancing_part_1-5/
+5,Point Instancing Part 2,Point Instancing Part 2,https://rebelway.academy/topic/07_point_instancing_part_2-5/
+5,Point Instancing Part 3,Point Instancing Part 3,https://rebelway.academy/topic/08_point_instancing_part_3-5/
+5,Animation And Contraints,Animation And Contraints,https://rebelway.academy/topic/09_animation_and_contraints-5/
+5,Layout Tools,Layout Tools,https://rebelway.academy/topic/10_layout_tools-5/
+5,Lazy Lighting,Lazy Lighting,https://rebelway.academy/topic/11_lazy_lighting-5/
+5,Assignment,Assignment,https://rebelway.academy/topic/12_assignment-5/
+6,Week Overview,Week Overview,https://rebelway.academy/topic/01_week_overview-5/
+6,Fog Details,Fog Details,https://rebelway.academy/topic/02_fog_details-5/
+6,Smoke Trails,Smoke Trails,https://rebelway.academy/topic/03_smoke_trails-5/
+6,Ocean FX,Ocean FX,https://rebelway.academy/topic/04_ocean_fx-5/
+6,USD Render Primitives,USD Render Primitives,https://rebelway.academy/topic/05_usd_render_primitives-5/
+6,Noise And Sampling,Noise And Sampling,https://rebelway.academy/topic/06_noise_and_sampling-5/
+6,Shot Render Passes,Shot Render Passes,https://rebelway.academy/topic/07_shot_render_passes-5/
+6,Artist Workflow,Artist Workflow,https://rebelway.academy/topic/08_artist_workflow-5/
+6,Week6 Assigment,Week6 Assigment,https://rebelway.academy/topic/09_week6_assigment-5/
+7,Week7 Overview,Week7 Overview,https://rebelway.academy/topic/01_week7_overview-5/
+7,Production Data for Lighting,Production Data for Lighting,https://rebelway.academy/topic/02_production_data_for_lighting-5/
+7,Lighting to Footage Workflow,Lighting to Footage Workflow,https://rebelway.academy/topic/03_lighting_to_footage_workflow-5/
+7,Shot 010 Plate Prep,Shot 010 Plate Prep,https://rebelway.academy/topic/04_shot_010_plate_prep-5/
+7,Shot 010 Layout And Lighting,Shot 010 Layout And Lighting,https://rebelway.academy/topic/05_shot_010_layout_and_lighting-5/
+7,Shot 010 Slapcomp,Shot 010 Slapcomp,https://rebelway.academy/topic/06_shot_010_slapcomp-5/
+7,Shot 020 Prep And Layout,Shot 020 Prep And Layout,https://rebelway.academy/topic/07_shot_020_prep_and_layout-5/
+7,Shot 020 Karma Lighting,Shot 020 Karma Lighting,https://rebelway.academy/topic/08_shot_020_karma_lighting-5/
+7,Shot 020 Arnold Lighting,Shot 020 Arnold Lighting,https://rebelway.academy/topic/09_shot_020_arnold_lighting-5/
+7,Shot 020 Slapcomp,Shot 020 Slapcomp,https://rebelway.academy/topic/10_shot_020_slapcomp-5/
+7,Spatial Lighting,Spatial Lighting,https://rebelway.academy/topic/11_spatial_lighting-5/
+7,Week 07 Assigment,Week 07 Assigment,https://rebelway.academy/topic/12_week_07_assigment-5/
+7,Bonus LIDAR Scan,Bonus LIDAR Scan,https://rebelway.academy/topic/13_bonus_lidar_scan-5/
+7,Bonus HDR Stitch,Bonus HDR Stitch,https://rebelway.academy/topic/14_bonus_hdr_stitch-5/
+8,Week 8 Overview,Week 8 Overview,https://rebelway.academy/topic/01_week_8_overview-5/
+8,Sequence Analysis,Sequence Analysis,https://rebelway.academy/topic/02_sequence_analysis-5/
+8,Footage Prep,Footage Prep,https://rebelway.academy/topic/03_footage_prep-5/
+8,Layout Hero Shot,Layout Hero Shot,https://rebelway.academy/topic/04_layout_hero_shot-5/
+8,Base Lighting Setup,Base Lighting Setup,https://rebelway.academy/topic/05_base_lighting_setup-5/
+8,FG Build Pt01,FG Build Pt01,https://rebelway.academy/topic/06_fg_build_pt01-5/
+8,FG Build Pt02,FG Build Pt02,https://rebelway.academy/topic/07_fg_build_pt02-5/
+8,BG Build,BG Build,https://rebelway.academy/topic/08_bg_build-5/
+8,Sparks,Sparks,https://rebelway.academy/topic/09_sparks-5/
+8,Arnold Auto Light Groups,Arnold Auto Light Groups,https://rebelway.academy/topic/10_arnold_auto_light_groups-5/
+8,Week 8 Overview 2,Week 8 Overview 2,https://rebelway.academy/topic/11_week_8_overview_2-5/
+8,Render Products,Render Products,https://rebelway.academy/topic/12_render_products-5/
+8,Render Passes,Render Passes,https://rebelway.academy/topic/13_render_passes-5/
+8,Slapcomp,Slapcomp,https://rebelway.academy/topic/14_slapcomp-5/
+8,Week 08 Assigment,Week 08 Assigment,https://rebelway.academy/topic/15_week_08_assigment-5/
+9,Week 09 Overview,Week 09 Overview,https://rebelway.academy/topic/01_week_09_overview-5/
+9,Master Project Pt 1,Master Project Pt 1,https://rebelway.academy/topic/02_master_project_pt_1-5/
+9,Master Project Pt 2,Master Project Pt 2,https://rebelway.academy/topic/03_master_project_pt_2-5/
+9,Slapcomp,Slapcomp,https://rebelway.academy/topic/04_slapcomp-5/
+9,Previs And Ref Analysis,Previs And Ref Analysis,https://rebelway.academy/topic/05_previs_and_ref_analysis-5/
+9,Principle Shot Part 01,Principle Shot Part 01,https://rebelway.academy/topic/06_principle_shot_part_01-5/
+9,Principle Shot Part 02,Principle Shot Part 02,https://rebelway.academy/topic/07_principle_shot_part_02-5/
+9,Child Shots Part 01,Child Shots Part 01,https://rebelway.academy/topic/08_child_shots_part_01-5/
+9,Child Shots Part 02,Child Shots Part 02,https://rebelway.academy/topic/09_child_shots_part_02-5/
+9,Assignment,Assignment,https://rebelway.academy/topic/10_assignment-5/
+10,Overview,Overview,https://rebelway.academy/topic/01_overview-5/
+10,Week9 Comp Part 1,Week9 Comp Part 1,https://rebelway.academy/topic/02_week9_comp_part_1-5/
+10,Week9 Comp Part 2,Week9 Comp Part 2,https://rebelway.academy/topic/03_week9_comp_part_2-5/
+10,Matching Grain,Matching Grain,https://rebelway.academy/topic/04_matching_grain-5/
+10,Shadow Integration,Shadow Integration,https://rebelway.academy/topic/05_shadow_integration-5/
+10,Week8 Comp Part 1,Week8 Comp Part 1,https://rebelway.academy/topic/06_week8_comp_part_1-5/
+10,Week8 Comp Part 2,Week8 Comp Part 2,https://rebelway.academy/topic/07_week8_comp_part_2-5/
+10,Week8 Comp Part 3,Week8 Comp Part 3,https://rebelway.academy/topic/08_week8_comp_part_3-5/
+10,Week 5 Comp,Week 5 Comp,https://rebelway.academy/topic/09_week_5_comp-5/
+10,Assignment,Assignment,https://rebelway.academy/topic/10_assignment-5/

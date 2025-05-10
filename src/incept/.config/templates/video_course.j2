@@ -1,46 +1,29 @@
-{# video_course.j2 #}
-{#
-  Top-level "TV Show" folder structure:
-   - Folder name: {{ course_slug|lower }}  (e.g. "cinematic_lighting_in_houdini")
-   - Files:
-       1) tvshow.nfo (with template_content for Jellyfin)
-       2) poster.jpg, banner.jpg, fanart.jpg, logo.png, etc.
-   - An optional "extrafanart" folder containing multiple backdrops
-   - Subfolders for each "chapter" (rendered by video_chapter.j2).
-#}
+{# ~/.incept/templates/video_course.j2 #}
 {
-  "folder": "{{ course_slug|lower }}",
+  "folder": "{{ numeric_prefix }}_{{ course_slug }}",
   "files": [
     {
       "file": "tvshow.nfo",
-      "template_content": "<tvshow>\n"
-                          "  <title>{{ course_title }}</title>\n"
-                          "  <showtitle>{{ course_title }}</showtitle>\n"
-                          "  <year>{{ year }}</year>\n"
-                          "  <plot>{{ description }}</plot>\n"
-                          "  <genre>Education</genre>\n"
-                          "  <studio>{% if institute %}{{ institute|join(', ') }}{% else %}Unknown{% endif %}</studio>\n"
-                          "  <!-- Add more fields as desired: <mpaa>, <ratings>, <actors>, etc. -->\n"
-                          "</tvshow>"
+      "template_content": {{ (
+        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?>\n"
+        "<tvshow>\n"
+        "  <title>" ~ course_title ~ "</title>\n"
+        "  <plot>" ~ description ~ "</plot>\n"
+        "  <genre>Education</genre>\n"
+        "  <studio>" ~ (institute|join(', ') if institute else 'Unknown') ~ "</studio>\n"
+        "  <year>" ~ year|string ~ "</year>\n"
+        "</tvshow>\n"
+      ) | tojson }}
     },
     { "file": "poster.jpg" },
-    { "file": "banner.jpg" },
     { "file": "fanart.jpg" },
     { "file": "background.jpg" },
     { "file": "logo.png" },
     { "file": "thumb.jpg" }
   ],
   "subfolders": [
-    {
-      "folder": "extrafanart",
-      "files": [
-        { "file": "fanart1.jpg" },
-        { "file": "fanart2.jpg" }
-      ]
-    },
-    {% for chapter in chapters %}
-      {{ chapter | tojson }},
-    {% endfor %}
-    {}
+{% for chapter in chapters %}
+    {{ chapter | tojson }}{% if not loop.last %},{% endif %}
+{% endfor %}
   ]
 }

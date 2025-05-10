@@ -1,3 +1,5 @@
+# src/incept/asset_generator.py
+
 from __future__ import annotations
 
 """
@@ -243,6 +245,9 @@ class PosterGenerator(BaseGenerator):
         self.variant        = variant
         self.base_public_id = base_public_id
         self.logo_public_id = logo_public_id
+        # accept str *or* list/tuple for convenience
+        if isinstance(instructor, (list, tuple)):
+            instructor = ", ".join(map(str, instructor))
         self.instructor     = instructor.upper()
         self.course_title   = course_title.upper()
         self.chapter_title  = chapter_title.upper() if chapter_title else None

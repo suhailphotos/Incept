@@ -4,9 +4,13 @@ import os
 import json
 import click
 import shutil
+import re
 from dotenv import load_dotenv
 from pathlib import Path
 from incept.courses import getCourses, addCourses, addChapters, addLessons
+from incept.payload import build_payload
+
+from incept.dl_rebelway import download_rebelway, report_broken_sources
 
 # Set up user configuration directory
 CONFIG_DIR = Path.home() / ".incept"
@@ -86,7 +90,7 @@ def cli_get_courses(api_key, database_id, filter):
         api_key = os.getenv("NOTION_API_KEY")
     # 4) Similarly, get database ID.
     if not database_id:
-        database_id = os.getenv("NOTION_DATABASE_ID")
+        database_id = os.getenv("NOTION_COURSE_DATABASE_ID")
     # 5) If missing credentials, raise an error.
     if not api_key or not database_id:
         raise click.ClickException("API_KEY or DATABASE_ID not found. Provide via CLI options or .env file.")
@@ -115,7 +119,14 @@ def cli_get_courses(api_key, database_id, filter):
 @click.option("--link", default=None, help="Course link/URL (override JSON).")
 @click.option("--path", default=None, help="Local path for folder creation (override JSON). e.g., '$DATALIB/threeD/courses'")
 @click.option("--folder-template", default=None, help="Template folder name for local structure (override JSON). e.g. 'default'")
-def cli_add_course(api_key, database_id, data_file_path, name, description, link, path, folder_template):
+# Jellyfin / video hierarchy
+@click.option(
+    "--include-video/--no-video",
+    default=False,
+    help="Also create Jellyfin-ready video folders and store full episode paths in Notion."
+)
+def cli_add_course(api_key, database_id, data_file_path, name, description, link,
+                   path, folder_template, include_video):
     """
     Insert one or more new courses (including chapters/lessons) into Notion.
     Either provide --data-file-path or specify the details manually 
@@ -134,7 +145,7 @@ def cli_add_course(api_key, database_id, data_file_path, name, description, link
     if not api_key:
         api_key = os.getenv("NOTION_API_KEY")
     if not database_id:
-        database_id = os.getenv("NOTION_DATABASE_ID")
+        database_id = os.getenv("NOTION_COURSE_DATABASE_ID")
     if not api_key or not database_id:
         raise click.ClickException("API_KEY or DATABASE_ID not found. Provide via CLI or .env file.")
 
@@ -197,11 +208,13 @@ def cli_add_course(api_key, database_id, data_file_path, name, description, link
     if isinstance(payload_data.get("courses"), dict):
         payload_data["courses"] = [payload_data["courses"]]
 
+
     # 4) Call addCourses with the final payload
     inserted_courses = addCourses(
         payload_data=payload_data,
         templates_dir=Path.home() / ".incept" / "templates",
         db=db_type,
+        include_video=include_video,
         api_key=api_key,
         database_id=database_id
     )
@@ -222,7 +235,13 @@ def cli_add_course(api_key, database_id, data_file_path, name, description, link
 @click.option("--link", default=None, help="Chapter link/URL (override JSON).")
 @click.option("--path", default=None, help="Local path for folder creation (override JSON), e.g., '$DATALIB/threeD/courses'")
 @click.option("--folder-template", default=None, help="Template folder name for local structure (override JSON), e.g., 'default'")
-def cli_add_chapter(api_key, database_id, data_file_path, course_name, chapter_name, description, link, path, folder_template):
+@click.option(
+    "--include-video/--no-video",
+    default=False,
+    help="Mirror the new chapter as a season inside the video tree."
+)
+def cli_add_chapter(api_key, database_id, data_file_path, course_name, chapter_name,
+                    description, link, path, folder_template, include_video):
     """
     Insert one or more new chapters (and optionally lessons) into an existing course in Notion.
     Either provide --data-file-path or specify details manually (in which case exactly one chapter is inserted).
@@ -234,7 +253,7 @@ def cli_add_chapter(api_key, database_id, data_file_path, course_name, chapter_n
     if not api_key:
         api_key = os.getenv("NOTION_API_KEY")
     if not database_id:
-        database_id = os.getenv("NOTION_DATABASE_ID")
+        database_id = os.getenv("NOTION_COURSE_DATABASE_ID")
     if not api_key or not database_id:
         raise click.ClickException("API_KEY or DATABASE_ID not found.")
     
@@ -301,6 +320,7 @@ def cli_add_chapter(api_key, database_id, data_file_path, course_name, chapter_n
         course_filter=course_name,
         templates_dir=Path.home() / ".incept" / "templates",
         db=db_type,
+        include_video=include_video,
         api_key=api_key,
         database_id=database_id
     )
@@ -321,7 +341,13 @@ def cli_add_chapter(api_key, database_id, data_file_path, course_name, chapter_n
 @click.option("--link", default=None, help="Lesson link/URL (override JSON).")
 @click.option("--path", default=None, help="Local path for folder creation (override JSON), e.g., '$DATALIB/threeD/courses'.")
 @click.option("--folder-template", default=None, help="Template folder name for local structure (override JSON), e.g., 'default'.")
-def cli_add_lesson(api_key, database_id, data_file_path, course_name, chapter_name, lesson_name, description, link, path, folder_template):
+@click.option(
+    "--include-video/--no-video",
+    default=False,
+    help="Treat the lesson as a Jellyfin episode and capture the full .mp4 path."
+)
+def cli_add_lesson(api_key, database_id, data_file_path, course_name, chapter_name,
+                   lesson_name, description, link, path, folder_template, include_video):
     """
     Insert one or more lessons into an existing chapter of a course in Notion.
     The JSON file (if provided) should follow the standard internal format:
@@ -351,7 +377,7 @@ def cli_add_lesson(api_key, database_id, data_file_path, course_name, chapter_na
     if not api_key:
         api_key = os.getenv("NOTION_API_KEY")
     if not database_id:
-        database_id = os.getenv("NOTION_DATABASE_ID")
+        database_id = os.getenv("NOTION_COURSE_DATABASE_ID")
     if not api_key or not database_id:
         raise click.ClickException("API_KEY or DATABASE_ID not found.")
 
@@ -459,20 +485,148 @@ def cli_add_lesson(api_key, database_id, data_file_path, course_name, chapter_na
     except (KeyError, IndexError):
         raise click.ClickException("Invalid payload structure for lessons.")
 
+    # ─── pull the course ONCE and pass it to every call ──────────────────
+    notion_course = getCourses(
+        db=db_type,
+        filter=course_name,
+        api_key=api_key,
+        database_id=database_id
+    )["courses"][0]
+
     inserted_lessons = []
     for lesson_payload in lessons:
-        inserted = addLessons(
-            lesson_payload,
-            course_filter=course_name,
-            templates_dir=Path.home() / ".incept" / "templates",
-            db=db_type,
-            api_key=api_key,
-            database_id=database_id
+        inserted_lessons.append(
+            addLessons(
+                lesson_payload,
+                course_obj       = notion_course,         # new positional arg
+                templates_dir    = Path.home() / ".incept" / "templates",
+                db               = db_type,
+                include_video    = include_video,
+                api_key          = api_key,
+                database_id      = database_id,
+            )
         )
-        inserted_lessons.append(inserted)
 
     click.echo("Inserted Lessons:")
     click.echo(json.dumps(inserted_lessons, indent=2))
+
+
+
+@main.command("build-payload")
+@click.option("--course-name",              required=True, help="Course title")
+@click.option("--course-desc",              required=True, help="Full course description")
+@click.option("--intro-link",               required=True, help="Course intro URL")
+@click.option("--chapters",                 required=True, type=click.Path(exists=True),
+              help="Path to chapters.csv")
+@click.option("--lessons",                  required=True, type=click.Path(exists=True),
+              help="Path to lessons.csv")
+
+@click.option("-r", "--range", "chapter_range", default=None,
+              help="Only build chapters in this range, e.g. 2-3")
+
+# ← new flag for naming template
+@click.option("--chapter-name-template", default=None,
+              help="Python .format() expression for chapter name, e.g. 'Week {i:02d}'")
+
+# ← existing overrides
+@click.option("--tool",        multiple=True, help="Tool UUID(s); repeat or omit for default")
+@click.option("--instructor",  multiple=True, help="Instructor name(s); repeat or omit for default")
+@click.option("--institute",   multiple=True, help="Institute name(s); repeat or omit for default")
+@click.option("--tags",        multiple=True, help="Tag(s); repeat or omit for default")
+@click.option("--template",    "template_override", help="Folder‐template variant; omit for default")
+
+@click.option("--logo-public-id",        default=None, help="Override logo public ID")
+@click.option("--fanart-public-id",      default=None, help="Override fanart public ID")
+@click.option("--poster-base-public-id", default=None, help="Override poster base public ID")
+@click.option("--thumb-base-public-id",  default=None, help="Override thumb base public ID")
+
+@click.option("--templates-dir", default=str(Path.home() / ".incept" / "templates"),
+              help="Your Jinja2 templates folder")
+@click.option("--out",           default="payload.json", help="Where to write the final JSON")
+def cli_build_payload(
+    course_name, course_desc, intro_link,
+    chapters, lessons, chapter_range,
+    chapter_name_template,
+    tool, instructor, institute, tags, template_override,
+    logo_public_id, fanart_public_id, poster_base_public_id, thumb_base_public_id,
+    templates_dir, out
+):
+    """
+    Build a nested course→chapters→lessons payload from two CSVs + defaults/overrides.
+    """
+    # parse range if provided
+    crange: tuple[int,int] | None = None
+    if chapter_range:
+        m = re.match(r"^(\d+)-(\d+)$", chapter_range)
+        if not m:
+            raise click.BadParameter("range must be N-M")
+        crange = (int(m.group(1)), int(m.group(2)))
+
+    payload = build_payload(
+      course_name=course_name,
+      course_desc=course_desc,
+      intro_link=intro_link,
+      chapters_csv=Path(chapters),
+      lessons_csv=Path(lessons),
+      chapter_range=crange,
+      chapter_name_template=chapter_name_template,
+      templates_dir=Path(templates_dir),
+
+      tool=list(tool) or None,
+      instructor=list(instructor) or None,
+      institute=list(institute) or None,
+      tags=list(tags) or None,
+      template=template_override or None,
+
+      logo_public_id=logo_public_id,
+      fanart_public_id=fanart_public_id,
+      poster_base_public_id=poster_base_public_id,
+      thumb_base_public_id=thumb_base_public_id,
+    )
+
+    with open(out, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2)
+
+    click.echo(f"payload written to {out}")
+
+@main.command("dl-rebelway")
+@click.option("--excel",     "excel_path", required=True, type=click.Path(exists=True))
+@click.option("--output",    "out_dir",    required=True, type=click.Path())
+@click.option("--skip-first", default=0,     help="Rows to skip (zero-based).")
+@click.option(
+    "-r","--range","chapter_range",
+    default=None,
+    help="Only download for this chapter or range, e.g. 3 or 2-4"
+)
+@click.option("--chrome-port", default=9222, help="Chrome remote debug port.")
+def cli_dl_rebelway(excel_path, out_dir, skip_first, chrome_port, chapter_range):
+    """Download SOURCE MP4s from Rebelway lessons.xlsx."""
+    # parse the chapter_range flag into a (start,end) tuple
+    range_tuple = None
+    if chapter_range:
+        m = re.match(r"^(\d+)(?:-(\d+))?$", chapter_range)
+        if not m:
+            raise click.BadParameter("range must be N or N-M")
+        start = int(m.group(1))
+        end   = int(m.group(2)) if m.group(2) else start
+        range_tuple = (start, end)
+
+    download_rebelway(
+        excel_path,
+        out_dir,
+        skip_first=skip_first,
+        chrome_port=chrome_port,
+        chapter_range=range_tuple,
+    )
+
+@main.command("report-broken")
+@click.option("--excel",  "excel_path", required=True, type=click.Path(exists=True))
+@click.option("--output", "out_csv",    required=True, type=click.Path())
+@click.option("--chrome-port", default=9222, help="Chrome remote debug port.")
+def cli_report_broken(excel_path, out_csv, chrome_port):
+    """Report lessons with missing SOURCE links to a CSV."""
+    report_broken_sources(excel_path, out_csv, chrome_port)
+
 
 if __name__ == "__main__":
     main()

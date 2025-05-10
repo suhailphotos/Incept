@@ -1,28 +1,20 @@
-{# video_chapter.j2 #}
-{#
-  Each "chapter" -> "season_01", "season_02", or "season_00" for specials.
-  We place typical season-level images:
-    season_XX_poster.jpg, season_XX_fanart.jpg, banner, cover, logo, thumb, etc.
-#}
+{# ~/.incept/templates/video_chapter.j2 #}
 {
   "folder": "season_{{ numeric_prefix }}",
   "files": [
-    { "file": "season_{{ numeric_prefix }}_poster.jpg" },
-    { "file": "season_{{ numeric_prefix }}_fanart.jpg" },
-    { "file": "season_{{ numeric_prefix }}_banner.jpg" },
-    { "file": "season_{{ numeric_prefix }}_cover.jpg" },
-    { "file": "season_{{ numeric_prefix }}_background.jpg" },
-    { "file": "season_{{ numeric_prefix }}_logo.png" },
-    { "file": "season_{{ numeric_prefix }}_thumb.jpg" }
+    { "file": "poster.jpg" },
+    { "file": "fanart.jpg" },
+    { "file": "background.jpg" },
+    { "file": "logo.png" },
+    { "file": "thumb.jpg" }
   ],
   "subfolders": [
     {
       "folder": ".",
       "subfolders": [
-        {% for lesson in lessons %}
-          {{ lesson | tojson }},
-        {% endfor %}
-        {}
+{% for lesson in lessons %}
+        {{ lesson | tojson }}{% if not loop.last %},{% endif %}
+{% endfor %}
       ]
     }
   ]

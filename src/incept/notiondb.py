@@ -31,8 +31,10 @@ else:
         "Instructor": {"target": "instructor", "type": "select", "return": "list"},
         "Institute": {"target":"institute", "type":"select", "return":"list"},
         "Path": {"target": "path", "type": "rich_text", "return": "str"},
-        "Template": {"target": "template", "type": "rich_text", "return": "str"},
-        "Tags": {"target": "tags", "type": "multi_select", "return": "list"}
+        "Template": {"target": "template", "type": "rich_text", "return": "str", "default": "default"},
+        "Tags": {"target": "tags", "type": "multi_select", "return": "list"},
+        "Video": {"target": "video", "type": "checkbox", "return": "boolean"},
+        "Video Path": {"target": "video_path", "type": "rich_text", "return": "str"}
     }
     back_mapping = {
         "icon": {"target": "icon", "return": "object"},
@@ -44,9 +46,11 @@ else:
         "link": {"target": "Course Link", "type": "url", "return": "str"},
         "instructor": {"target": "Instructor", "type": "select", "return": "list"},
         "institute": {"target":"Institute", "type":"select", "return":"list"},
-        "path": {"target": "Path", "type": "rich_text", "return": "str"},
-        "template": {"target": "Template", "type": "rich_text", "return": "str"},
-        "tags": {"target": "Tags", "type": "multi_select", "return": "list", "default": ["Python"]}
+        "path": {"target": "Path", "type": "rich_text", "return": "str", "code": True},
+        "template": {"target": "Template", "type": "rich_text", "return": "str", "code": True},
+        "tags": {"target": "Tags", "type": "multi_select", "return": "list", "default": ["Python"]},
+        "video": {"target": "Video", "type": "checkbox", "return": "boolean"},
+        "video_path": {"target": "Video Path", "type": "rich_text", "return": "str", "code": True}
     }
     hierarchy_config = {
         "root": "courses",
@@ -55,6 +59,8 @@ else:
     }
     DEFAULT_ICON_URL = "https://www.notion.so/icons/graduate_lightgray.svg"
     DEFAULT_COVER_URL = "https://res.cloudinary.com/dicttuyma/image/upload/w_1500,h_600,c_fill,g_auto/v1742094799/banner/notion_21.jpg"
+
+
 
 class NotionDB:
 

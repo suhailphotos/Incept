@@ -1,0 +1,65 @@
+{#
+  Build a courses payload. Expects `courses`, each with:
+    id, icon, cover, name, tool, description,
+    logo_public_id, fanart_public_id, poster_base_id,
+    thumb_base_id, link, instructor, institute, tags, template,
+    optional chapters → lessons
+#}
+{
+  "courses": [
+  {%- for course in courses %}
+    {
+      "id":            {{ course.id            | tojson }},
+      "icon":          {{ course.icon          | tojson }},
+      "cover":         {{ course.cover         | tojson }},
+      "name":          {{ course.name          | tojson }},
+      "tool":          {{ course.tool          | tojson }},
+      "description":   {{ course.description   | tojson }},
+      "logo_public_id":   {{ course.logo_public_id   | tojson }},
+      "fanart_public_id": {{ course.fanart_public_id | tojson }},
+      "poster_base_id":   {{ course.poster_base_id   | tojson }},
+      "thumb_base_id":    {{ course.thumb_base_id    | tojson }},    {# ← new #}
+      "link":          {{ course.link          | tojson }},
+      "instructor":    {{ course.instructor    | tojson }},
+      "institute":     {{ course.institute     | tojson }},
+      "tags":          {{ course.tags          | tojson }},
+      "template":      {{ course.template      | tojson }}
+      {%- if course.chapters %}
+      ,"chapters": [
+        {%- for chap in course.chapters %}
+        {
+          "id":           {{ chap.id           | tojson }},
+          "icon":         {{ chap.icon         | tojson }},
+          "cover":        {{ chap.cover        | tojson }},
+          "name":         {{ chap.name         | tojson }},
+          "tool":         {{ chap.tool         | tojson }},
+          "description":  {{ chap.description  | tojson }},
+          "link":         {{ chap.link         | tojson }},
+          "instructor":   {{ chap.instructor   | tojson }},
+          "institute":    {{ chap.institute    | tojson }},
+          "tags":         {{ chap.tags         | tojson }},
+          "template":     {{ chap.template     | tojson }}
+          {%- if chap.lessons %}
+          ,"lessons": [
+            {%- for les in chap.lessons %}
+            {
+              "id":          {{ les.id          | tojson }},
+              "icon":        {{ les.icon        | tojson }},
+              "cover":       {{ les.cover       | tojson }},
+              "tool":        {{ les.tool        | tojson }},
+              "name":        {{ les.name        | tojson }},
+              "description": {{ les.description | tojson }},
+              "link":        {{ les.link        | tojson }},
+              "instructor":  {{ les.instructor  | tojson }},
+              "institute":   {{ les.institute   | tojson }},
+              "tags":        {{ les.tags        | tojson }},
+              "template":    {{ les.template    | tojson }}
+            }{{ "," if not loop.last }}{% endfor %}
+          ]
+          {%- endif %}
+        }{{ "," if not loop.last }}{% endfor %}
+      ]
+      {%- endif %}
+    }{{ "," if not loop.last }}{% endfor %}
+  ]
+}
