@@ -4,6 +4,7 @@ import os
 import json
 import click
 import shutil
+import re
 from dotenv import load_dotenv
 from pathlib import Path
 from incept.courses import getCourses, addCourses, addChapters, addLessons
@@ -520,6 +521,9 @@ def cli_add_lesson(api_key, database_id, data_file_path, course_name, chapter_na
 @click.option("--lessons",                  required=True, type=click.Path(exists=True),
               help="Path to lessons.csv")
 
+@click.option("-r", "--range", "chapter_range", default=None,
+              help="Only build chapters in this range, e.g. 2-3")
+
 # ← new flag for naming template
 @click.option("--chapter-name-template", default=None,
               help="Python .format() expression for chapter name, e.g. 'Week {i:02d}'")
@@ -541,7 +545,7 @@ def cli_add_lesson(api_key, database_id, data_file_path, course_name, chapter_na
 @click.option("--out",           default="payload.json", help="Where to write the final JSON")
 def cli_build_payload(
     course_name, course_desc, intro_link,
-    chapters, lessons,
+    chapters, lessons, chapter_range,
     chapter_name_template,
     tool, instructor, institute, tags, template_override,
     logo_public_id, fanart_public_id, poster_base_public_id, thumb_base_public_id,
@@ -550,12 +554,21 @@ def cli_build_payload(
     """
     Build a nested course→chapters→lessons payload from two CSVs + defaults/overrides.
     """
+    # parse range if provided
+    crange: tuple[int,int] | None = None
+    if chapter_range:
+        m = re.match(r"^(\d+)-(\d+)$", chapter_range)
+        if not m:
+            raise click.BadParameter("range must be N-M")
+        crange = (int(m.group(1)), int(m.group(2)))
+
     payload = build_payload(
       course_name=course_name,
       course_desc=course_desc,
       intro_link=intro_link,
       chapters_csv=Path(chapters),
       lessons_csv=Path(lessons),
+      chapter_range=crange,
       chapter_name_template=chapter_name_template,
       templates_dir=Path(templates_dir),
 
@@ -580,10 +593,31 @@ def cli_build_payload(
 @click.option("--excel",     "excel_path", required=True, type=click.Path(exists=True))
 @click.option("--output",    "out_dir",    required=True, type=click.Path())
 @click.option("--skip-first", default=0,     help="Rows to skip (zero-based).")
+@click.option(
+    "-r","--range","chapter_range",
+    default=None,
+    help="Only download for this chapter or range, e.g. 3 or 2-4"
+)
 @click.option("--chrome-port", default=9222, help="Chrome remote debug port.")
-def cli_dl_rebelway(excel_path, out_dir, skip_first, chrome_port):
+def cli_dl_rebelway(excel_path, out_dir, skip_first, chrome_port, chapter_range):
     """Download SOURCE MP4s from Rebelway lessons.xlsx."""
-    download_rebelway(excel_path, out_dir, skip_first, chrome_port)
+    # parse the chapter_range flag into a (start,end) tuple
+    range_tuple = None
+    if chapter_range:
+        m = re.match(r"^(\d+)(?:-(\d+))?$", chapter_range)
+        if not m:
+            raise click.BadParameter("range must be N or N-M")
+        start = int(m.group(1))
+        end   = int(m.group(2)) if m.group(2) else start
+        range_tuple = (start, end)
+
+    download_rebelway(
+        excel_path,
+        out_dir,
+        skip_first=skip_first,
+        chrome_port=chrome_port,
+        chapter_range=range_tuple,
+    )
 
 @main.command("report-broken")
 @click.option("--excel",  "excel_path", required=True, type=click.Path(exists=True))

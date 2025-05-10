@@ -16,18 +16,24 @@ def launch_chrome(debug_port: int = 9222) -> None:
     Fire up (or re-fire) Google Chrome in remote-debugging mode.
     Blocks until the user hits ENTER.
     """
+    # launch a fresh Chrome instance on a separate profile so it's guaranteed
+    # to have remote-debugging turned on and no lock on your default profile
     cmd = [
-        "open", "-a", "Google Chrome", "--args",
-        f"--remote-debugging-port={debug_port}"
+        "open", "-na", "Google Chrome", "--args",
+        f"--remote-debugging-port={debug_port}",
+        "--user-data-dir=/tmp/chrome-remote-debug",
+        "--no-first-run",
+        "--no-default-browser-check"
     ]
     subprocess.Popen(cmd)
     input(f"\n🚀 Chrome launched on port {debug_port}.  Log in, then press ENTER to continue…")
 
-def make_chrome_driver(debug_port: int = 9222, headless: bool = True):
+def make_chrome_driver(debug_port: int = 9222, headless: bool = False):
     """
     Return a Selenium WebDriver attached to the already-running Chrome.
     """
     opts = Options()
+    # when attaching to remote-debugging Chrome, do NOT run headless
     if headless:
         opts.add_argument("--headless=new")
     opts.add_experimental_option("debuggerAddress", f"127.0.0.1:{debug_port}")

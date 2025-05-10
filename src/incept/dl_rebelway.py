@@ -1,6 +1,7 @@
 # src/incept/dl_rebelway.py
 import os
 import html
+import re
 import pandas as pd
 
 from urllib.parse                import urlsplit
@@ -29,8 +30,9 @@ def download_rebelway(
     excel_path: str,
     out_dir:    str,
     skip_first: int = 0,
-    chrome_port:int = 9222
-):
+    chrome_port:int = 9222,
+    chapter_range: tuple[int,int] | None = None,
+) -> None:
     """
     Read the 'lessons' sheet of the Excel file, 
     launch Chrome & Selenium, then download every SOURCE MP4.
@@ -42,6 +44,15 @@ def download_rebelway(
     df = pd.read_excel(excel_path, sheet_name="lessons", engine="openpyxl")
     if not {"chapter_index","name","link"}.issubset(df.columns):
         raise ValueError("Excel must have columns: chapter_index, name, link")
+
+
+    # 2a) filter to the requested chapter(s)
+    if chapter_range:
+        start, end = chapter_range
+        df = df[df["chapter_index"].between(start, end)]
+        if df.empty:
+            print(f"⚠️  No rows found for chapter range {start}-{end}; exiting.")
+            return
 
     # 3) Prepare Selenium + requests
     driver = make_chrome_driver(debug_port=chrome_port)

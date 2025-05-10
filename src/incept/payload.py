@@ -80,7 +80,15 @@ def load_lessons(
     with open(csv_path, mode='r', encoding='utf-8-sig', newline='') as f:
         reader = csv.DictReader(f)
         for r in reader:
-            ci = int(r["chapter_index"])
+            raw_idx = r.get("chapter_index", "").strip()
+            if not raw_idx:
+                # no chapter_index → skip
+                continue
+            try:
+                ci = int(raw_idx)
+            except ValueError:
+                # invalid number → skip
+                continue
             lesson = {
                 "id":          None,
                 "icon":        None,
@@ -105,6 +113,7 @@ def build_payload(
     intro_link: str,
     chapters_csv: Path,
     lessons_csv: Path,
+    chapter_range: tuple[int,int] | None = None,
     templates_dir: Path,
 
     chapter_name_template: str | None = None,
@@ -146,8 +155,21 @@ def build_payload(
         lessons_csv,
         tool_list, instr_list, insti_list, tags_list, template_str
     )
+    # attach only existing lessons, then filter out empties/range
+    filtered = []
     for chap in chap_list:
-        chap["lessons"] = les_map.get(chap["index"], [])
+        chap_idx = chap["index"]
+        chap["lessons"] = les_map.get(chap_idx, [])
+        # skip if no lessons
+        if not chap["lessons"]:
+            continue
+        # skip if out of requested range
+        if chapter_range:
+            start, end = chapter_range
+            if chap_idx < start or chap_idx > end:
+                continue
+        filtered.append(chap)
+    chap_list = filtered
 
     # 3) assemble course dict
     course = {
