@@ -33,6 +33,7 @@ else:
         "Path": {"target": "path", "type": "rich_text", "return": "str"},
         "Template": {"target": "template", "type": "rich_text", "return": "str", "default": "default"},
         "Tags": {"target": "tags", "type": "multi_select", "return": "list"},
+        "Status": {"target": "status",     "type": "status",    "return": "str"},
         "Video": {"target": "video", "type": "checkbox", "return": "boolean"},
         "Video Path": {"target": "video_path", "type": "rich_text", "return": "str"}
     }
@@ -49,6 +50,7 @@ else:
         "path": {"target": "Path", "type": "rich_text", "return": "str", "code": True},
         "template": {"target": "Template", "type": "rich_text", "return": "str", "code": True},
         "tags": {"target": "Tags", "type": "multi_select", "return": "list", "default": ["Python"]},
+        "status": {"target": "Status", "type": "status",    "return": "str", "default": "Not started"},
         "video": {"target": "Video", "type": "checkbox", "return": "boolean"},
         "video_path": {"target": "Video Path", "type": "rich_text", "return": "str", "code": True}
     }
@@ -234,6 +236,7 @@ class NotionDB:
         # Build payload using NotionManager's build_notion_payload().
         payload = self.notion.build_notion_payload(flat_object, back_mapping)
 
+
         # Append "Parent item" relation if a parent_item_id is available.
         if parent_item_id:
             parent_relation = {
@@ -244,6 +247,7 @@ class NotionDB:
             if "properties" not in payload:
                 payload["properties"] = {}
             payload["properties"]["Parent item"] = parent_relation
+
 
         # Insert the page.
         new_page = self.notion.add_page(payload)
@@ -292,7 +296,7 @@ if __name__ == "__main__":
 
     def test_insert_lessons(notion_db):
         # Assume the payload file is at $HOME/.incept/payload/lessons.json
-        payload_file = os.path.join(os.path.expanduser("~"), ".incept", "payload", "notion_lessons.json")
+        payload_file = os.path.join(os.path.expanduser("~"), ".incept", "payload", "ml_test_payload.json")
         if not os.path.exists(payload_file):
             print(f"Payload file not found: {payload_file}")
             return

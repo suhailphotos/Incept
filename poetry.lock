@@ -1632,13 +1632,13 @@ httpx = ">=0.23.0"
 
 [[package]]
 name = "notionmanager"
-version = "0.1.20"
+version = "0.1.23"
 description = "A Python package for managing courses, projects, and directories with Notion integration."
 optional = false
 python-versions = "<4.0.0,>=3.11.7"
 files = [
-    {file = "notionmanager-0.1.20-py3-none-any.whl", hash = "sha256:21e1f636fa1f9170c355ed16e5f912fff6b642a70c83c6d06ec3280db715f398"},
-    {file = "notionmanager-0.1.20.tar.gz", hash = "sha256:f463c406b158e41ec219babcedb49150af55f1c18687b2facd0529b04a344376"},
+    {file = "notionmanager-0.1.23-py3-none-any.whl", hash = "sha256:6803efa73c14d08630959d04bb420f86ed30c7f44204cb7d05b72f904cf5f1a2"},
+    {file = "notionmanager-0.1.23.tar.gz", hash = "sha256:6a8bd45c097aebd21d1e5a05228e19f5899d8b87075bc784f5fa1d617c6efb53"},
 ]
 
 [package.dependencies]
@@ -4155,4 +4155,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11.7"
-content-hash = "9abdef13adbf4e201c14cc54c7f3118c8667f66498cdb4696fd9e0cfd7908b3a"
+content-hash = "c613042d2ab2714ae7ec30dc7d62854e586dafe862d24d35f8b697d1deeb2c6c"

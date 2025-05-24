@@ -93,6 +93,8 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, include_v
         lesson_dict["video_path"] = lesson_dict.get("video_path") if include_video else "NA"
         # Set lesson type.
         lesson_dict["type"] = ["Lesson"]
+        # ensure every new lesson starts as "Not started"
+        lesson_dict["status"] = lesson_dict.get("status", "Not started")
         inserted_lesson = db_client.insert_page(
             flat_object=lesson_dict,
             back_mapping=lesson_back_mapping,
@@ -110,6 +112,8 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, include_v
         chapter_dict["video_path"] = chapter_dict.get("video_path") if include_video else "NA"
         # Set chapter type.
         chapter_dict["type"] = ["Chapter"]
+        # ensure every new chapter starts as "Not started"
+        chapter_dict["status"] = chapter_dict.get("status", "Not started")
         inserted_chapter = db_client.insert_page(
             flat_object=chapter_dict,
             back_mapping=chapter_back_mapping,
@@ -139,7 +143,8 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, include_v
 
         # Set course type.
         local_course["type"] = ["Course"]
-
+        # ensure every new chapter starts as "Not started"
+        chapter_dict["status"] = chapter_dict.get("status", "Not started")
         # 2a) If course_name is already in existing_course_names, skip.
         if course_name in existing_course_names:
             print(f"Course '{course_name}' already exists; skipping insertion.")
@@ -272,6 +277,7 @@ def addChapters(payload_data: dict,
         lesson_dict["video_path"] = lesson_dict.get("video_path") if include_video else "NA"
         # Ensure the lesson payload has the correct type.
         lesson_dict["type"] = ["Lesson"]
+        lesson_dict["status"] = lesson_dict.get("status", "Not started")
         inserted_lesson = db_client.insert_page(
             flat_object=lesson_dict,
             back_mapping=lesson_back_mapping,
@@ -294,8 +300,9 @@ def addChapters(payload_data: dict,
             print("Skipping a chapter that has no 'name'.")
             continue
 
-        # Set the chapter type to "Chapter"
+        # Set the chapter type to "Chapter", and default status
         chapter_payload["type"] = ["Chapter"]
+        chapter_payload["status"] = chapter_payload.get("status", "Not started")
 
         # 3a) Check if it already exists.
         if chapter_name in existing_chapter_names:
@@ -441,8 +448,10 @@ def addLessons(lesson_payload: dict, *, course_obj: dict | None = None,
     # ----------------------------------------------------------
     # 4.  Book-keeping fields expected by Notion
     # ----------------------------------------------------------
-    lesson_payload["type"]  = ["Lesson"]
-    lesson_payload["video"] = include_video
+    # set up Notion‐expected fields + our new status
+    lesson_payload["type"]   = ["Lesson"]
+    lesson_payload["video"]  = include_video
+    lesson_payload["status"] = lesson_payload.get("status", "Not started")
 
     # -----------------------------------------------------------
     #  Gather chapter-template metadata so the lesson helper
@@ -653,9 +662,50 @@ if __name__ == "__main__":
         print("Inserted Courses with Video:")
         print(json.dumps(inserted_courses, indent=2))
 
+    def test_notiondb_payload_for_add_chapter():
+        """
+        Loads your .json payload, builds the chapter object, then prints the
+        exact Notion API payload that would be sent to Notion (but doesn't send it).
+        """
+    
+        # Load your chapter JSON
+        payload_file = "/Users/suhail/.incept/payload/ml_3d_wk3_vfx.json"
+        with open(payload_file, "r") as f:
+            payload_data = json.load(f)
+        # Get the course name for filtering
+        course_name = payload_data["courses"][0]["name"]
+    
+        # Setup Notion DB client
+        db_client = get_db_client("notion")
+    
+        # Simulate what addChapters would do, but just print the Notion payload.
+        # We'll prepare one chapter, translate it, and print.
+        local_course = payload_data["courses"][0]
+        local_chapters = local_course.get("chapters", [])
+        if isinstance(local_chapters, dict):
+            local_chapters = [local_chapters]
+        chapter_payload = local_chapters[0]
+    
+        # Simulate the property translation step that insert_page uses.
+        flat_object = chapter_payload
+        back_mapping = db_client.back_mapping
+        forward_mapping = db_client.forward_mapping
+        parent_item = {"id": "dummy_parent"}  # Just a placeholder for now
+    
+        # ---- Emulate the translation to Notion payload (how does insert_page do it?) ----
+        # The goal is to print the *exact* payload that's handed to Notion.
+        notion_payload = db_client.translate_to_notion_payload(
+            flat_object=flat_object,
+            back_mapping=back_mapping,
+            forward_mapping=forward_mapping,
+            parent_item=parent_item,
+            child_key="chapters"
+        )
+        print(json.dumps(notion_payload, indent=2))
+
 
     # Uncomment to test addCourses + video:
-    test_add_courses_with_video()
+    # test_add_courses_with_video()
   
 
     # Uncomment to test addLessons.
