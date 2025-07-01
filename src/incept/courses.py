@@ -143,9 +143,7 @@ def addCourses(payload_data: dict, templates_dir: Path, db=DEFAULT_DB, include_v
 
         # Set course type.
         local_course["type"] = ["Course"]
-        # ensure every new chapter starts as "Not started"
-        chapter_dict["status"] = chapter_dict.get("status", "Not started")
-        # 2a) If course_name is already in existing_course_names, skip.
+       # 2a) If course_name is already in existing_course_names, skip.
         if course_name in existing_course_names:
             print(f"Course '{course_name}' already exists; skipping insertion.")
             continue
