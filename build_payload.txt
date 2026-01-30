@@ -1,0 +1,15 @@
+incept build-payload \
+  --course-name "Introduction To Machine Learning" \
+  --course-desc "Master core AI and Machine Learning concepts through practical training in supervised learning, unsupervised learning, neural networks, and transformers—while gaining hands-on experience in Python, data pipelines, model deployment, and industry tools like Houdini, TensorFlow, and PyTorch." \
+  --intro-link "https://rebelway.academy/lessons/week1-33/" \
+  --chapters ~/.incept/payload/chapters.csv \
+  --lessons  ~/.incept/payload/lessons.csv \
+  --chapter-name-template "Week {i:02d}" \
+  --tool 166a1865-b187-8138-8316-dc8288897458 \
+  --tool 149a1865-b187-80f9-b21f-c9c96430bf62 \
+  --instructor "Felipe Pesantez" \
+  --tags Houdini \
+  --tags Python \
+  --template default \
+  --thumb-base-public-id "thumb/base_image" \
+  --out ~/.incept/payload/intro_to_ml.json
